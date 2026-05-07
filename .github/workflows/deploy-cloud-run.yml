@@ -1,0 +1,74 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  BACKEND_IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/odata-bq-backend
+  FRONTEND_IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/odata-bq-frontend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run Backend Tests
+        run: npm run test --prefix backend
+        env:
+          OIDC_ISSUER: http://localhost/
+          OIDC_AUDIENCE: test-audience
+          BQ_BILLING_PROJECT_ID: test-project
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Authorize Docker'
+        run: gcloud auth configure-docker
+
+      - name: 'Build and Push Backend'
+        run: |
+          docker build -t $BACKEND_IMAGE -f backend/Dockerfile .
+          docker push $BACKEND_IMAGE
+
+      - name: 'Build and Push Frontend'
+        run: |
+          docker build -t $FRONTEND_IMAGE -f frontend/Dockerfile .
+          docker push $FRONTEND_IMAGE
+
+      - name: 'Deploy Backend to Cloud Run'
+        run: |
+          gcloud run deploy odata-bq-backend \
+            --image $BACKEND_IMAGE \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated
+
+      - name: 'Deploy Frontend to Cloud Run'
+        run: |
+          gcloud run deploy odata-bq-frontend \
+            --image $FRONTEND_IMAGE \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated

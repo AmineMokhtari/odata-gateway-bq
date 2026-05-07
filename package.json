@@ -1,0 +1,49 @@
+{
+  "name": "odata-gateway-bq",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "This project was bootstrapped with Fastify-CLI.",
+  "main": "backend/dist/app.js",
+  "directories": {
+    "doc": "docs",
+    "test": "backend/test"
+  },
+  "scripts": {
+    "test": "npm run build:backend && tsc -p backend/test/tsconfig.json && OIDC_ISSUER=http://localhost/ OIDC_AUDIENCE=test-audience BQ_BILLING_PROJECT_ID=test-project GCP_WORKLOAD_POOL_ID=test-pool GCP_WORKLOAD_PROVIDER_ID=test-provider FASTIFY_AUTOLOAD_TYPESCRIPT=true c8 node --test --test-concurrency 1 --import tsx backend/test/**/*.test.ts",
+    "start": "npm run build:backend && fastify start -a 0.0.0.0 -l info backend/dist/app.js",
+    "build:backend": "cd backend && tsc",
+    "watch:backend": "cd backend && tsc -w",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm run build:backend && fastify start -a 0.0.0.0 --ignore-watch=.ts$ -w -l info -P backend/dist/app.js --port 3001",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "keywords": [],
+  "author": "Amine MOKHTARI",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@fastify/autoload": "^6.0.0",
+    "@fastify/compress": "^8.3.1",
+    "@fastify/sensible": "^6.0.0",
+    "@google-cloud/bigquery": "^8.1.1",
+    "@google-cloud/bigquery-storage": "^5.1.0",
+    "fastify": "^5.0.0",
+    "fastify-cli": "^8.0.0",
+    "fastify-plugin": "^5.0.0",
+    "google-auth-library": "^10.6.2",
+    "jose": "^6.2.2",
+    "js-yaml": "^4.1.1",
+    "lru-cache": "^11.3.5",
+    "odata-v4-sql": "^0.1.2",
+    "protobufjs": "^7.5.5"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.0.3",
+    "c8": "^11.0.0",
+    "concurrently": "^9.0.0",
+    "fastify-tsconfig": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.2"
+  }
+}

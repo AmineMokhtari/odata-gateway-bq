@@ -1,0 +1,14 @@
+{
+  "name": "odata-v4-gcp",
+  "version": "1.0.0",
+  "description": "High-performance OData v4 to SQL translator for GCP.",
+  "type": "module",
+  "main": "./src/translator.js",
+  "types": "./src/translator.d.ts",
+  "exports": {
+    ".": "./src/translator.js",
+    "./parser": "./src/parser.js",
+    "./lexer": "./src/lexer.js",
+    "./ast": "./src/ast.js"
+  }
+}

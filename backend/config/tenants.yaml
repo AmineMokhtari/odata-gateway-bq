@@ -1,0 +1,32 @@
+# Multi-Tenant Gateway Configuration
+# Mapped to Story 4.2 & 5.2
+
+tenants:
+  - project_id: "my-project"
+    dataset_id: "my_dataset"
+    scan_budget_gb: 10
+    name: "Marketing Analytics"
+    access_rules:
+      emails:
+        - "elena@example.com"
+        - "david@example.com"
+        - "user1@example.com"
+      groups:
+        - "Marketing"
+        - "Analyst"
+
+  - project_id: "finance-prod"
+    dataset_id: "audits"
+    scan_budget_gb: 50
+    name: "Corporate Finance"
+    access_rules:
+      groups:
+        - "Finance"
+
+  - project_id: "sales-staging"
+    dataset_id: "crm"
+    scan_budget_gb: 2
+    name: "Sales Ops (Staging)"
+    access_rules:
+      emails:
+        - "tester@example.com"
