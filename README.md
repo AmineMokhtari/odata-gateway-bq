@@ -15,6 +15,7 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 *   **Data Engineers:** Who want to stop writing manual SQL exports and "SQL Tax" requests.
 *   **Data Consumers:** (Analysts, Finance, Marketing) who need real-time data in their familiar spreadsheet environments.
 *   **Architects:** Who need a secure, multi-tenant, and cost-controlled way to democratize data without exposing BigQuery IAM.
+*   **Chief Data Officers (CDO):** Who need to maximize the ROI of their BigQuery investment by safely democratizing data access while maintaining strict governance and cost control.
 
 ---
 
