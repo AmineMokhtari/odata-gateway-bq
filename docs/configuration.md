@@ -1,6 +1,6 @@
 # Configuration Reference
 
-This document provides a comprehensive list of all configuration options required to run the **OData BigQuery Gateway**.
+This document provides a comprehensive list of all configuration options required to run the **OData Gateway for BigQuery**.
 
 ## 1. Environment Variables
 

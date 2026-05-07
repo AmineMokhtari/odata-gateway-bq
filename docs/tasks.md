@@ -1,6 +1,6 @@
 # Tasks: Deployment & Implementation Matrix
 
-This document outlines the operational tasks and environment configurations supported by the **OData BigQuery Gateway**. Use this matrix to select the best implementation strategy for your organization's infrastructure.
+This document outlines the operational tasks and environment configurations supported by the **OData Gateway for BigQuery**. Use this matrix to select the best implementation strategy for your organization's infrastructure.
 
 ## 1. Local Deployment (Development & POC)
 
@@ -125,7 +125,7 @@ For deployment in private data centers requiring connection to Google Cloud. Sup
 
 ## 3. Supported Infrastructure
 
-The OData BigQuery Gateway is officially supported on the following platforms only:
+The OData Gateway for BigQuery is officially supported on the following platforms only:
 
 - **Virtual Machines (VM):** Any Linux-based environment (Ubuntu, RHEL, etc.) with Node.js 20+ or Docker.
 - **Kubernetes:** Standard Kubernetes distributions (v1.24+).
@@ -155,7 +155,7 @@ graph TD
 
     subgraph "GCP Execution/Billing Project"
         LB[Cloud Load Balancer / IAP]
-        Gateway[OData BigQuery Gateway]
+        Gateway[OData Gateway for BigQuery]
         Cache[(In-Memory Metadata Cache)]
     end
 

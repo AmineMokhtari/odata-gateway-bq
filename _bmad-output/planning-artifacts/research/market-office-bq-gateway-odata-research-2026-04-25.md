@@ -162,7 +162,7 @@ _Source: Striim.com "Data Democratization Report"_
 
 ### Pain Point Prioritization
 
-[Actionable priority list for the OData BigQuery Gateway UVP.]
+[Actionable priority list for the OData Gateway for BigQuery UVP.]
 _High Priority Pain Points: Cost Leakage (Bill Shock); IAM Complexity (Service Account Keys); Metadata Discovery Speed._
 _Medium Priority Pain Points: Regional dataset locking (US vs Europe); Nested record (STRUCT) handling._
 _Low Priority Pain Points: Clunky UIs (since Excel/Power BI is the UI)._
@@ -349,7 +349,7 @@ Security Architects (who hold 50% of the decision power) are rejecting tools tha
 
 ## Market Research Conclusion
 
-The **OData BigQuery Gateway** is uniquely positioned to disrupt the high-priced commercial connector market. By solving for **Financial Safety** and **OIDC Identity** natively, it addresses the 2025-2026 enterprise priorities that incumbents often treat as afterthoughts. The path to victory lies in the "Last Mile" of data—making petabyte-scale BigQuery data feel like a simple, governed, and safe local spreadsheet.
+The **OData Gateway for BigQuery** is uniquely positioned to disrupt the high-priced commercial connector market. By solving for **Financial Safety** and **OIDC Identity** natively, it addresses the 2025-2026 enterprise priorities that incumbents often treat as afterthoughts. The path to victory lies in the "Last Mile" of data—making petabyte-scale BigQuery data feel like a simple, governed, and safe local spreadsheet.
 
 **Market Research Completion Date:** 2026-04-25
 **Research Period:** 2024-2026 Comprehensive Analysis

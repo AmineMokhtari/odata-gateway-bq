@@ -1,6 +1,6 @@
 # Knowledge Base: How the Gateway Works
 
-The **OData BigQuery Gateway** acts as a secure bridge between your professional analytics tools and your organization's BigQuery data lakehouse.
+The **OData Gateway for BigQuery** acts as a secure bridge between your professional analytics tools and your organization's BigQuery data lakehouse.
 
 ## Core Concepts
 

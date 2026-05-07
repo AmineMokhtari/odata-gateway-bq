@@ -1,6 +1,6 @@
 # Getting Started Guide: Connecting to the Data Marketplace
 
-Welcome to the **OData BigQuery Gateway**. This guide will help you connect your favorite data tools (Excel, Power BI, etc.) to your organization's BigQuery datasets in minutes.
+Welcome to the **OData Gateway for BigQuery**. This guide will help you connect your favorite data tools (Excel, Power BI, etc.) to your organization's BigQuery datasets in minutes.
 
 ## Prerequisites
 - An active **Office 365 / Microsoft Entra ID** account.

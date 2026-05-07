@@ -1,6 +1,6 @@
 # Troubleshooting & FAQ
 
-Common questions and solutions for the OData BigQuery Gateway.
+Common questions and solutions for the OData Gateway for BigQuery.
 
 ## Troubleshooting Common Errors
 

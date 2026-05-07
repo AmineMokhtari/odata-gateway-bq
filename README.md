@@ -1,15 +1,15 @@
-# 🚀 OData BigQuery Gateway
+# 🚀 OData Gateway for BigQuery
 
 ### Unlock Your BigQuery Lakehouse for the Modern Enterprise.
 
 [![Fastify](https://img.shields.io/badge/fastify-v5.0.0-black.svg?style=flat-square&logo=fastify)](https://www.fastify.io)
 [![TypeScript](https://img.shields.io/badge/typescript-v5.9-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=flat-square)](https://opensource.org/licenses/ISC)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 
 ---
 
 ## 🌟 What is it?
-The **OData BigQuery Gateway** is a production-grade, zero-trust data bridge that transforms your BigQuery datasets into a governed **Data Marketplace**. It allows business users to access petabyte-scale data directly from tools like **Microsoft Excel**, **Power BI**, and **Microsoft Copilot** using the standard OData V4 protocol.
+The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge that transforms your BigQuery datasets into a governed **Data Marketplace**. It allows business users to access petabyte-scale data directly from tools like **Microsoft Excel**, **Power BI**, and **Microsoft Copilot** using the standard OData V4 protocol.
 
 ### Who is it for?
 *   **Data Engineers:** Who want to stop writing manual SQL exports and "SQL Tax" requests.

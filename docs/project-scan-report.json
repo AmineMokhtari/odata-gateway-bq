@@ -115,7 +115,7 @@
     {
       "part_id": "root",
       "project_type_id": "backend",
-      "display_name": "OData BigQuery Gateway"
+      "display_name": "OData Gateway for BigQuery"
     }
   ],
   "outputs_generated": [

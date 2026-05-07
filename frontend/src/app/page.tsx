@@ -45,7 +45,7 @@ export default function Home() {
           </div>
           
           <div className="mt-12 text-center text-slate-400 text-sm font-medium">
-            &copy; 2026 OData BigQuery Gateway. Build with ❤️ for the Data Community.
+            &copy; 2026 OData Gateway for BigQuery. Build with ❤️ for the Data Community.
           </div>
         </div>
       </main>

@@ -18,7 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "OData BigQuery Gateway | Governed Data Marketplace",
+  title: "OData Gateway for BigQuery | Governed Data Marketplace",
   description: "Unlock your BigQuery lakehouse for Excel and Power BI with zero drivers and proactive cost control.",
 };
 

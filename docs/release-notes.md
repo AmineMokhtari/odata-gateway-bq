@@ -24,7 +24,7 @@ This release introduces the **"Elena" Experience**—a set of features designed 
 ## Version 1.0.0 (Initial MVP)
 *Release Date: April 25, 2026*
 
-The initial launch of the **OData BigQuery Gateway** focuses on enabling secure, governed data democratization for Excel and Power BI users.
+The initial launch of the **OData Gateway for BigQuery** focuses on enabling secure, governed data democratization for Excel and Power BI users.
 
 ### New Features
 - **URL-Based Routing:** Access independent BigQuery datasets via easy-to-use URL segments: `/v1/:projectId/:datasetId`.
