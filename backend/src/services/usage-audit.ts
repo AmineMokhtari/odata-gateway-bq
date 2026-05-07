@@ -17,6 +17,7 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import { sanitizeLabelValue } from './bq-executor.js';
 import { config } from '../config.js';
+import { bigQueryValueReplacer } from '../lib/transformers/json-caster.js';
 
 export interface UserUsage {
   totalBytesBilled: number;
@@ -90,7 +91,7 @@ export async function getUserUsage(
     totalBytesBilled: usageRows[0]?.total_bytes_billed || 0,
     lastJobs: activityRows.map((row: any) => ({
       id: row.id,
-      creationTime: row.creation_time.value || row.creation_time,
+      creationTime: bigQueryValueReplacer('', row.creation_time),
       bytes: row.bytes,
       status: row.status === 'SUCCESS' ? 'DONE' : 'FAILURE'
     }))

@@ -56,4 +56,32 @@ describe('ODataEnvelopeTransformer', () => {
     const json = JSON.parse(result)
     assert.strictEqual(json['@odata.count'], undefined)
   })
+
+  test('should flatten BigQuery wrapped values (timestamps, dates)', async () => {
+    const transformer = new ODataEnvelopeTransformer({
+      contextUrl: 'http://test/$metadata#Items'
+    })
+
+    const source = Readable.from([
+      { 
+        id: 1, 
+        created: { value: '2023-10-27T10:00:00Z' },
+        updated: { value: '2023-10-27T10:00:00' }, // Naive
+        on: { value: '2023-10-27' }
+      }
+    ])
+    let result = ''
+    
+    for await (const chunk of source.pipe(transformer)) {
+      result += chunk
+    }
+
+    const json = JSON.parse(result)
+    assert.deepStrictEqual(json.value[0], {
+      id: 1,
+      created: '2023-10-27T10:00:00Z',
+      updated: '2023-10-27T10:00:00Z', // Should have Z appended
+      on: '2023-10-27'
+    })
+  })
 })

@@ -15,6 +15,7 @@
  */
 
 import { Transform, TransformCallback } from 'node:stream'
+import { bigQueryValueReplacer } from './json-caster.js'
 
 export interface ODataEnvelopeOptions {
   contextUrl: string
@@ -49,14 +50,14 @@ export class ODataEnvelopeTransformer extends Transform {
       }
       head += `,"value":[`
       this.push(head)
-      const canContinue = this.push(JSON.stringify(row))
+      const canContinue = this.push(JSON.stringify(row, bigQueryValueReplacer))
       this.firstRow = false
       if (!canContinue) {
         this.once('drain', callback)
         return
       }
     } else {
-      const canContinue = this.push(',' + JSON.stringify(row))
+      const canContinue = this.push(',' + JSON.stringify(row, bigQueryValueReplacer))
       if (!canContinue) {
         this.once('drain', callback)
         return

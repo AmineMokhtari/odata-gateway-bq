@@ -37,7 +37,7 @@ export class Translator extends Visitor {
     
     // For a QueryNode, we return a structured object
     if (node instanceof AST.QueryNode) {
-      const options: Record<string, string> = {};
+      const options: Record<string, any> = {};
       
       const selectNode = node.options.get('select') as AST.SelectNode;
       options.select = this.visit(selectNode || new AST.SelectNode(0, 0, []));

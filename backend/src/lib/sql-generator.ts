@@ -107,7 +107,7 @@ export function translateODataToSql(table: string, query: string, tableMetadata?
   }
 
   // 2. Parse and Translate via ov4g
-  let options: Record<string, string> = { select: 'SELECT *', where: '', orderby: '', limit: '', offset: '' }
+  let options: Record<string, any> = { select: 'SELECT *', where: '', orderby: '', limit: '', offset: '' }
   let params: Record<string, any> = {}
 
   if (formalQuery.length > 1) {

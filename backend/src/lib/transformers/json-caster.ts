@@ -58,3 +58,23 @@ export function applyJsonCasting(tableMetadata: TableMetadata, selectClause: str
 
   return castedColumns.join(', ')
 }
+
+/**
+ * Replacer function for JSON.stringify to flatten BigQuery wrapped types.
+ * Ensures ISO 8601 compliance with 'Z' suffix for timestamps and datetimes.
+ * 
+ * BigQuery Node.js client returns TIMESTAMP, DATE, and DATETIME as objects with a .value property.
+ * This replacer flattens them to their string values and ensures DateTimeOffset compatibility.
+ */
+export function bigQueryValueReplacer(key: string, value: any): any {
+  if (value && typeof value === 'object' && typeof value.value === 'string' && Object.keys(value).length === 1) {
+    const str = value.value
+    // If it's a DateTime string (contains T) but lacks a timezone offset, append 'Z'
+    // This handles BigQuery DATETIME types which are naive but mapped to Edm.DateTimeOffset.
+    if (str.includes('T') && !str.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(str)) {
+      return str + 'Z'
+    }
+    return str
+  }
+  return value
+}
