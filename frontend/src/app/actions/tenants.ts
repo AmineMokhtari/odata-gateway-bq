@@ -23,14 +23,37 @@ import { type GatewayConfig, type TenantConfig } from '@common/src/types/tenant'
 
 export async function getTenants(): Promise<TenantConfig[]> {
   try {
-    // Path relative to the root of the project when running in dev or production
-    const configPath = join(process.cwd(), '..', 'backend', 'config', 'tenants.yaml')
-    const fileContents = readFileSync(configPath, 'utf8')
-    const config = yaml.load(fileContents) as GatewayConfig
+    const envPath = process.env.TENANTS_CONFIG_PATH || 'backend/config/tenants.yaml';
     
-    return config?.tenants || []
+    // Attempt multiple resolution strategies for local dev
+    const pathsToTry = [
+      join(process.cwd(), envPath),
+      join(process.cwd(), '..', envPath),
+      join(process.cwd(), '..', '..', envPath)
+    ];
+
+    let fileContents = '';
+    let success = false;
+
+    for (const p of pathsToTry) {
+      try {
+        fileContents = readFileSync(p, 'utf8');
+        success = true;
+        break;
+      } catch (e) {
+        continue;
+      }
+    }
+
+    if (!success) {
+      console.warn('Could not find tenants.yaml at any expected path');
+      return [];
+    }
+
+    const config = yaml.load(fileContents) as GatewayConfig;
+    return config?.tenants || [];
   } catch (err: any) {
-    console.error('Failed to load tenants in Server Action:', err.message)
-    return []
+    console.error('Failed to load tenants in Server Action:', err.message);
+    return [];
   }
 }

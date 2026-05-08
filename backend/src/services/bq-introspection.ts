@@ -67,7 +67,7 @@ export async function getDatasetMetadata(
   // 2. Query INFORMATION_SCHEMA.TABLES for all tables
   // We use backtick escaping for identifiers to prevent SQL injection
   const tablesQuery = `
-    SELECT table_name, description
+    SELECT table_name
     FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLES\`
     WHERE table_type = 'BASE TABLE' OR table_type = 'VIEW'
   `
@@ -76,7 +76,7 @@ export async function getDatasetMetadata(
   // 3. Query INFORMATION_SCHEMA.COLUMNS for all columns, including partitioning info
   const columnsQuery = `
     SELECT table_name, column_name, data_type, is_nullable,
-           is_partitioning_column, description
+           is_partitioning_column
     FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.COLUMNS\`
     ORDER BY table_name, ordinal_position
   `
@@ -109,7 +109,6 @@ export async function getDatasetMetadata(
       k.constraint_name = c.constraint_name
       AND k.table_catalog = c.table_catalog
       AND k.table_schema = c.table_schema
-      AND k.ordinal_position = c.ordinal_position
     JOIN
       \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLE_CONSTRAINTS\` tc
     ON
@@ -127,7 +126,6 @@ export async function getDatasetMetadata(
   for (const row of tableRows) {
     tablesMap.set(row.table_name, {
       name: row.table_name,
-      description: row.description || undefined,
       columns: [],
       relationships: []
     })
@@ -140,8 +138,7 @@ export async function getDatasetMetadata(
       table.columns.push({
         name: row.column_name,
         type: row.data_type,
-        isNullable: row.is_nullable === 'YES',
-        description: row.description || undefined
+        isNullable: row.is_nullable === 'YES'
       })
       if (row.is_partitioning_column === 'YES') {
         table.partitionColumn = row.column_name
@@ -204,7 +201,7 @@ export async function getTableMetadata(
 
   // 2. Query INFORMATION_SCHEMA for the specific table and its columns
   const query = `
-    SELECT column_name, data_type, is_nullable, description
+    SELECT column_name, data_type, is_nullable
     FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.COLUMNS\`
     WHERE table_name = @tableName
     ORDER BY ordinal_position
@@ -225,8 +222,7 @@ export async function getTableMetadata(
     columns: columnRows.map((row: any) => ({
       name: row.column_name,
       type: row.data_type,
-      isNullable: row.is_nullable === 'YES',
-      description: row.description || undefined
+      isNullable: row.is_nullable === 'YES'
     })),
     relationships: [] // Relationships usually fetched at dataset level for performance
   }

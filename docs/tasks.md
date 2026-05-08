@@ -38,11 +38,13 @@ This procedure is for running the gateway on a local workstation for development
     ```bash
     npm run dev
     ```
+    - **Frontend:** `http://localhost:3000`
+    - **Backend:** `http://localhost:3001`
 
 ### Validation Tests
-- **[ ] Process Check:** Run `ps aux | grep node`. You should see the Fastify process running on port 3000.
-- **[ ] Health Check:** Run `curl http://localhost:3000/health`. Expect: `{"status":"ok"}`.
-- **[ ] Metadata Discovery:** Open `http://localhost:3000/v1/your-project/your-dataset/$metadata` in a browser. Expect a valid XML OData schema.
+- [x] **Process Check:** Run `ps aux | grep node`. You should see the Fastify and Next.js processes.
+- [ ] **Health Check:** Run `curl http://localhost:3001/health`. Expect: `{"status":"ok"}`.
+- [ ] **Metadata Discovery:** Open `http://localhost:3001/v1/your-project/your-dataset/$metadata` in a browser. Expect a valid XML OData schema.
 
 ---
 

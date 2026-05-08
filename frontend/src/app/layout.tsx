@@ -40,6 +40,7 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 import { Navigation } from "@/components/Navigation";
+import { MSWProvider } from "./MSWProvider";
 
 export default function RootLayout({
   children,
@@ -52,9 +53,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navigation />
-        {children}
-        <Toaster position="top-right" closeButton richColors />
+        <MSWProvider>
+          <Navigation />
+          {children}
+          <Toaster position="top-right" closeButton richColors />
+        </MSWProvider>
       </body>
     </html>
   );

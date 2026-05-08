@@ -61,7 +61,11 @@ Get the gateway running locally in three simple steps:
     ```bash
     npm run dev
     ```
-    *Open `http://localhost:3000/v1/your-project/your-dataset/$metadata` to see your OData schema.*
+    *   **Marketplace UI:** `http://localhost:3000`
+    *   **OData API:** `http://localhost:3001/v1/your-project/your-dataset/$metadata`
+
+> [!TIP]
+> The backend build generates artifacts in `backend/dist/backend/src/`. This path is automatically handled by `npm run dev`.
 
 ---
 

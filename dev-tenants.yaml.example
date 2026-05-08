@@ -1,0 +1,22 @@
+# OData Gateway - Development Tenants Configuration Template
+# This file defines the GCP projects and BigQuery datasets accessible through the gateway.
+# For local development, copy this file to 'dev-tenants.yaml'.
+
+tenants:
+  - project_id: "your-gcp-project-id"   # The GCP Project ID where the data resides
+    dataset_id: "your_dataset_id"       # The BigQuery Dataset ID
+    name: "Development Dataset"        # Human-readable name shown in the Marketplace UI
+    scan_budget_gb: 10                 # Maximum GB per query allowed for this tenant
+    
+    # Optional: Access rules (defaults to unrestricted in ANONYMOUS_MODE if omitted)
+    # access_rules:
+    #   emails:
+    #     - "user@example.com"
+    #   groups:
+    #     - "DataAnalysts"
+
+  # Example of a second tenant
+  # - project_id: "marketing-prod"
+  #   dataset_id: "analytics_v1"
+  #   name: "Marketing Analytics"
+  #   scan_budget_gb: 50
