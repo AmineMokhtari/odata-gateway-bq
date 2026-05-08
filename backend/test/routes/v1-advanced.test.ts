@@ -82,7 +82,8 @@ test('v1 advanced routing and admin', async (t) => {
     datasetId,
     location: 'US',
     tables: [
-      { name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }] }
+      { name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] },
+      { name: 'OverBudget', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }
     ]
   })
 
@@ -98,7 +99,7 @@ test('v1 advanced routing and admin', async (t) => {
     
     // Check if it was added to cache
     const cached = app.metadataCache.get(`${projectId}:${datasetId}`)
-    assert.ok(cached.tables.find((t: any) => t.name === 'FreshTable'))
+    assert.ok(cached?.tables.find((t: any) => t.name === 'FreshTable'))
   })
 
   await t.test('Budget: should return 400 with visual explanation for BudgetExceeded', async () => {
@@ -140,6 +141,8 @@ test('v1 advanced routing and admin', async (t) => {
   })
 
   await t.test('Connection Pulse: should update lastActive on $metadata query', async () => {
+    app.usageTracker.clear()
+
     // Initial status
     let res = await app.inject({
       url: `/v1/connection-status/${projectId}/${datasetId}`,

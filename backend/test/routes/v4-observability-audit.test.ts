@@ -94,7 +94,7 @@ test('Epic 4: High-performance observability and audit', async (t) => {
   // Pre-seed cache
   app.metadataCache.set(`${projectId}:${datasetId}`, {
     projectId, datasetId, location: 'US',
-    tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }] }]
+    tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }]
   })
 
   // 1. Verify Pulse Tracking on Discovery
@@ -170,7 +170,7 @@ test('Epic 4: High-performance observability and audit', async (t) => {
     // Seed cache for this instance too
     appWithFailingAudit.metadataCache.set(`${projectId}:${datasetId}`, {
       projectId, datasetId, location: 'US',
-      tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }] }]
+      tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }]
     })
 
     const res = await appWithFailingAudit.inject({

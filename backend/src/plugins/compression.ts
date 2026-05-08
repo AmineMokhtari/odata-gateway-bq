@@ -36,4 +36,6 @@ export default fp<FastifyCompressOptions>(async (fastify) => {
   } else {
     fastify.log.info('Response compression is DISABLED (ENABLE_COMPRESSION is not true)')
   }
+}, {
+  name: 'compression'
 })

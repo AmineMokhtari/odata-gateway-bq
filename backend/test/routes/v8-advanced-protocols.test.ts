@@ -62,11 +62,12 @@ test('Epic 8: Advanced OData protocols engine', async (t) => {
         getMetadata: async () => [{ statistics: { query: { totalRows: '1' } } }],
         getQueryResultsStream: () => {
           let rows: any[] = []
+          const upSql = (sql || '').toUpperCase()
           
-          if (sql.includes('STRUCT')) {
+          if (upSql.includes('STRUCT') || upSql.includes('DETAILS')) {
             // Expanded result
             rows = [{ id: 1, Category: 'Books', Details: { author: 'Elena', year: 2024 } }]
-          } else if (sql.includes('GROUP BY')) {
+          } else if (upSql.includes('GROUP BY')) {
             // Aggregated result
             rows = [{ Category: 'Books', Total: 1500 }]
           } else {
@@ -139,7 +140,8 @@ test('Epic 8: Advanced OData protocols engine', async (t) => {
         name: 'Logs', 
         columns: [{ name: 'event_date', type: 'DATE', isNullable: false }],
         requiresPartitionFilter: true,
-        partitionColumn: 'event_date'
+        partitionColumn: 'event_date',
+        relationships: []
       }]
     })
 

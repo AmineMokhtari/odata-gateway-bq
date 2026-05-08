@@ -25,8 +25,7 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
   }
 
   const originalFetch = globalThis.fetch
-  // @ts-ignore
-  globalThis.fetch = async (url: any) => {
+  globalThis.fetch = (async (url: string | URL | Request) => {
     const urlStr = String(url)
     if (urlStr.includes('.well-known/openid-configuration')) {
       return {
@@ -45,7 +44,7 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
       }
     }
     return { ok: false, status: 404 }
-  }
+  }) as typeof fetch
 
   t.after(() => {
     globalThis.fetch = originalFetch

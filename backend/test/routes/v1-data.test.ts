@@ -73,13 +73,18 @@ test('v1 data routing', async (t) => {
         id: 'mock-job-id',
         metadata: {
           statistics: {
-            totalBytesProcessed: '1024'
+            totalBytesProcessed: '1024',
+            query: { totalRows: '1' }
           }
         },
+        getMetadata: async () => [{
+          statistics: { query: { totalRows: '1' } }
+        }],
         getQueryResultsStream: () => {
           const s = new Readable({
+            objectMode: true,
             read() {
-              this.push(JSON.stringify({ id: 1 }))
+              this.push({ id: 1 })
               this.push(null)
             }
           })
@@ -104,10 +109,10 @@ test('v1 data routing', async (t) => {
     datasetId,
     location: 'US',
     tables: [
-      { name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }] }
+      { name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }
     ]
   })
-  app.metadataCache.set(`${projectId}:${datasetId}:xml`, '<?xml version="1.0" encoding="utf-8"?><Edmx xmlns="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0"><DataServices><Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="GCP.my_project.my_dataset"><EntityType Name="Sales"><Key><PropertyRef Name="id"/></Key><Property Name="id" Type="Edm.Int64" Nullable="false"/></EntityType><EntityContainer Name="BigQueryContext"><EntitySet Name="Sales" EntityType="GCP.my_project.my_dataset.Sales"/></EntityContainer></Schema></DataServices></Edmx>')
+  app.metadataCache.set(`${projectId}:${datasetId}:xml`, '<?xml version="1.0" encoding="utf-8"?><Edmx xmlns="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0"><DataServices><Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="GCP.my_project.my_dataset"><EntityType Name="Sales"><Key><PropertyRef Name="id"/></Key><Property Name="id" Type="Edm.Int64" Nullable="false"/></EntityType><EntityContainer Name="BigQueryContext"><EntitySet Name="Sales" EntityType="GCP.my_project.my_dataset.Sales"/></EntityContainer></Schema></DataServices></Edmx>' as any)
 
   await t.test('should parse projectId and datasetId correctly', async () => {
     const res = await app.inject({
@@ -160,13 +165,10 @@ test('v1 data routing', async (t) => {
       }
     })
 
-    // It fails with 500 because of real BigQuery client initialization.
-    // If it reaches BQ, it's considered a success for this routing test.
-    if (res.statusCode === 500) {
-      assert.ok(res.payload.includes('BigQuery') || res.payload.includes('project'), 'Should have reached BigQuery execution phase')
-    } else {
-      assert.equal(res.statusCode, 200)
-    }
+    assert.equal(res.statusCode, 200)
+    const body = res.json()
+    assert.equal(body.value.length, 1)
+    assert.equal(body.value[0].id, 1)
   })
 
   await t.test('should return 400 for invalid projectId', async () => {

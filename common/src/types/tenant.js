@@ -13,17 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import fp from 'fastify-plugin'
-import sensible, { FastifySensibleOptions } from '@fastify/sensible'
-
-/**
- * This plugins adds some utilities to handle http errors
- *
- * @see https://github.com/fastify/fastify-sensible
- */
-export default fp<FastifySensibleOptions>(async (fastify) => {
-  fastify.register(sensible)
-}, {
-  name: 'sensible'
-})
+export {};
+//# sourceMappingURL=tenant.js.map

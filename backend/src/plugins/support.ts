@@ -26,6 +26,8 @@ export default fp<SupportPluginOptions>(async (fastify, opts) => {
   fastify.decorate('someSupport', function () {
     return 'hugs'
   })
+}, {
+  name: 'support'
 })
 
 // When using .decorate you have to specify added properties for Typescript

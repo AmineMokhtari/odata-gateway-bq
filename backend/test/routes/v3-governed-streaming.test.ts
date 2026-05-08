@@ -26,8 +26,7 @@ test('Epic 3: Governed data streaming engine', async (t) => {
   }
 
   const originalFetch = globalThis.fetch
-  // @ts-ignore
-  globalThis.fetch = async (url: any) => {
+  globalThis.fetch = (async (url: string | URL | Request) => {
     const urlStr = String(url)
     if (urlStr.includes('.well-known/openid-configuration')) {
       return { ok: true, status: 200, json: async () => ({ jwks_uri: 'http://localhost/jwks.json' }) }
@@ -36,7 +35,7 @@ test('Epic 3: Governed data streaming engine', async (t) => {
       return { ok: true, status: 200, json: async () => ({ keys: [{ ...jwk, alg: 'RS256', use: 'sig', kid: 'test-kid' }] }) }
     }
     return { ok: false, status: 404 }
-  }
+  }) as typeof fetch
 
   t.after(() => {
     globalThis.fetch = originalFetch
@@ -108,7 +107,7 @@ test('Epic 3: Governed data streaming engine', async (t) => {
   // Pre-seed cache
   app.metadataCache.set(`${projectId}:${datasetId}`, {
     projectId, datasetId, location: 'US',
-    tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }] }]
+    tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }]
   })
 
   // 1. Verify Budget Enforcement (Circuit Breaker)

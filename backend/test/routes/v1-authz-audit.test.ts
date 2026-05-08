@@ -103,7 +103,7 @@ test('Epic 1: Identity propagation and rule-based authorization', async (t) => {
   // Pre-seed cache and internal rules (via mock/override)
   app.metadataCache.set(`${projectId}:${datasetId}`, {
     projectId, datasetId, location: 'US',
-    tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }] }]
+    tables: [{ name: 'Sales', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }]
   })
 
   // 1. Verify Authorization Denial

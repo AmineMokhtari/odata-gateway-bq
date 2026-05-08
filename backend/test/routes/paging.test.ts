@@ -65,14 +65,17 @@ test('v1 smart paging ($skiptoken)', async (t) => {
     id: 'mock-job-id',
     metadata: {
       statistics: {
+        totalBytesProcessed: '1024',
         query: {
           totalRows: '100'
         }
       }
     },
+    getMetadata: async () => [{ statistics: { totalBytesProcessed: '1024', query: { totalRows: '100' } } }],
     get: async function() { return [this] },
-    getQueryResultsStream: (options: any) => {
-      const { startIndex, maxResults } = options
+    getQueryResultsStream: (options?: any) => {
+      const startIndex = Number(options?.startIndex || 0)
+      const maxResults = Number(options?.maxResults || 10)
       const s = new Readable({
         objectMode: true,
         read() {
@@ -117,6 +120,12 @@ test('v1 smart paging ($skiptoken)', async (t) => {
   const datasetId = 'my_dataset'
   const entitySet = 'test_table'
 
+  // Pre-seed cache to avoid BigQuery discovery queries
+  app.metadataCache.set(`${projectId}:${datasetId}`, {
+    projectId, datasetId, location: 'US',
+    tables: [{ name: 'test_table', columns: [{ name: 'id', type: 'INT64', isNullable: false }], relationships: [] }]
+  })
+
   await t.test('First page should return nextLink', async () => {
     const res = await app.inject({
       method: 'GET',
@@ -130,13 +139,13 @@ test('v1 smart paging ($skiptoken)', async (t) => {
     const body = JSON.parse(res.payload)
     assert.strictEqual(body.value.length, 10)
     assert.ok(body['@odata.nextLink'])
-    assert.ok(body['@odata.nextLink'].includes('$skiptoken=mock-job-id_10'))
+    assert.match(body['@odata.nextLink'], /(\$|%24)skiptoken=mock-job-id(%3A|:)10/)
   })
 
   await t.test('Second page using $skiptoken should resume results', async () => {
     const res = await app.inject({
       method: 'GET',
-      url: `/v1/${projectId}/${datasetId}/${entitySet}?$top=10&$skiptoken=mock-job-id_10`,
+      url: `/v1/${projectId}/${datasetId}/${entitySet}?$top=10&$skiptoken=mock-job-id:10`,
       headers: {
         authorization: `Bearer ${validToken}`
       }
@@ -146,13 +155,13 @@ test('v1 smart paging ($skiptoken)', async (t) => {
     const body = JSON.parse(res.payload)
     assert.strictEqual(body.value.length, 10)
     assert.strictEqual(body.value[0].id, 11)
-    assert.ok(body['@odata.nextLink'].includes('$skiptoken=mock-job-id_20'))
+    assert.match(body['@odata.nextLink'], /(\$|%24)skiptoken=mock-job-id(%3A|:)20/)
   })
 
   await t.test('Final page should NOT have nextLink', async () => {
     const res = await app.inject({
       method: 'GET',
-      url: `/v1/${projectId}/${datasetId}/${entitySet}?$top=10&$skiptoken=mock-job-id_90`,
+      url: `/v1/${projectId}/${datasetId}/${entitySet}?$top=10&$skiptoken=mock-job-id:90`,
       headers: {
         authorization: `Bearer ${validToken}`
       }

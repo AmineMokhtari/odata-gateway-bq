@@ -20,8 +20,7 @@ test('admin routes', async (t) => {
 
   // Mock fetch for auth
   const originalFetch = globalThis.fetch
-  // @ts-ignore
-  globalThis.fetch = async (url: any) => {
+  globalThis.fetch = (async (url: string | URL | Request) => {
     const urlStr = String(url)
     if (urlStr.includes('.well-known/openid-configuration')) {
       return {
@@ -46,8 +45,8 @@ test('admin routes', async (t) => {
         })
       }
     }
-    return { ok: false, status: 404 }
-  }
+    return { ok: false, status: 404, json: async () => ({}), text: async () => 'Not Found' }
+  }) as typeof fetch
 
   t.after(() => {
     globalThis.fetch = originalFetch
