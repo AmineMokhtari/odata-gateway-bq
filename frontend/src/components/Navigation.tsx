@@ -47,14 +47,14 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-indigo-700 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-100 group-hover:scale-110 transition-transform">
+          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground shadow-sm transition-transform">
             <Database className="w-5 h-5" />
           </div>
-          <span className="font-inter font-bold text-slate-900 tracking-tight text-lg">
+          <span className="font-sans font-medium text-foreground tracking-tight text-lg">
             OData Gateway
           </span>
         </Link>
@@ -62,25 +62,25 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
           {/* User Identity Status */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/50 border border-accent rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-bold text-accent-foreground uppercase tracking-wider flex items-center gap-1.5">
               <Lock className="w-3 h-3" />
               {userName}
             </span>
           </div>
 
-          <div className="h-4 w-[1px] bg-slate-200" />
+          <div className="h-4 w-[1px] bg-border" />
 
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "text-sm font-bold uppercase tracking-widest transition-colors",
+                "text-sm font-medium transition-colors",
                 pathname === item.href 
-                  ? "text-indigo-700" 
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               {item.name}
@@ -93,12 +93,12 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="Open Navigation Menu" className="h-10 w-10">
-                <Menu className="w-6 h-6 text-slate-600" />
+                <Menu className="w-6 h-6 text-muted-foreground" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <SheetHeader className="text-left border-b border-slate-100 pb-6 mb-6">
-                <SheetTitle className="text-2xl font-black font-inter tracking-tighter">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background border-l border-border">
+              <SheetHeader className="text-left border-b border-border pb-6 mb-6">
+                <SheetTitle className="text-xl font-bold font-sans tracking-tight text-foreground">
                   Data Marketplace
                 </SheetTitle>
               </SheetHeader>
@@ -108,10 +108,10 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-4 text-lg font-bold p-4 rounded-xl transition-colors",
+                      "flex items-center gap-4 text-base font-medium p-4 rounded transition-colors",
                       pathname === item.href 
-                        ? "bg-indigo-50 text-indigo-700" 
-                        : "text-slate-600 hover:bg-slate-50"
+                        ? "bg-accent text-accent-foreground" 
+                        : "text-foreground hover:bg-secondary"
                     )}
                   >
                     <item.icon className="w-6 h-6" />
@@ -120,15 +120,15 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
                 ))}
 
                 {/* Mobile User Identity Status */}
-                <div className="mx-4 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between">
+                <div className="mx-4 p-4 bg-accent/30 border border-accent rounded flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-sm font-bold text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-sm font-bold text-accent-foreground uppercase tracking-widest flex items-center gap-2">
                       <Lock className="w-4 h-4" />
                       {userName}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm uppercase tracking-tighter">Secure</span>
+                  <span className="text-[10px] font-bold text-primary bg-background px-2 py-1 rounded shadow-sm uppercase tracking-tighter border border-border">Secure</span>
                 </div>
               </div>
             </SheetContent>

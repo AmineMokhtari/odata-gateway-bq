@@ -62,17 +62,17 @@ const ExpandColumnSelector: React.FC<{
 }> = ({ baseUrl, entitySet, selectedColumns, onChange }) => {
   const { properties, loading } = useEntityMetadata(baseUrl, entitySet);
 
-  if (loading) return <div className="text-[10px] text-indigo-300 italic">Discovering fields...</div>;
+  if (loading) return <div className="text-[10px] text-primary italic">Discovering fields...</div>;
 
   return (
-    <div className="mt-2 pl-4 py-1 space-y-2 border-l-2 border-indigo-200/50 animate-in slide-in-from-left-1">
+    <div className="mt-2 pl-4 py-1 space-y-2 border-l-2 border-primary/20 animate-in slide-in-from-left-1">
        <div className="flex items-center justify-between">
-         <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">Granular Fields ($select)</p>
+         <p className="text-[9px] font-bold text-primary/60 uppercase tracking-widest">Granular Fields ($select)</p>
          {selectedColumns.length > 0 && (
            <Button 
             variant="ghost" 
             size="sm" 
-            className="h-4 px-1 text-[8px] text-indigo-400 hover:text-indigo-600"
+            className="h-4 px-1 text-[8px] text-primary hover:text-primary"
             onClick={(e) => { e.stopPropagation(); onChange([]); }}
            >
              Reset
@@ -94,8 +94,8 @@ const ExpandColumnSelector: React.FC<{
              }}
              className={`h-6 px-2 rounded-md text-[9px] font-bold transition-all ${
                selectedColumns.includes(p.name)
-               ? 'bg-indigo-600 text-white shadow-sm'
-               : 'bg-white text-slate-500 border border-slate-100 hover:border-indigo-200'
+                 ? 'bg-primary text-primary-foreground shadow-sm'
+                 : 'bg-card text-muted-foreground border border-border hover:border-primary/50'
              }`}
            >
              {p.name}
@@ -288,35 +288,35 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
   };
 
   return (
-    <Card className="w-full max-w-2xl border-slate-200 shadow-xl bg-white rounded-2xl overflow-hidden">
-      <CardHeader className="bg-slate-50 border-b border-slate-100 pb-6">
-        <div className="flex items-center gap-2 text-indigo-700 mb-2">
+    <Card className="w-full max-w-2xl border-border shadow-sm bg-card rounded-md overflow-hidden">
+      <CardHeader className="bg-muted/30 border-b border-border pb-6">
+        <div className="flex items-center gap-2 text-primary mb-2">
           <Globe className="w-5 h-5" />
           <span className="text-xs font-bold uppercase tracking-widest">Connection Builder</span>
         </div>
-        <CardTitle className="text-2xl font-inter font-bold text-slate-900">
+        <CardTitle className="text-2xl font-sans font-bold text-foreground">
           Generate Your OData Feed
         </CardTitle>
-        <CardDescription className="text-slate-500">
+        <CardDescription className="text-muted-foreground">
           Select your data target to create a native connection string for your BI tools.
         </CardDescription>
       </CardHeader>
       
       <CardContent className="p-8 space-y-8">
         {/* Connection Pulse Status (Story 4.3) */}
-        <div className="flex justify-center py-4 border-b border-slate-50">
+        <div className="flex justify-center py-4 border-b border-secondary">
           <SuccessPulseBadge state={localConnectionState} lastActive={lastActive} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Project Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 uppercase tracking-tight flex items-center gap-2">
-              <Database className="w-4 h-4 text-indigo-600" />
+            <label className="text-sm font-bold text-foreground uppercase tracking-tight flex items-center gap-2">
+              <Database className="w-4 h-4 text-primary" />
               GCP Project
             </label>
             <Select onValueChange={(val: string | null) => { if (val) { setSelectedProject(val); setSelectedDataset(''); } }}>
-              <SelectTrigger className="h-12 border-slate-200 focus:ring-indigo-500 rounded-lg">
+              <SelectTrigger className="h-12 border-border focus:ring-primary rounded">
                 <SelectValue placeholder="Select Project" />
               </SelectTrigger>
               <SelectContent>
@@ -329,8 +329,8 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
 
           {/* Dataset Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 uppercase tracking-tight flex items-center gap-2">
-              <Database className="w-4 h-4 text-indigo-600" />
+            <label className="text-sm font-bold text-foreground uppercase tracking-tight flex items-center gap-2">
+              <Database className="w-4 h-4 text-primary" />
               BigQuery Dataset
             </label>
             <Select 
@@ -338,7 +338,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
               onValueChange={(val: string | null) => { if (val) setSelectedDataset(val); }}
               value={selectedDataset}
             >
-              <SelectTrigger className="h-12 border-slate-200 focus:ring-indigo-500 rounded-lg">
+              <SelectTrigger className="h-12 border-border focus:ring-primary rounded">
                 <SelectValue placeholder={selectedProject ? "Select Dataset" : "First select project"} />
               </SelectTrigger>
               <SelectContent>
@@ -352,8 +352,8 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
 
         {/* Table Selection */}
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 uppercase tracking-tight flex items-center gap-2">
-            <Table className="w-4 h-4 text-indigo-600" />
+          <label className="text-sm font-bold text-foreground uppercase tracking-tight flex items-center gap-2">
+            <Table className="w-4 h-4 text-primary" />
             Primary Table
           </label>
           <Select 
@@ -368,7 +368,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
             }}
             value={selectedTable}
           >
-            <SelectTrigger className="h-12 border-slate-200 focus:ring-indigo-500 rounded-lg">
+            <SelectTrigger className="h-12 border-border focus:ring-primary rounded">
               <SelectValue placeholder={selectedDataset ? "Select Table" : "First select dataset"} />
             </SelectTrigger>
             <SelectContent>
@@ -378,7 +378,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
             </SelectContent>
           </Select>
           {selectedTable && tableDescription && (
-            <p className="text-xs text-slate-500 bg-slate-50 p-2 rounded-md border-l-2 border-indigo-400 animate-in fade-in slide-in-from-left-1">
+            <p className="text-xs text-muted-foreground bg-secondary p-2 rounded border-l-2 border-primary/50 animate-in fade-in slide-in-from-left-1">
               {tableDescription}
             </p>
           )}
@@ -386,13 +386,13 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
 
         {/* Primary Column Selection (Story 8.2 Patch) */}
         {selectedTable && (
-          <div className="space-y-4 p-6 bg-slate-50 border border-slate-100 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <div className="space-y-4 p-6 bg-muted/20 border border-border rounded animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-900">
-                <ListTree className="w-4 h-4 text-indigo-600" />
+              <div className="flex items-center gap-2 text-foreground">
+                <ListTree className="w-4 h-4 text-primary" />
                 <h3 className="text-sm font-bold uppercase tracking-tight">Select Columns</h3>
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Visual $select</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Visual $select</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {properties.map(prop => (
@@ -405,16 +405,16 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
                       prev.includes(prop.name) ? prev.filter(c => c !== prop.name) : [...prev, prop.name]
                     );
                   }}
-                  className={`h-auto min-h-8 py-1.5 px-4 rounded-xl text-[10px] font-bold transition-all flex flex-col items-start gap-0.5 ${
+                  className={`h-auto min-h-8 py-1.5 px-4 rounded text-[10px] font-bold transition-all flex flex-col items-start gap-0.5 ${
                     selectedColumns.includes(prop.name)
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-100'
-                    : 'bg-white text-slate-600 hover:border-indigo-300 hover:bg-slate-50'
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10'
+                    : 'bg-card text-muted-foreground border border-border hover:border-primary/50 hover:bg-accent'
                   }`}
                 >
                   <span>{prop.name}</span>
                   {prop.description && (
                     <span className={`text-[8px] font-medium leading-tight text-left max-w-[120px] line-clamp-1 ${
-                      selectedColumns.includes(prop.name) ? 'text-indigo-200' : 'text-slate-400'
+                      selectedColumns.includes(prop.name) ? 'text-primary-foreground/80' : 'text-muted-foreground/80'
                     }`}>
                       {prop.description}
                     </span>
@@ -427,19 +427,19 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
 
         {/* Visual Join Builder (Story 6.2) */}
         {isEnabled && selectedTable && navProps.length > 0 && (
-          <div className="space-y-4 p-6 bg-indigo-50/50 border border-indigo-100 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <div className="space-y-4 p-6 bg-accent/20 border border-accent rounded animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-indigo-900">
+              <div className="flex items-center gap-2 text-primary">
                 <LinkIcon className="w-4 h-4" />
                 <h3 className="text-sm font-bold uppercase tracking-tight">Related Data (Joins)</h3>
               </div>
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Visual $expand</span>
+              <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Visual $expand</span>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {navProps.map(prop => (
-                <div key={prop.name} className={`flex flex-col space-y-2 bg-white p-4 rounded-xl border transition-all cursor-pointer group ${
-                  selectedExpands.includes(prop.name) ? 'border-indigo-300 ring-1 ring-indigo-100' : 'border-slate-100 hover:border-indigo-200'
+                <div key={prop.name} className={`flex flex-col space-y-2 bg-card p-4 rounded border transition-all cursor-pointer group ${
+                  selectedExpands.includes(prop.name) ? 'border-primary/50 ring-1 ring-primary/10' : 'border-border hover:border-primary/30'
                 }`}
                      onClick={() => toggleExpand(prop.name)}>
                   <div className="flex items-center space-x-3">
@@ -447,16 +447,16 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
                       id={`expand-${prop.name}`} 
                       checked={selectedExpands.includes(prop.name)}
                       onCheckedChange={() => toggleExpand(prop.name)}
-                      className="border-indigo-200 data-[state=checked]:bg-indigo-600"
+                      className="border-border data-[state=checked]:bg-primary"
                     />
                     <div className="space-y-0.5">
                       <label 
                         htmlFor={`expand-${prop.name}`}
-                        className="text-xs font-bold text-slate-900 leading-none cursor-pointer"
+                        className="text-xs font-bold text-foreground leading-none cursor-pointer"
                       >
                         {prop.name}
                       </label>
-                      <p className="text-[10px] text-slate-400 font-medium">Automatic Join</p>
+                      <p className="text-[10px] text-muted-foreground font-medium">Automatic Join</p>
                     </div>
                   </div>
 
@@ -482,19 +482,19 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
 
         {/* Visual Aggregation Builder (Story 6.3) */}
         {isEnabled && selectedTable && (
-          <div className="space-y-4 p-6 bg-slate-50 border border-slate-100 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <div className="space-y-4 p-6 bg-muted/20 border border-border rounded animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-900">
-                <Sigma className="w-4 h-4 text-emerald-600" />
+              <div className="flex items-center gap-2 text-foreground">
+                <Sigma className="w-4 h-4 text-success" />
                 <h3 className="text-sm font-bold uppercase tracking-tight">Summarize Data</h3>
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Visual $apply</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Visual $apply</span>
             </div>
             
             <div className="space-y-6">
               {/* Grouping Section */}
               <div className="space-y-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                   <ListTree className="w-3 h-3" /> Group By (Categorical)
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -506,8 +506,8 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
                       onClick={() => toggleGroupBy(prop.name)}
                       className={`h-8 rounded-full text-[10px] font-bold transition-all ${
                         selectedGroupBy.includes(prop.name)
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                        : 'bg-white text-slate-600 hover:border-indigo-200'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-card text-muted-foreground border border-border hover:border-primary/50'
                       }`}
                     >
                       {prop.name}
@@ -518,13 +518,13 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
 
               {/* Aggregation Section */}
               <div className="space-y-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                   <Sigma className="w-3 h-3" /> Calculations (Numerical)
                 </p>
                 <div className="space-y-2">
                   {properties.filter(p => p.isNumeric).map(prop => (
-                    <div key={prop.name} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-100">
-                      <span className="text-xs font-bold text-slate-700">{prop.name}</span>
+                    <div key={prop.name} className="flex items-center justify-between bg-card p-3 rounded border border-border">
+                      <span className="text-xs font-bold text-foreground">{prop.name}</span>
                       <div className="flex gap-1">
                         {['sum', 'average', 'count'].map((func) => (
                           <Button
@@ -532,10 +532,10 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
                             variant="ghost"
                             size="sm"
                             onClick={() => setAggregation(prop.name, func as any)}
-                            className={`h-7 px-3 rounded-lg text-[9px] font-bold uppercase transition-all ${
+                            className={`h-7 px-3 rounded text-[9px] font-bold uppercase transition-all ${
                               selectedAggs[prop.name] === func
-                              ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                              : 'text-slate-400 hover:bg-slate-50'
+                              ? 'bg-success/10 text-success hover:bg-success/20'
+                              : 'text-muted-foreground hover:bg-muted'
                             }`}
                           >
                             {func}
@@ -553,11 +553,11 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
         {/* URL Preview & Copy */}
         <div className="space-y-3 pt-4">
           <div className="flex justify-between items-end">
-            <label className="text-sm font-bold text-slate-700 uppercase tracking-tight">
+            <label className="text-sm font-bold text-foreground uppercase tracking-tight">
               OData Service Root
             </label>
             {generatedUrl && (
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase">
+              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100 uppercase">
                 Ready to Connect
               </span>
             )}
@@ -569,10 +569,10 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
                 readOnly 
                 value={generatedUrl} 
                 placeholder="https://gateway.example.com/v1/project/dataset"
-                className="h-14 bg-slate-50 border-slate-200 font-mono text-sm text-indigo-700 focus-visible:ring-indigo-500 pr-4 rounded-xl"
+                className="h-14 bg-muted/30 border-border font-mono text-sm text-primary focus-visible:ring-primary pr-4 rounded-md"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Read Only</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">Read Only</span>
               </div>
             </div>
             
@@ -580,17 +580,17 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
               size="icon"
               disabled={!generatedUrl}
               onClick={handleCopy}
-              className={`h-14 w-14 rounded-xl transition-all duration-300 ${
+              className={`h-14 w-14 rounded-md transition-all duration-300 ${
                 copied 
-                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100' 
-                : 'bg-indigo-700 hover:bg-indigo-800 shadow-indigo-100'
-              } shadow-lg`}
+                ? 'bg-success hover:bg-success/90 shadow-sm' 
+                : 'bg-primary hover:bg-primary/90 shadow-sm'
+              }`}
             >
-              {copied ? <Check className="w-6 h-6 text-white" /> : <Copy className="w-6 h-6 text-white" />}
+              {copied ? <Check className="w-6 h-6 text-success-foreground" /> : <Copy className="w-6 h-6 text-primary-foreground" />}
             </Button>
           </div>
           
-          <p className="text-xs text-slate-400 italic">
+          <p className="text-xs text-muted-foreground italic">
             * This URL follows the OData V4 standard. Use it as an &quot;OData Feed&quot; data source in Excel or Power BI.
           </p>
         </div>
