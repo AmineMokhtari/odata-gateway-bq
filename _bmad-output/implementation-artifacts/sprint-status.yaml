@@ -87,8 +87,9 @@ development_status:
   epic-4-5-retrospective: done
 
   # Epic 6: Self-Service Governance & Guided Queries
-  epic-6: done
+  epic-6: in-progress
   6-1-actionable-error-layer-the-elena-tips: done
+  6-1-pivot-cloud-native-elena-tips: in-progress
   6-2-visual-join-builder-expand: done
   6-3-visual-aggregation-builder-apply: done
   6-4-self-service-usage-dashboard: done

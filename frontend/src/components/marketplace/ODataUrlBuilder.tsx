@@ -33,9 +33,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { UsageDashboard } from './UsageDashboard';
 import { toast } from 'sonner';
 import { type TenantConfig } from '@common/src/types/tenant';
-import { SuccessPulseBadge } from './SuccessPulseBadge';
+import { SuccessPulseBadge, type ConnectionState } from './SuccessPulseBadge';
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { MobileActionBar } from '@/components/MobileActionBar';
+import { useProjectStore } from '@/store/project-store';
 
 interface ODataUrlBuilderProps {
   tenants: TenantConfig[];
@@ -141,18 +142,40 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
     .filter(t => t.project_id === selectedProject)
     .map(t => t.dataset_id);
 
+  const { setElenaTip, openElenaDrawer } = useProjectStore();
+  const [localConnectionState, setLocalConnectionState] = useState<ConnectionState>('listening');
+
   // Fetch usage and tables when dataset changes
   useEffect(() => {
     if (serviceRoot) {
+      setLocalConnectionState('verifying');
       // Fetch Tables
       fetch(serviceRoot)
-        .then(res => res.json())
-        .then(data => {
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok) {
+            if (data.elena_tip) {
+              setElenaTip(data.elena_tip);
+              setLocalConnectionState('blocked');
+              openElenaDrawer();
+              toast.error('Query blocked by governance rules', {
+                description: 'Elena has some tips to help you fix this.'
+              });
+            } else {
+              setLocalConnectionState('listening');
+            }
+            return;
+          }
+          
           if (data.value) {
             setAvailableTables(data.value.map((v: { name: string }) => v.name));
+            setLocalConnectionState('connected');
           }
         })
-        .catch(err => console.error('Failed to fetch tables:', err));
+        .catch(err => {
+          console.error('Failed to fetch tables:', err);
+          setLocalConnectionState('listening');
+        });
 
       // Fetch Usage (Story 6.4)
       setLoadingUsage(true);
@@ -171,8 +194,9 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
       setAvailableTables([]);
       setSelectedTable('');
       setUsageData(null);
+      setLocalConnectionState('listening');
     }
-  }, [serviceRoot]);
+  }, [serviceRoot, setElenaTip, openElenaDrawer]);
 
   useEffect(() => {
     if (selectedProject && selectedDataset) {
@@ -281,7 +305,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
       <CardContent className="p-8 space-y-8">
         {/* Connection Pulse Status (Story 4.3) */}
         <div className="flex justify-center py-4 border-b border-slate-50">
-          <SuccessPulseBadge state={connectionState} lastActive={lastActive} />
+          <SuccessPulseBadge state={localConnectionState} lastActive={lastActive} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

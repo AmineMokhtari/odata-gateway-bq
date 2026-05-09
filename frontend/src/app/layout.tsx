@@ -40,6 +40,7 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 import { Navigation } from "@/components/Navigation";
+import { ElenaDrawer } from "@/components/drawers/ElenaDrawer";
 import { MSWProvider } from "./MSWProvider";
 
 export default function RootLayout({
@@ -56,6 +57,7 @@ export default function RootLayout({
         <MSWProvider>
           <Navigation />
           {children}
+          <ElenaDrawer />
           <Toaster position="top-right" closeButton richColors />
         </MSWProvider>
       </body>

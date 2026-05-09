@@ -22,14 +22,19 @@ import { Badge } from '@/components/ui/badge';
 import { Zap, Wifi, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type ConnectionState = 'listening' | 'verifying' | 'connected';
+export type ConnectionState = 'listening' | 'verifying' | 'connected' | 'blocked';
 
 interface SuccessPulseBadgeProps {
   state: ConnectionState;
   lastActive?: number | null;
 }
 
+import { AlertCircle } from 'lucide-react';
+import { useProjectStore } from '@/store/project-store';
+
 export const SuccessPulseBadge: React.FC<SuccessPulseBadgeProps> = ({ state, lastActive }) => {
+  const { openElenaDrawer, activeTip } = useProjectStore();
+
   const getRelativeTime = (time: number) => {
     const seconds = Math.floor((Date.now() - time) / 1000);
     if (seconds < 60) return 'Just now';
@@ -37,8 +42,22 @@ export const SuccessPulseBadge: React.FC<SuccessPulseBadgeProps> = ({ state, las
     return `${minutes}m ago`;
   };
 
+  const handleBadgeClick = () => {
+    if (state === 'blocked' && activeTip) {
+      openElenaDrawer();
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div 
+      className={cn(
+        "flex flex-col items-center gap-3 transition-transform active:scale-95",
+        state === 'blocked' && "cursor-pointer"
+      )}
+      onClick={handleBadgeClick}
+      data-testid="pulse-badge"
+      data-state={state}
+    >
       <div className="relative">
         <AnimatePresence mode="wait">
           {state === 'connected' && (
@@ -55,6 +74,21 @@ export const SuccessPulseBadge: React.FC<SuccessPulseBadgeProps> = ({ state, las
                 ease: "easeInOut"
               }}
               className="absolute inset-0 rounded-full bg-emerald-500"
+            />
+          )}
+          {state === 'blocked' && (
+            <motion.div
+              key="blocked-pulse"
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.5, 0.2, 0.5]
+              }}
+              transition={{ 
+                duration: 1.5, 
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute inset-0 rounded-full bg-red-500"
             />
           )}
           {state === 'listening' && (
@@ -80,12 +114,14 @@ export const SuccessPulseBadge: React.FC<SuccessPulseBadgeProps> = ({ state, las
             "relative z-10 w-16 h-16 rounded-full flex items-center justify-center border-4 border-white shadow-xl transition-colors duration-500",
             state === 'listening' && "bg-amber-500",
             state === 'verifying' && "bg-indigo-600",
-            state === 'connected' && "bg-emerald-600"
+            state === 'connected' && "bg-emerald-600",
+            state === 'blocked' && "bg-red-600"
           )}
         >
           {state === 'listening' && <Wifi className="w-8 h-8 text-white animate-pulse" />}
           {state === 'verifying' && <Zap className="w-8 h-8 text-white" />}
           {state === 'connected' && <CheckCircle2 className="w-8 h-8 text-white" />}
+          {state === 'blocked' && <AlertCircle className="w-8 h-8 text-white animate-bounce" />}
         </motion.div>
       </div>
 
@@ -95,12 +131,14 @@ export const SuccessPulseBadge: React.FC<SuccessPulseBadgeProps> = ({ state, las
             "px-3 py-1 font-bold uppercase tracking-tighter transition-colors duration-500",
             state === 'listening' && "bg-amber-100 text-amber-700 hover:bg-amber-100",
             state === 'verifying' && "bg-indigo-100 text-indigo-700 hover:bg-indigo-100",
-            state === 'connected' && "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+            state === 'connected' && "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+            state === 'blocked' && "bg-red-100 text-red-700 hover:bg-red-100"
           )}
         >
           {state === 'listening' && 'Listening...'}
           {state === 'verifying' && 'Verifying...'}
           {state === 'connected' && 'Connection Active'}
+          {state === 'blocked' && 'Action Required'}
         </Badge>
         
         {state === 'connected' && lastActive && (
@@ -111,6 +149,11 @@ export const SuccessPulseBadge: React.FC<SuccessPulseBadgeProps> = ({ state, las
         {state === 'listening' && (
           <p className="text-[10px] font-bold text-slate-400 uppercase animate-pulse">
             Waiting for Excel / Power BI
+          </p>
+        )}
+        {state === 'blocked' && (
+          <p className="text-[10px] font-bold text-red-400 uppercase">
+            Click for Elena&apos;s Tip
           </p>
         )}
       </div>
