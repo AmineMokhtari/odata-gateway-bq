@@ -55,7 +55,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <MSWProvider>
-          <Navigation />
+          <Navigation userName={process.env.DEFAULT_ANONYMOUS_USER_NAME} />
           {children}
           <ElenaDrawer />
           <Toaster position="top-right" closeButton richColors />

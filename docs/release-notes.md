@@ -1,7 +1,7 @@
 # Release Notes
 
 ## Version 1.1.0 (Self-Service Governance)
-*Release Date: April 26, 2026*
+*Release Date: May 09, 2026*
 
 This release introduces the **"Elena" Experience**—a set of features designed to empower non-technical users with advanced data building and governance capabilities.
 
@@ -9,7 +9,10 @@ This release introduces the **"Elena" Experience**—a set of features designed 
 - **Usage Hub (User Consumption Tracking):** Real-time dashboard for users to track their personal monthly BigQuery consumption and job history.
 - **Visual Join Builder (`$expand`):** Automatic discovery of foreign key relationships allowing users to build complex joins visually.
 - **Visual Aggregation Builder (`$apply`):** Interactive UI for building GroupBy and Aggregate queries without knowing OData syntax.
-- **"Elena Tips" Error Layer:** Narrative error handling that translates technical BigQuery failures into business-friendly advice.
+- **"Elena Tips" Finalized Integration:** Reactive slide-out guidance for 403 (Budget Exceeded) and 401 (Authentication) errors.
+- **Marketplace UI Streamlining:** Cleaned up navigation, removed redundant sidebars, and optimized for high-density data discovery.
+- **Identity Pill (Top Bar):** Persistent, high-visibility security status pill in the navigation bar.
+- **Secure Identity Propagation:** Architectural shift to server-to-client identity prop for enhanced security boundaries.
 - **Decoupled Billing (Enterprise Mode):** Support for `BQ_BILLING_PROJECT_ID` to separate query execution costs from source data projects.
 - **Feature Toggle (Query Builder):** New `ENABLE_QUERY_BUILDER` toggle to hide/show advanced data building tools.
 

@@ -11,9 +11,10 @@ Common questions and solutions for the OData Gateway for BigQuery.
 ### 2. Error: "Budget Exceeded" (OData Error: `BudgetExceeded`)
 - **Cause:** The query you are trying to run would scan more data than your allowed limit (e.g., > 10GB).
 - **Solution:** 
-  - Add filters to your query (e.g., filter by `Date`, `Region`, or `ID`).
-  - Select only the columns you need rather than the whole table.
-  - If you genuinely need the full dataset, contact an administrator to request a temporary budget increase.
+  - Look for **"Elena's Advice"** in the Marketplace UI. The gateway automatically analyzes your query and provides a slide-out drawer with specific recommendations.
+  - Apply the suggested **"Quick Fixes"** (e.g., "Last 7 Days" or "Essential Columns") provided in the drawer.
+  - If you are connecting from a third-party tool like Excel, ensure you have added a `$filter` or `$select` clause to reduce the scan volume.
+  - Contact an administrator if you genuinely need a permanent budget increase for a specific project.
 
 ### 3. Error: "Table Not Found"
 - **Cause:** The Gateway has not yet discovered the table, or it was recently deleted/renamed in BigQuery.

@@ -23,8 +23,7 @@ import {
   Menu, 
   Database, 
   LayoutDashboard, 
-  BookOpen, 
-  Code 
+  Lock 
 } from 'lucide-react';
 import { 
   Sheet, 
@@ -38,10 +37,13 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { name: 'Marketplace', href: '/marketplace', icon: LayoutDashboard },
-  { name: 'Documentation', href: '/docs', icon: BookOpen },
 ];
 
-export const Navigation: React.FC = () => {
+interface NavigationProps {
+  userName?: string;
+}
+
+export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }) => {
   const pathname = usePathname();
 
   return (
@@ -58,7 +60,18 @@ export const Navigation: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
+          {/* User Identity Status */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
+              <Lock className="w-3 h-3" />
+              {userName}
+            </span>
+          </div>
+
+          <div className="h-4 w-[1px] bg-slate-200" />
+
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -73,12 +86,6 @@ export const Navigation: React.FC = () => {
               {item.name}
             </Link>
           ))}
-          <Button asChild size="sm" className="bg-slate-900 text-white hover:bg-slate-800 rounded-lg font-bold">
-            <a href="https://github.com/your-repo/odata-gateway-bq" target="_blank">
-              <Code className="w-4 h-4 mr-2" />
-              GitHub
-            </a>
-          </Button>
         </div>
 
         {/* Mobile Hamburger Menu */}
@@ -111,13 +118,17 @@ export const Navigation: React.FC = () => {
                     {item.name}
                   </Link>
                 ))}
-                <div className="pt-6 border-t border-slate-100">
-                  <Button asChild variant="outline" className="w-full h-12 text-lg font-bold rounded-xl justify-start">
-                    <a href="https://github.com/your-repo/odata-gateway-bq" target="_blank">
-                      <Code className="w-5 h-5 mr-3" />
-                      View Project Source
-                    </a>
-                  </Button>
+
+                {/* Mobile User Identity Status */}
+                <div className="mx-4 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-sm font-bold text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      {userName}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm uppercase tracking-tighter">Secure</span>
                 </div>
               </div>
             </SheetContent>

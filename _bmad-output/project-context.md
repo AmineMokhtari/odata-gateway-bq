@@ -32,6 +32,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Auth/Identity:** `jose` v6.2.2 (OIDC verification)
 - **OData Engine:** `odata-v4-sql` v0.1.2
 - **Caching:** `lru-cache` v11.3.5 (Sharded per tenant)
+- **State Management:** `zustand` (Global frontend state)
 - **Logging:** `pino` (structured logs)
 - **Icons:** Lucide-React
 
@@ -44,6 +45,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **React Components:** Use functional components with explicit `interface` or `type` for Props. Avoid `any` rigorously.
 - **Next.js Pattern:** Strictly utilize **App Router** conventions. Default to **Server Components** for page layouts and SEO-critical content; use **Client Components** (`'use client'`) only for interactive elements like the OData URL Builder or Success Pulse Badge.
 - **Error Handling:** Use Fastify's `sensible` patterns for backend errors and React **Error Boundaries** for frontend stability. Always provide OData V4 compliant error objects: `{ "error": { "code": "CodeName", "message": "human message" } }`.
+- **Elena's Advice Pattern:** Backend 401/403 errors MUST be decorated with an `elena_tip` object containing a human-readable `message` and `quick_fixes` (actions like `SELECT_COLUMNS`). Frontend MUST reactively trigger the `ElenaDrawer` using Zustand state when these decorated errors are received.
 - **Async Pattern:** Exclusively use `async/await`. Use the `pipeline` function from `node:stream/promises` for all BigQuery streaming operations.
 
 ### Framework-Specific Rules (Fastify & Next.js)
@@ -55,6 +57,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Portal Routing:** All web portal routes MUST be prefixed with `/web/` (e.g., `/web/`, `/web/marketplace`, `/web/admin`). This MUST be enforced via `basePath: '/web'` in the Next.js configuration.
 - **Styling Standards:** Use **Tailwind CSS** with the 8px spacing system and established "Trust" palette (Indigo-700, Emerald, Amber). Use **Shadcn/UI** (Radix UI) for all interactive primitives to ensure WCAG AA compliance.
 - **Request Decoration:** Verified user identities and correlation IDs MUST be attached to the request object for BigQuery Job Labeling.
+- **Secure Identity Propagation:** Sensitive environment variables (e.g., `DEFAULT_ANONYMOUS_USER_NAME`) MUST NOT use the `NEXT_PUBLIC_` prefix. They must be read in Server Components (like `RootLayout`) and passed as props to Client Components (`Navigation`) to maintain security boundaries.
 
 ### Testing Rules
 
@@ -117,4 +120,4 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-04-25
+Last Updated: 2026-05-09

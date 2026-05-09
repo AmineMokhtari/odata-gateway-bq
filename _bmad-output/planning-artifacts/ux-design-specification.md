@@ -80,9 +80,10 @@ We explored multiple iterations of the "Cloud Native" aesthetic, focusing on how
 ### Chosen Direction: "The Cloud Native Marketplace"
 
 This direction prioritizes functional density and platform consistency.
-- **Layout**: Persistent left-hand sidebar for primary modules (Marketplace, Governance, Logs) with a top-bar "Project Switcher" (mimicking the Google Cloud project selector).
-- **Dashboard Layout**: A "Hub-and-Spoke" model. The Marketplace uses a dense grid of cards for datasets, while the individual dataset view uses a tabbed interface (Overview, Data, Schema, Usage).
-- **Interaction Pattern**: "Proactive Guidance" using the side-drawers for the "OData URL Builder" and "Elena's Tips" to keep the main content focused on data.
+- **Layout**: Sticky top-bar navigation for primary modules with a centered, high-focus Marketplace layout. Removed the persistent left sidebar to maximize horizontal space for complex OData URL builders.
+- **Identity Context**: A high-visibility "Identity Pill" in the top-bar provides real-time status of the verified organizational or anonymous session.
+- **Dashboard Layout**: A focused Connection Builder model. The Marketplace provides a streamlined interface for tenant and dataset selection, with real-time connection status feedback.
+- **Interaction Pattern**: "Proactive Guidance" using the side-drawers for "Elena's Advice" to keep the main content focused on connection parameters.
 
 ### Design Rationale
 
@@ -189,9 +190,9 @@ We follow the Material Design 3 elevation and color system for all user actions.
 
 ### Navigation Patterns
 
-- **Global Context**: The top-bar **Project Switcher** is the "Source of Truth." Changing the project updates all marketplace cards and governance dashboards.
-- **Deep Navigation**: Use **Tabs** for switching between "Data Preview" and "Schema Metadata" within a dataset view.
-- **Configuration**: All query builders and URL generators are housed in **Right-aligned Drawers (Sheets)** to maintain focus on the underlying data.
+- **Global Context**: The top-bar **Identity Pill** is the "Source of Truth" for security. It dynamically reflects the verified organizational or anonymous session.
+- **Top-Bar Navigation**: Unified navigation for switching between the Marketplace and other core modules, reducing vertical clutter.
+- **Configuration**: All query builders and Elena's advice are housed in **Right-aligned Drawers (Sheets)** to maintain focus on the underlying connection parameters.
 
 ### Additional Patterns
 

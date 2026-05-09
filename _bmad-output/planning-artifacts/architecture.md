@@ -7,7 +7,7 @@ user_name: 'Amine_mokhtari'
 date: '2026-04-24'
 lastStep: 8
 status: 'complete'
-completedAt: '2026-04-24'
+completedAt: '2026-05-09'
 ---
 
 # Architecture Decision Document
@@ -101,6 +101,7 @@ Built-in support for environment variables (`dotenv`), structured logging (`pino
 - **Hosting Strategy:** Google Cloud Run (Fully managed, serverless).
 - **Core Translation:** `odata-v4-sql` for SQL generation.
 - **Advice Engine:** Backend Middleware to generate "Elena's Tips" from BQ errors.
+- **Identity Propagation:** Server-to-Client prop injection for non-public environment variables (Security Boundary).
 
 **Deferred Decisions (Post-MVP):**
 - **Redis Integration:** Deferred until horizontal scaling requires cross-instance cache persistence.
@@ -147,7 +148,7 @@ Built-in support for environment variables (`dotenv`), structured logging (`pino
 
 **Global State Management:**
 - **Decision:** Zustand.
-- **Rationale:** High-performance, lightweight state management for the Project Switcher and global Drawer states (Elena, URL Builder).
+- **Rationale:** High-performance, lightweight state management for the Project Switcher and global Drawer states (Elena, URL Builder). Elena's Drawer is triggered reactively when the OData Gateway returns an `elena_tip` metadata field.
 - **Affects:** All UI Components.
 
 **UI Component Library:**
@@ -250,21 +251,21 @@ odata-gateway-bq/
 │   │   ├── routes/
 │   │   │   ├── v1/
 │   │   │   │   ├── data.ts
-│   │   │   │   └── dry-run.ts   # [NEW] Pulse Badge API
+│   │   │   │   └── dry-run.ts   # Pulse Badge API
 │   │   │   └── health.ts
 │   │   └── services/
 │   │       ├── bq-executor.ts
 │   │       └── odata-metadata.ts
-│   ├── frontend/                # [NEW] React/Vite Console Portal
+│   ├── frontend/                # Next.js Marketplace Portal
 │   │   ├── src/
+│   │   │   ├── app/             # App Router (layout.tsx, page.tsx)
 │   │   │   ├── components/
-│   │   │   │   ├── layout/      # Sidebar, TopBar (Project Switcher)
+│   │   │   │   ├── layout/      # Navigation, TopBar
 │   │   │   │   ├── marketplace/ # Data Grid, Dataset Cards
 │   │   │   │   └── drawers/     # URL Builder, Elena Drawer
-│   │   │   ├── store/           # Zustand Stores (useProjectStore.ts)
+│   │   │   ├── store/           # Zustand Stores (project-store.ts)
 │   │   │   ├── hooks/           # useDryRun.ts (Audit Logic)
-│   │   │   ├── styles/          # MD3 Theme (tailwind.config.js)
-│   │   │   └── App.tsx
+│   │   │   └── package.json
 │   │   └── package.json
 │   └── shared/                  # Common Types & Schemas
 │       └── elena-payload.ts     # Tip/Advice JSON Schema

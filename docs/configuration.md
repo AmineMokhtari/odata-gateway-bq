@@ -18,6 +18,7 @@ These variables control the core behavior and security of the application.
 | `PORT` | No | `3000` | The port the Fastify server will listen on. |
 | `LOG_LEVEL` | No | `info` | The verbosity of logs (`debug`, `info`, `warn`, `error`). |
 | `NEXT_PUBLIC_API_MOCKING` | No | `false` | (Frontend) If `true`, enables MSW mocking in the browser. |
+| `DEFAULT_ANONYMOUS_USER_NAME` | No | `ANONYMOUS` | The user name displayed in the UI when `ANONYMOUS_MODE=true`. |
 | `GOOGLE_APPLICATION_CREDENTIALS` | No** | - | Path to a Service Account JSON key. |
 
 *\* Required unless `ANONYMOUS_MODE=true`.*  
