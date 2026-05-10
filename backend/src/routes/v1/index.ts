@@ -16,7 +16,7 @@
 
 import { type FastifyPluginAsync } from 'fastify'
 import { Readable } from 'node:stream'
-import { getDatasetMetadata, getTableMetadata } from '../../services/bq-introspection.js'
+import { getDatasetMetadata, getTableMetadata, getDatasetsDescriptions } from '../../services/bq-introspection.js'
 import { getUserUsage } from '../../services/usage-audit.js'
 import { generateEdm } from '../../services/odata-metadata.js'
 import { translateODataToSql, PartitionFilterRequiredError } from '../../lib/sql-generator.js'
@@ -29,6 +29,41 @@ import { config } from '../../config.js'
 
 const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   
+  // Data Catalog (Story: Visual Data catalog)
+  fastify.get('/catalog', async function (request, reply) {
+    const tenants = fastify.tenantsConfig.all()
+    
+    // Group tenants by project to minimize BigQuery queries
+    const projectMap = new Map<string, string[]>()
+    for (const t of tenants) {
+      if (!projectMap.has(t.project_id)) {
+        projectMap.set(t.project_id, [])
+      }
+      projectMap.get(t.project_id)!.push(t.dataset_id)
+    }
+
+    const enrichedTenants = [...tenants]
+    
+    // Fetch descriptions for each project's datasets
+    for (const [projectId, datasetIds] of projectMap.entries()) {
+      try {
+        const bq = fastify.getBQClient(projectId)
+        const descriptions = await getDatasetsDescriptions(bq, projectId, datasetIds)
+        
+        // Map descriptions back to enrichedTenants
+        for (const t of enrichedTenants) {
+          if (t.project_id === projectId && descriptions[t.dataset_id]) {
+            t.description = descriptions[t.dataset_id]
+          }
+        }
+      } catch (err: any) {
+        request.log.error({ err: err.message, projectId }, 'Failed to fetch dataset descriptions for catalog')
+      }
+    }
+
+    return { value: enrichedTenants }
+  })
+
   // OData Service Root
   fastify.get('/:projectId/:datasetId', {
     schema: {
@@ -51,7 +86,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       const isAuthorized = checkTenantAccess(request.user, tenantConfig, fastify.isAnonymousMode)
       if (!isAuthorized) {
         return reply.code(403).send({
-          error: { code: 'Unauthorized', message: 'Access denied to this marketplace' }
+          error: { code: 'Unauthorized', message: 'Access denied to this catalog' }
         })
       }
     }
@@ -100,7 +135,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       const isAuthorized = checkTenantAccess(request.user, tenantConfig, fastify.isAnonymousMode)
       if (!isAuthorized) {
         return reply.code(403).send({
-          error: { code: 'Unauthorized', message: 'Access denied to this marketplace' }
+          error: { code: 'Unauthorized', message: 'Access denied to this catalog' }
         })
       }
     }
@@ -156,7 +191,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         return reply.code(403).send({
           error: {
             code: 'Unauthorized',
-            message: 'You do not have permission to access this data marketplace'
+            message: 'You do not have permission to access this data catalog'
           }
         })
       }
@@ -293,7 +328,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       } catch (err: any) {
         if (err.code === 'BudgetExceeded') {
           const portalUrl = process.env.PORTAL_URL || `${request.protocol}://${request.hostname}/web`
-          const explainUrl = `${portalUrl}/marketplace/${projectId}/${datasetId}/${entitySet}/explain?${odataSearchParams.toString()}`
+          const explainUrl = `${portalUrl}/catalog/${projectId}/${datasetId}/${entitySet}/explain?${odataSearchParams.toString()}`
 
           return reply.code(400).send({
             error: {

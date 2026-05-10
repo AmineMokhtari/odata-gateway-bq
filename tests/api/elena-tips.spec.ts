@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Elena Tips API Error Decoration (ATDD)', () => {
   test('[P0] should decorate 403 BudgetExceeded with elena_tip', async ({ request }) => {
     // THIS TEST WILL FAIL - Elena plugin implemented but might need handler integration
-    const response = await request.get('http://localhost:3001/v1/project-id/dataset-id/Entities', {
+    const response = await request.get('http://localhost:3002/v1/project-id/dataset-id/Entities', {
       headers: {
         'Authorization': 'Bearer valid-token',
         'x-mock-error': 'BudgetExceeded' // Hypothetical mock header for testability
@@ -27,7 +27,7 @@ test.describe('Elena Tips API Error Decoration (ATDD)', () => {
 
   test('[P1] should decorate 401 Unauthorized with session-refresh advice', async ({ request }) => {
     // THIS TEST WILL FAIL - Elena plugin implemented
-    const response = await request.get('http://localhost:3001/v1/project-id/dataset-id/Entities', {
+    const response = await request.get('http://localhost:3002/v1/project-id/dataset-id/Entities', {
       headers: {
         'Authorization': 'Bearer expired-token'
       }

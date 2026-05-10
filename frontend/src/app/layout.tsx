@@ -30,7 +30,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OData Gateway for BigQuery | Governed Data Marketplace",
+  title: "OData Gateway for BigQuery | Governed Data Catalog",
   description: "Unlock your BigQuery lakehouse for Excel and Power BI with zero drivers and proactive cost control.",
 };
 

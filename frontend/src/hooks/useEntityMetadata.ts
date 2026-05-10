@@ -96,8 +96,10 @@ export const useEntityMetadata = (baseUrl: string, entitySet: string) => {
         
         setProperties(props);
         setNavProps(navs);
-      } catch (err) {
-        console.error('Error parsing entity metadata:', err);
+      } catch (err: any) {
+        if (err.message && !/fetch/i.test(err.message)) {
+          console.error('Error parsing entity metadata:', err);
+        }
       } finally {
         setLoading(false);
       }

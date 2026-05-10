@@ -17,7 +17,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react';
-import { type ConnectionState } from '@/components/marketplace/SuccessPulseBadge';
+import { type ConnectionState } from '@/components/catalog/SuccessPulseBadge';
 
 interface UseConnectionStatusProps {
   projectId: string;
@@ -40,7 +40,7 @@ export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: U
     if (!projectId || !datasetId) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3001';
+      const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
       const response = await fetch(`${baseUrl}/v1/connection-status/${projectId}/${datasetId}`);
       
       if (!response.ok) {
@@ -58,8 +58,12 @@ export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: U
         setState('listening');
       }
     } catch (err: any) {
-      console.error('Polling error:', err.message);
+      // Silence standard network fetch errors in console as they are expected during startup/restarts
+      if (err.message && !/fetch/i.test(err.message)) {
+        console.error('Polling error:', err.message);
+      }
       setError(err.message);
+      setState('listening');
     }
   }, [projectId, datasetId]);
 

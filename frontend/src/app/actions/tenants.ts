@@ -23,37 +23,49 @@ import { type GatewayConfig, type TenantConfig } from '@common/src/types/tenant'
 
 export async function getTenants(): Promise<TenantConfig[]> {
   try {
-    const envPath = process.env.TENANTS_CONFIG_PATH || 'backend/config/tenants.yaml';
-    
-    // Attempt multiple resolution strategies for local dev
-    const pathsToTry = [
-      join(process.cwd(), envPath),
-      join(process.cwd(), '..', envPath),
-      join(process.cwd(), '..', '..', envPath)
-    ];
+    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
+    const response = await fetch(`${baseUrl}/v1/catalog`, {
+      next: { revalidate: 60 } // Cache for 60 seconds
+    });
 
-    let fileContents = '';
-    let success = false;
-
-    for (const p of pathsToTry) {
-      try {
-        fileContents = readFileSync(p, 'utf8');
-        success = true;
-        break;
-      } catch (e) {
-        continue;
-      }
+    if (!response.ok) {
+      throw new Error(`Backend returned ${response.status}`);
     }
 
-    if (!success) {
-      console.warn('Could not find tenants.yaml at any expected path');
+    const data = await response.json();
+    return data.value || [];
+  } catch (err: any) {
+    console.warn('Failed to fetch tenants from backend, falling back to local config:', err.message);
+    
+    // Fallback to local file reading if backend is unavailable
+    try {
+      const envPath = process.env.TENANTS_CONFIG_PATH || 'backend/config/tenants.yaml';
+      const pathsToTry = [
+        join(process.cwd(), envPath),
+        join(process.cwd(), '..', envPath),
+        join(process.cwd(), '..', '..', envPath)
+      ];
+
+      let fileContents = '';
+      let success = false;
+
+      for (const p of pathsToTry) {
+        try {
+          fileContents = readFileSync(p, 'utf8');
+          success = true;
+          break;
+        } catch (e) {
+          continue;
+        }
+      }
+
+      if (!success) return [];
+
+      const config = yaml.load(fileContents) as GatewayConfig;
+      return config?.tenants || [];
+    } catch (fallbackErr) {
+      console.error('Fallback tenant loading failed:', fallbackErr);
       return [];
     }
-
-    const config = yaml.load(fileContents) as GatewayConfig;
-    return config?.tenants || [];
-  } catch (err: any) {
-    console.error('Failed to load tenants in Server Action:', err.message);
-    return [];
   }
 }

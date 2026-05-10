@@ -15,13 +15,13 @@
  */
 
 import React from 'react';
-import { BudgetGauge } from '@/components/marketplace/BudgetGauge';
-import { CostSavingTips } from '@/components/marketplace/CostSavingTips';
+import { BudgetGauge } from '@/components/catalog/BudgetGauge';
+import { CostSavingTips } from '@/components/catalog/CostSavingTips';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, Code, ExternalLink, Info } from 'lucide-react';
 import Link from 'next/link';
 import { mapErrorToElenaAdvice } from '@/lib/error-mapping';
-import { ElenaAdviceCard } from '@/components/marketplace/ElenaAdviceCard';
+import { ElenaAdviceCard } from '@/components/catalog/ElenaAdviceCard';
 
 interface ExplainPageProps {
   params: Promise<{
@@ -41,7 +41,7 @@ export default async function ExplainPage({ params, searchParams }: ExplainPageP
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
 
-  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3001';
+  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
   
   // Fetch detailed explanation from the backend
   let explainData = null;
@@ -63,11 +63,11 @@ export default async function ExplainPage({ params, searchParams }: ExplainPageP
         {/* Navigation & Header */}
         <div className="space-y-4">
           <Link 
-            href="/marketplace" 
+            href="/catalog" 
             className="inline-flex items-center text-sm font-bold text-indigo-700 hover:text-indigo-800 uppercase tracking-widest gap-1 group"
           >
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Marketplace
+            Back to Catalog
           </Link>
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight font-inter">
             Query Governance Audit

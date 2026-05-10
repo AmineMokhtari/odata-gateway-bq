@@ -15,29 +15,16 @@
  */
 
 import { getTenants } from "@/app/actions/tenants";
-import { ODataUrlBuilder } from "@/components/marketplace/ODataUrlBuilder";
+import { CatalogView } from "@/components/catalog/CatalogView";
 
-export default async function MarketplacePage() {
+export default async function CatalogPage() {
   const tenants = await getTenants();
   const isQueryBuilderEnabled = process.env.ENABLE_QUERY_BUILDER === 'true';
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-1 container mx-auto px-6 py-12 lg:py-20 space-y-16">
-        {/* Page Header */}
-        <div className="max-w-3xl space-y-4">
-          <h1 className="text-4xl font-bold text-foreground tracking-tight font-sans">
-            Governed Data Marketplace
-          </h1>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            Connect your BI tools to BigQuery in 60 seconds. Select a dataset below to generate your secure, budget-governed OData connection.
-          </p>
-        </div>
-
-        <div className="max-w-5xl">
-          {/* Main Action: URL Builder */}
-          <ODataUrlBuilder tenants={tenants} isEnabled={isQueryBuilderEnabled} />
-        </div>
+      <main className="flex-1 container mx-auto px-6 py-12 lg:py-20">
+        <CatalogView tenants={tenants} isQueryBuilderEnabled={isQueryBuilderEnabled} />
       </main>
     </div>
   );

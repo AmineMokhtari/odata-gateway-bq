@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-export interface AccessRules {
-  emails?: string[]
-  groups?: string[]
-}
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-export interface TenantConfig {
-  project_id: string
-  dataset_id: string
-  scan_budget_gb: number
-  name?: string
-  description?: string
-  access_rules?: AccessRules
-}
-
-export interface GatewayConfig {
-  tenants: TenantConfig[]
+export default function Loading() {
+  return (
+    <div className="flex flex-col min-h-[60vh] items-center justify-center">
+      <LoadingSpinner label="Discovering available datasets..." />
+    </div>
+  );
 }

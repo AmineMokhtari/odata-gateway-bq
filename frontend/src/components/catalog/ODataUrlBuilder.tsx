@@ -27,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Copy, Check, Database, Globe, Link as LinkIcon, Table, Sigma, ListTree, Activity } from 'lucide-react';
+import { Copy, Check, Database, Globe, Link as LinkIcon, Table, Sigma, ListTree, Activity, ChevronLeft, Loader2 } from 'lucide-react';
 import { useEntityMetadata } from '@/hooks/useEntityMetadata';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UsageDashboard } from './UsageDashboard';
@@ -41,6 +41,9 @@ import { useProjectStore } from '@/store/project-store';
 interface ODataUrlBuilderProps {
   tenants: TenantConfig[];
   isEnabled?: boolean;
+  initialProjectId?: string;
+  initialDatasetId?: string;
+  onBack?: () => void;
 }
 
 interface UsageData {
@@ -106,9 +109,15 @@ const ExpandColumnSelector: React.FC<{
   );
 };
 
-export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEnabled = false }) => {
-  const [selectedProject, setSelectedProject] = useState<string>('');
-  const [selectedDataset, setSelectedDataset] = useState<string>('');
+export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ 
+  tenants, 
+  isEnabled = false,
+  initialProjectId = '',
+  initialDatasetId = '',
+  onBack
+}) => {
+  const [selectedProject, setSelectedProject] = useState<string>(initialProjectId);
+  const [selectedDataset, setSelectedDataset] = useState<string>(initialDatasetId);
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [availableTables, setAvailableTables] = useState<string[]>([]);
   const [selectedExpands, setSelectedExpands] = useState<string[]>([]);
@@ -118,10 +127,11 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
   const [selectedAggs, setSelectedAggs] = useState<Record<string, 'sum' | 'average' | 'min' | 'max' | 'count'>>({});
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(false);
+  const [loadingTables, setLoadingTables] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3001';
+  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:3002` : 'http://127.0.0.1:3002');
   const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   const serviceRoot = selectedProject && selectedDataset ? `${normalizedBase}/v1/${selectedProject}/${selectedDataset}` : '';
 
@@ -148,11 +158,13 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
   // Fetch usage and tables when dataset changes
   useEffect(() => {
     if (serviceRoot) {
+      setLoadingTables(true);
       setLocalConnectionState('verifying');
       // Fetch Tables
       fetch(serviceRoot)
         .then(async (res) => {
           const data = await res.json();
+          console.log('[ODataBuilder] Tables response:', data);
           if (!res.ok) {
             if (data.elena_tip) {
               setElenaTip(data.elena_tip);
@@ -173,16 +185,23 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
           }
         })
         .catch(err => {
-          console.error('Failed to fetch tables:', err);
+          if (err.message && !/fetch/i.test(err.message)) {
+            console.error('Failed to fetch tables:', err);
+          }
           setLocalConnectionState('listening');
-        });
+        })
+        .finally(() => setLoadingTables(false));
 
       // Fetch Usage (Story 6.4)
       setLoadingUsage(true);
       fetch(`${serviceRoot}/usage`)
         .then(res => res.json())
         .then(data => setUsageData(data))
-        .catch(err => console.error('Failed to fetch usage:', err))
+        .catch(err => {
+          if (err.message && !/fetch/i.test(err.message)) {
+            console.error('Failed to fetch usage:', err);
+          }
+        })
         .finally(() => setLoadingUsage(false));
 
       // Reset state when dataset changes (Story 8.2 Patch)
@@ -253,7 +272,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
       setGeneratedUrl('');
     }
     setCopied(false);
-  }, [selectedProject, selectedDataset, selectedTable, selectedExpands, selectedGroupBy, selectedAggs, normalizedBase]);
+  }, [selectedProject, selectedDataset, selectedTable, selectedExpands, selectedExpandColumns, selectedColumns, selectedGroupBy, selectedAggs, normalizedBase]);
 
   const toggleExpand = (name: string) => {
     setSelectedExpands(prev => 
@@ -288,11 +307,19 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
   };
 
   return (
-    <Card className="w-full max-w-2xl border-border shadow-sm bg-card rounded-md overflow-hidden">
+    <Card className="w-full border-border shadow-sm bg-card rounded-md overflow-hidden">
       <CardHeader className="bg-muted/30 border-b border-border pb-6">
-        <div className="flex items-center gap-2 text-primary mb-2">
-          <Globe className="w-5 h-5" />
-          <span className="text-xs font-bold uppercase tracking-widest">Connection Builder</span>
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-2 text-primary">
+            <Globe className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-widest">Connection Builder</span>
+          </div>
+          {onBack && (
+            <Button variant="ghost" size="sm" onClick={onBack} className="h-8 px-2 text-xs gap-1">
+              <ChevronLeft className="w-4 h-4" />
+              Back to Catalog
+            </Button>
+          )}
         </div>
         <CardTitle className="text-2xl font-sans font-bold text-foreground">
           Generate Your OData Feed
@@ -300,6 +327,17 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
         <CardDescription className="text-muted-foreground">
           Select your data target to create a native connection string for your BI tools.
         </CardDescription>
+        {(loadingTables || loadingMetadata || loadingUsage) && (
+          <div className="mt-4 space-y-2 animate-in fade-in">
+            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-primary">
+              <span>Synchronizing BigQuery Metadata</span>
+              <span className="animate-pulse">Loading...</span>
+            </div>
+            <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+              <div className="h-full bg-primary animate-progress-indeterminate w-1/3" />
+            </div>
+          </div>
+        )}
       </CardHeader>
       
       <CardContent className="p-8 space-y-8">
@@ -369,12 +407,25 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
             value={selectedTable}
           >
             <SelectTrigger className="h-12 border-border focus:ring-primary rounded">
-              <SelectValue placeholder={selectedDataset ? "Select Table" : "First select dataset"} />
+              <div className="flex items-center gap-2">
+                {loadingTables && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                <SelectValue placeholder={
+                  loadingTables 
+                    ? "Discovering tables..." 
+                    : (selectedDataset ? "Select Table" : "First select dataset")
+                } />
+              </div>
             </SelectTrigger>
             <SelectContent>
-              {availableTables.map(table => (
-                <SelectItem key={table} value={table}>{table}</SelectItem>
-              ))}
+              {availableTables.length === 0 && !loadingTables ? (
+                <div className="p-4 text-xs text-muted-foreground text-center">
+                  No tables found in this dataset.
+                </div>
+              ) : (
+                availableTables.map(table => (
+                  <SelectItem key={table} value={table}>{table}</SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           {selectedTable && tableDescription && (
@@ -395,32 +446,39 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({ tenants, isEna
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Visual $select</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {properties.map(prop => (
-                <Button
-                  key={prop.name}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedColumns(prev => 
-                      prev.includes(prop.name) ? prev.filter(c => c !== prop.name) : [...prev, prop.name]
-                    );
-                  }}
-                  className={`h-auto min-h-8 py-1.5 px-4 rounded text-[10px] font-bold transition-all flex flex-col items-start gap-0.5 ${
-                    selectedColumns.includes(prop.name)
-                    ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10'
-                    : 'bg-card text-muted-foreground border border-border hover:border-primary/50 hover:bg-accent'
-                  }`}
-                >
-                  <span>{prop.name}</span>
-                  {prop.description && (
-                    <span className={`text-[8px] font-medium leading-tight text-left max-w-[120px] line-clamp-1 ${
-                      selectedColumns.includes(prop.name) ? 'text-primary-foreground/80' : 'text-muted-foreground/80'
-                    }`}>
-                      {prop.description}
-                    </span>
-                  )}
-                </Button>
-              ))}
+              {loadingMetadata ? (
+                <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  Introspecting table schema...
+                </div>
+              ) : (
+                properties.map(prop => (
+                  <Button
+                    key={prop.name}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedColumns(prev => 
+                        prev.includes(prop.name) ? prev.filter(c => c !== prop.name) : [...prev, prop.name]
+                      );
+                    }}
+                    className={`h-auto min-h-8 py-1.5 px-4 rounded text-[10px] font-bold transition-all flex flex-col items-start gap-0.5 ${
+                      selectedColumns.includes(prop.name)
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10'
+                      : 'bg-card text-muted-foreground border border-border hover:border-primary/50 hover:bg-accent'
+                    }`}
+                  >
+                    <span>{prop.name}</span>
+                    {prop.description && (
+                      <span className={`text-[8px] font-medium leading-tight text-left max-w-[120px] line-clamp-1 ${
+                        selectedColumns.includes(prop.name) ? 'text-primary-foreground/80' : 'text-muted-foreground/80'
+                      }`}>
+                        {prop.description}
+                      </span>
+                    )}
+                  </Button>
+                ))
+              )}
             </div>
           </div>
         )}

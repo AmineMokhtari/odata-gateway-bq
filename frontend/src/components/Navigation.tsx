@@ -36,7 +36,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { name: 'Marketplace', href: '/marketplace', icon: LayoutDashboard },
+  { name: 'Catalog', href: '/catalog', icon: LayoutDashboard },
 ];
 
 interface NavigationProps {
@@ -99,7 +99,7 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
             <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background border-l border-border">
               <SheetHeader className="text-left border-b border-border pb-6 mb-6">
                 <SheetTitle className="text-xl font-bold font-sans tracking-tight text-foreground">
-                  Data Marketplace
+                  Data Catalog
                 </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-6">

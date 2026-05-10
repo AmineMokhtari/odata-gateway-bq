@@ -227,3 +227,36 @@ export async function getTableMetadata(
     relationships: [] // Relationships usually fetched at dataset level for performance
   }
 }
+
+/**
+ * Fetches descriptions for a list of datasets in a project from INFORMATION_SCHEMA.SCHEMATA.
+ * Strictly meets the requirement of getting description from Information Schema.
+ */
+export async function getDatasetsDescriptions(
+  bq: BigQuery,
+  projectId: string,
+  datasetIds: string[]
+): Promise<Record<string, string>> {
+  if (datasetIds.length === 0) return {}
+
+  // INFORMATION_SCHEMA.SCHEMATA contains schema_name and description
+  const query = `
+    SELECT schema_name, description
+    FROM \`${projectId.replace(/`/g, '``')}.INFORMATION_SCHEMA.SCHEMATA\`
+    WHERE schema_name IN UNNEST(@datasetIds)
+  `
+
+  const [rows] = await bq.query({
+    query,
+    params: { datasetIds }
+  })
+
+  const descriptions: Record<string, string> = {}
+  for (const row of rows) {
+    if (row.description) {
+      descriptions[row.schema_name] = row.description
+    }
+  }
+
+  return descriptions;
+}

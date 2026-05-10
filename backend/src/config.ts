@@ -36,7 +36,7 @@ export const config = {
   defaultScanBudgetGb: parseInt(process.env.DEFAULT_SCAN_BUDGET_GB || '1', 10),
   
   // App
-  port: parseInt(process.env.PORT || '3001', 10),
+  port: parseInt(process.env.PORT || '3002', 10),
   isDev: process.env.NODE_ENV !== 'production'
 }
 

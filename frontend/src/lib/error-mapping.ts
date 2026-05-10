@@ -38,18 +38,18 @@ export const mapErrorToElenaAdvice = (code: string, datasetId?: string): ElenaAd
         advice: 'Elena says: Try picking only the columns you really need or adding a date filter to reduce the scan size.',
         nextStepLink: {
           label: 'Adjust Filters',
-          href: `/marketplace/${datasetId || ''}`
+          href: `/catalog/${datasetId || ''}`
         }
       };
 
     case 'Unauthorized':
       return {
         title: 'Access Required',
-        message: 'It looks like you don\'t have access to this data marketplace just yet.',
+        message: 'It looks like you don\'t have access to this data catalog just yet.',
         advice: `Elena says: Contact your team lead to request access to the ${datasetId || 'requested'} dataset.`,
         nextStepLink: {
           label: 'Go Back',
-          href: '/marketplace'
+          href: '/catalog'
         }
       };
 
