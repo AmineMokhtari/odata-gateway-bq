@@ -37,6 +37,7 @@ import { SuccessPulseBadge, type ConnectionState } from './SuccessPulseBadge';
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { MobileActionBar } from '@/components/MobileActionBar';
 import { useProjectStore } from '@/store/project-store';
+import { downloadODataODC } from '@/lib/excel-generator';
 
 interface ODataUrlBuilderProps {
   tenants: TenantConfig[];
@@ -128,10 +129,12 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(false);
   const [loadingTables, setLoadingTables] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:3002` : 'http://127.0.0.1:3002');
+  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || (typeof window !== 'undefined' ? `${window.location.origin}/web/api/gateway` : 'http://127.0.0.1:3002');
   const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   const serviceRoot = selectedProject && selectedDataset ? `${normalizedBase}/v1/${selectedProject}/${selectedDataset}` : '';
 
@@ -159,6 +162,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   useEffect(() => {
     if (serviceRoot) {
       setLoadingTables(true);
+      setFetchError(null);
       setLocalConnectionState('verifying');
       // Fetch Tables
       fetch(serviceRoot)
@@ -185,9 +189,8 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
           }
         })
         .catch(err => {
-          if (err.message && !/fetch/i.test(err.message)) {
-            console.error('Failed to fetch tables:', err);
-          }
+          console.error('Failed to fetch tables:', err);
+          setFetchError(err.message || 'Failed to connect to gateway');
           setLocalConnectionState('listening');
         })
         .finally(() => setLoadingTables(false));
@@ -306,6 +309,20 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
     }
   };
 
+  const handleExcelExport = () => {
+    if (generatedUrl) {
+      setExporting(true);
+      const filename = selectedTable ? `${selectedProject}_${selectedTable}` : `${selectedProject}_OData`;
+      downloadODataODC(generatedUrl, filename);
+      
+      toast.success('Excel Connection Created!', {
+        description: 'Open the downloaded .odc file to start your analysis.',
+      });
+      
+      setTimeout(() => setExporting(false), 2000);
+    }
+  };
+
   return (
     <Card className="w-full border-border shadow-sm bg-card rounded-md overflow-hidden">
       <CardHeader className="bg-muted/30 border-b border-border pb-6">
@@ -353,7 +370,10 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
               <Database className="w-4 h-4 text-primary" />
               GCP Project
             </label>
-            <Select onValueChange={(val: string | null) => { if (val) { setSelectedProject(val); setSelectedDataset(''); } }}>
+            <Select 
+              value={selectedProject}
+              onValueChange={(val: string | null) => { if (val) { setSelectedProject(val); setSelectedDataset(''); } }}
+            >
               <SelectTrigger className="h-12 border-border focus:ring-primary rounded">
                 <SelectValue placeholder="Select Project" />
               </SelectTrigger>
@@ -417,15 +437,20 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
               </div>
             </SelectTrigger>
             <SelectContent>
-              {availableTables.length === 0 && !loadingTables ? (
+              {fetchError && !loadingTables && (
+                <div className="p-4 text-xs text-destructive bg-destructive/10 rounded border border-destructive/20 text-center">
+                  <p className="font-bold mb-1">Connection Error</p>
+                  <p>{fetchError}</p>
+                </div>
+              )}
+              {availableTables.length === 0 && !loadingTables && !fetchError && (
                 <div className="p-4 text-xs text-muted-foreground text-center">
                   No tables found in this dataset.
                 </div>
-              ) : (
-                availableTables.map(table => (
-                  <SelectItem key={table} value={table}>{table}</SelectItem>
-                ))
               )}
+              {!loadingTables && !fetchError && availableTables.map(table => (
+                <SelectItem key={table} value={table}>{table}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           {selectedTable && tableDescription && (
@@ -636,6 +661,38 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
             
             <Button 
               size="icon"
+              disabled={!generatedUrl || exporting}
+              onClick={handleExcelExport}
+              className={`h-14 w-14 rounded-md transition-all duration-300 ${
+                exporting 
+                ? 'bg-emerald-600 hover:bg-emerald-600 shadow-sm' 
+                : 'bg-emerald-500 hover:bg-emerald-600 shadow-sm'
+              }`}
+              title="Connect to Excel"
+            >
+              {exporting ? (
+                <Loader2 className="w-6 h-6 animate-spin text-white" />
+              ) : (
+                <svg 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="w-6 h-6 text-white"
+                >
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M8 13h2" />
+                  <path d="M8 17h2" />
+                  <path d="M10 9H8" />
+                </svg>
+              )}
+            </Button>
+
+            <Button 
+              size="icon"
               disabled={!generatedUrl}
               onClick={handleCopy}
               className={`h-14 w-14 rounded-md transition-all duration-300 ${
@@ -643,6 +700,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
                 ? 'bg-success hover:bg-success/90 shadow-sm' 
                 : 'bg-primary hover:bg-primary/90 shadow-sm'
               }`}
+              title="Copy URL"
             >
               {copied ? <Check className="w-6 h-6 text-success-foreground" /> : <Copy className="w-6 h-6 text-primary-foreground" />}
             </Button>

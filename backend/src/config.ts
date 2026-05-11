@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-/**
- * Centralized Configuration for OData BigQuery Server.
- * [Source: Story 8.5 Tech Debt CFG]
- */
+import { config as loadEnv } from 'dotenv'
+
+// Load environment variables from .env file (Story 8.5)
+loadEnv()
 
 export const config = {
   // GCP / BigQuery Core
