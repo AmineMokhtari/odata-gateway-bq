@@ -36,3 +36,4 @@ so that costs are traceable.
 ### Agent Model Used
 
 gemini-2.0-flash-thinking-exp-1219 (via Gemini CLI)
+

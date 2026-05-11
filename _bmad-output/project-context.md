@@ -54,7 +54,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **The "Audit-Execute" Pipeline:** Mandatory request flow for all data paths: `Identify` -> `Authorize` -> `Translate` -> `Audit` -> `Execute/Stream`.
 - **Stateless Compliance:** The entire system MUST remain stateless for Cloud Run. UI interactivity MUST use **long-polling** against usage/audit endpoints; persistent WebSockets or server-side sticky sessions are FORBIDDEN.
 - **Next.js UI Patterns:** Use **Server Components** by default. Use **Client Components** only for the OData URL Builder, Copy buttons, and Success Pulse animations.
-- **Portal Routing:** All web portal routes MUST be prefixed with `/web/` (e.g., `/web/`, `/web/marketplace`, `/web/admin`). This MUST be enforced via `basePath: '/web'` in the Next.js configuration.
+- **Portal Routing:** All web portal routes MUST be prefixed with `/web/` (e.g., `/web/`, `/web/Catalog`, `/web/admin`). This MUST be enforced via `basePath: '/web'` in the Next.js configuration.
 - **Styling Standards:** Use **Tailwind CSS** with the 8px spacing system and established "Trust" palette (Indigo-700, Emerald, Amber). Use **Shadcn/UI** (Radix UI) for all interactive primitives to ensure WCAG AA compliance.
 - **Request Decoration:** Verified user identities and correlation IDs MUST be attached to the request object for BigQuery Job Labeling.
 - **Secure Identity Propagation:** Sensitive environment variables (e.g., `DEFAULT_ANONYMOUS_USER_NAME`) MUST NOT use the `NEXT_PUBLIC_` prefix. They must be read in Server Components (like `RootLayout`) and passed as props to Client Components (`Navigation`) to maintain security boundaries.
@@ -82,7 +82,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
     - **Frontend:** UI layouts in `frontend/src/app/`, components in `frontend/src/components/`.
     - **Common:** Shared types, utilities, and schemas in `common/src/`.
 - **Logging:** 100% of logs must use `fastify.log` (pino) and MUST include the `correlationId` in the log object.
-- **Semantic HTML:** Use appropriate semantic tags (`<nav>`, `<section>`, `<article>`, `<aside>`) for the Marketplace Portal.
+- **Semantic HTML:** Use appropriate semantic tags (`<nav>`, `<section>`, `<article>`, `<aside>`) for the Catalog Portal.
 
 ### Development Workflow Rules
 
@@ -97,7 +97,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Anti-Pattern: Result Buffering:** NEVER buffer BigQuery results using `rows.push()` or `JSON.stringify()`. 100% of data MUST be streamed via `pipeline` to maintain the < 256MB memory footprint.
 - **Anti-Pattern: Budget Bypass:** NEVER execute a data-fetch query without first performing a Dry-Run audit. Every byte streamed must be estimated against the `scan_budget_gb`.
 - **The "No-Driver" Promise:** NEVER instruct the user to install a local driver (ODBC/JDBC) or configure a System DSN in the portal UI. The UX MUST focus exclusively on the native OData URL path.
-- **60s Time-to-Value (TTV):** All implementation decisions for the Marketplace Portal MUST support the goal of a < 60s window from landing page to active Excel connection.
+- **60s Time-to-Value (TTV):** All implementation decisions for the Catalog Portal MUST support the goal of a < 60s window from landing page to active Excel connection.
 - **Regional Chameleon Pattern:** BigQuery dataset residency MUST be verified before instantiating the client to avoid cross-region egress costs and residency violations.
 - **Financial Leakage Protection:** Explicitly handle `ERR_STREAM_PREMATURE_CLOSE` by immediately issuing a cancellation signal to the active BigQuery Job ID.
 - **Lossless Fidelity:** BigQuery `RECORD` (STRUCT) and `REPEATED` (ARRAY) types MUST be cast to JSON strings using `TO_JSON_STRING()` to ensure compatibility with Excel/Power BI cells.
@@ -121,3 +121,4 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Remove rules that become obvious over time
 
 Last Updated: 2026-05-09
+

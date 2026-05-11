@@ -6,7 +6,7 @@ Status: done
 
 As a David (Data Admin),
 I want endpoints to force refresh and check health,
-so that I can manage the marketplace.
+so that I can manage the Catalog.
 
 ## Acceptance Criteria
 
@@ -38,3 +38,4 @@ so that I can manage the marketplace.
 ### Agent Model Used
 
 gemini-2.0-flash-thinking-exp-1219 (via Gemini CLI)
+

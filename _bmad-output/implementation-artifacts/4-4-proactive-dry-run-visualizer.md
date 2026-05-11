@@ -10,7 +10,7 @@ so that I can successfully refine my filters and get my data.
 
 ## Acceptance Criteria
 
-1. **Explain Dashboard Route:** Implement a new page at `frontend/src/app/marketplace/[projectId]/[datasetId]/[entitySet]/explain/page.tsx`.
+1. **Explain Dashboard Route:** Implement a new page at `frontend/src/app/Catalog/[projectId]/[datasetId]/[entitySet]/explain/page.tsx`.
 2. **Visual Gauge:** Implement a high-contrast visual gauge using Tailwind CSS and Radix UI primitives.
     - Show `Estimated Scan` vs `Scan Budget`.
     - Color Logic: 
@@ -28,7 +28,7 @@ so that I can successfully refine my filters and get my data.
 5. **Backend Enhancement:** 
     - Update `backend/src/middleware/audit/dry-run-gate.ts` to include `estimatedBytes` and `budgetBytes` in the thrown error object.
     - Update `backend/src/routes/v1/index.ts` to return these values in the `BudgetExceeded` error response.
-    - Append a link to the portal's explain page in the error message: `[Explain: https://.../web/marketplace/.../explain?odataQuery=...]`.
+    - Append a link to the portal's explain page in the error message: `[Explain: https://.../web/Catalog/.../explain?odataQuery=...]`.
 6. **Design Standards:** Adhere to the "Indigo-700 / Emerald / Amber" palette and 8px spacing system.
 7. **Accessibility:** Target WCAG Level AA compliance for contrast and screen reader support.
 
@@ -65,8 +65,8 @@ so that I can successfully refine my filters and get my data.
 - **Source Tree:**
   - `backend/src/middleware/audit/dry-run-gate.ts`
   - `backend/src/routes/v1/index.ts`
-  - `frontend/src/app/marketplace/[projectId]/[datasetId]/[entitySet]/explain/page.tsx`
-  - `frontend/src/components/marketplace/BudgetGauge.tsx`
+  - `frontend/src/app/Catalog/[projectId]/[datasetId]/[entitySet]/explain/page.tsx`
+  - `frontend/src/components/Catalog/BudgetGauge.tsx`
 
 ### Project Structure Notes
 
@@ -93,6 +93,7 @@ Gemini 2.0 Flash (CLI Agent)
 
 - backend/src/middleware/audit/dry-run-gate.ts
 - backend/src/routes/v1/index.ts
-- frontend/src/app/marketplace/[projectId]/[datasetId]/[entitySet]/explain/page.tsx
-- frontend/src/components/marketplace/BudgetGauge.tsx
-- frontend/src/components/marketplace/CostSavingTips.tsx
+- frontend/src/app/Catalog/[projectId]/[datasetId]/[entitySet]/explain/page.tsx
+- frontend/src/components/Catalog/BudgetGauge.tsx
+- frontend/src/components/Catalog/CostSavingTips.tsx
+

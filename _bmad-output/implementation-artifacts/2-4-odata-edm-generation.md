@@ -55,3 +55,4 @@ so that I can discover data in Excel.
 ### Agent Model Used
 
 gemini-2.0-flash-thinking-exp-1219 (via Gemini CLI)
+

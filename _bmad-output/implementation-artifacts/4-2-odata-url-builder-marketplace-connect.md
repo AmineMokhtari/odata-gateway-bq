@@ -1,4 +1,4 @@
-# Story 4.2: OData URL Builder (Marketplace Connect)
+# Story 4.2: OData URL Builder (Catalog Connect)
 
 Status: ready-for-dev
 
@@ -40,14 +40,14 @@ so that I can avoid manual typing errors when connecting Excel or Power BI.
 ## Dev Notes
 
 - **Tech Stack:** Next.js 15 (App Router), Tailwind CSS, Shadcn/UI, Lucide-React.
-- **Routing:** Since `basePath: '/web'` is enabled, the page is located at `src/app/marketplace/page.tsx` but served at `/web/marketplace`.
+- **Routing:** Since `basePath: '/web'` is enabled, the page is located at `src/app/Catalog/page.tsx` but served at `/web/Catalog`.
 - **URL Base:** Use `NEXT_PUBLIC_GATEWAY_URL` for the base domain; ensure it points to the backend (e.g., port 3001) and does not include the `/web/` prefix.
 - **Data Source:** Access `backend/config/tenants.yaml` directly from the Server Action via relative path `../../backend/config/tenants.yaml`.
 
 ### Project Structure Notes
 
-- Component Location: `frontend/src/components/marketplace/ODataUrlBuilder.tsx`.
-- Page Location: `frontend/src/app/marketplace/page.tsx`.
+- Component Location: `frontend/src/components/Catalog/ODataUrlBuilder.tsx`.
+- Page Location: `frontend/src/app/Catalog/page.tsx`.
 - UI Primitives: Use `npx shadcn@latest add select input button toast` to ensure latest versions.
 
 ### References
@@ -70,6 +70,7 @@ N/A
 - Clarified that generated URL must bypass `/web/` prefix for OData compatibility.
 
 ### File List
-- `frontend/src/components/marketplace/ODataUrlBuilder.tsx` (New)
-- `frontend/src/app/marketplace/page.tsx` (New)
+- `frontend/src/components/Catalog/ODataUrlBuilder.tsx` (New)
+- `frontend/src/app/Catalog/page.tsx` (New)
 - `common/src/types/tenant.ts` (Potential New/Modify)
+

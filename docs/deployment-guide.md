@@ -40,3 +40,4 @@ In large organizations with multiple running instances, tenant configurations ca
 1. **VPC Service Controls:** Enclose the Gateway and BigQuery in a VPC-SC perimeter to prevent data exfiltration.
 2. **Identity-Aware Proxy (IAP):** Deploy the Gateway behind Cloud IAP and use `ANONYMOUS_MODE=true` to offload authentication to Google's edge.
 3. **Egress Control:** Restrict container egress to only allowed OIDC and BigQuery IP ranges.
+

@@ -256,12 +256,12 @@ odata-gateway-bq/
 │   │   └── services/
 │   │       ├── bq-executor.ts
 │   │       └── odata-metadata.ts
-│   ├── frontend/                # Next.js Marketplace Portal
+│   ├── frontend/                # Next.js Catalog Portal
 │   │   ├── src/
 │   │   │   ├── app/             # App Router (layout.tsx, page.tsx)
 │   │   │   ├── components/
 │   │   │   │   ├── layout/      # Navigation, TopBar
-│   │   │   │   ├── marketplace/ # Data Grid, Dataset Cards
+│   │   │   │   ├── Catalog/ # Data Grid, Dataset Cards
 │   │   │   │   └── drawers/     # URL Builder, Elena Drawer
 │   │   │   ├── store/           # Zustand Stores (project-store.ts)
 │   │   │   ├── hooks/           # useDryRun.ts (Audit Logic)
@@ -287,7 +287,7 @@ The primary boundary is the **URL-Based Tenant Segment** (`/v1/:projectId`). The
 ### Requirements to Structure Mapping
 
 **Feature Mapping:**
-- **Marketplace Discovery**: `src/frontend/components/marketplace/`
+- **Catalog Discovery**: `src/frontend/components/Catalog/`
 - **Cost Awareness (Pulse Badge)**: `src/backend/routes/v1/dry-run.ts` + `src/frontend/hooks/useDryRun.ts`
 - **Elena's Guidance**: `src/backend/plugins/elena-tips.ts` + `src/frontend/components/drawers/ElenaDrawer.tsx`
 
@@ -317,7 +317,7 @@ The new `src/backend` and `src/frontend` separation provides clear ownership whi
 ### Requirements Coverage Validation ✅
 
 **Feature Coverage:**
-- **Marketplace Discovery**: Fully supported by sharded metadata plugin.
+- **Catalog Discovery**: Fully supported by sharded metadata plugin.
 - **Cost Awareness**: Supported by `/dry-run` endpoint.
 - **Elena's Guidance**: Supported by backend error decoration.
 
@@ -391,3 +391,4 @@ npx fastify-cli generate src/backend --lang=ts
 # 2. Initialize Vite Frontend
 cd src/frontend && npx create-vite . --template react-ts
 ```
+

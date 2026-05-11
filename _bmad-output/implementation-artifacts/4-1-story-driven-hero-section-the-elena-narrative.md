@@ -23,7 +23,7 @@ last_updated: "2026-04-25"
 - [ ] **Accessibility:** All typography must meet WCAG AA contrast ratios (4.5:1 minimum).
 
 ## Developer Context
-This is the **entry point** of our Data Marketplace. It must feel high-trust, technical, yet deeply accessible. We are building this inside the `src/app` directory of our unified codebase.
+This is the **entry point** of our Data Catalog. It must feel high-trust, technical, yet deeply accessible. We are building this inside the `src/app` directory of our unified codebase.
 
 ### Technical Requirements
 - **Framework:** Next.js 15+ (App Router).
@@ -55,3 +55,4 @@ This is the **entry point** of our Data Marketplace. It must feel high-trust, te
 ---
 **Status:** ready-for-dev
 **Note:** Ultimate context engine analysis completed - validated with Audit-Execute pipeline visual enhancement.
+

@@ -183,3 +183,4 @@ graph TD
 - **Gateway (Cloud Run):** The core service that translates OData to SQL, enforces scan budgets, and streams data.
 - **Metadata Cache:** A sharded in-memory store that ensures high performance for OData discovery ($metadata) calls.
 - **BigQuery:** The source of truth for all data, accessed via a secure Service Account (Trusted Subsystem model).
+

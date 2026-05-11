@@ -31,10 +31,16 @@ The system follows a **Layered API Gateway / Data Proxy** pattern with a **Trust
 6. **Execute:** Run the query using a master service account with regionalized clients, passing parameters natively to prevent injection.
 7. **Stream:** Transform BigQuery rows into OData JSON envelopes and stream to the client.
 
+### The 'Elena' Advice Layer (Error Decoration)
+The system implements a non-intrusive guidance layer that intercepts technical BigQuery and Security errors:
+1. **Intercept:** A global `onSend` hook in Fastify detects `401`, `403`, and `500` status codes.
+2. **Decorate:** The `elena-tips` plugin injects an `elena_tip` object into the JSON error response, providing a narrative explanation and a list of `quick_fixes`.
+3. **Trigger:** The frontend detects decorated errors and automatically opens the `ElenaDrawer`, presenting the user with actionable buttons (e.g., "Select fewer columns" or "Refresh Session").
+
 ## Data Architecture
 ### Metadata Management
 - **Introspection:** Dynamically crawls `INFORMATION_SCHEMA` to build the OData Entity Data Model (EDM). This now includes fetching table and column descriptions for enhanced discoverability.
-- **Annotations:** Descriptions are mapped to standard OData annotations (`Org.OData.Core.V1.Description`), allowing BI tools and our marketplace UI to surface data definitions natively.
+- **Annotations:** Descriptions are mapped to standard OData annotations (`Org.OData.Core.V1.Description`), allowing BI tools and our catalog UI to surface data definitions natively.
 - **Caching:** Uses a sharded in-memory LRU cache (`projectId:datasetId` keys) with a 24-hour TTL to ensure sub-2s discovery latency.
 - **Live Discovery Fallback:** If a requested table is missing from the cache, the gateway performs a targeted check against `INFORMATION_SCHEMA`. If found, the cache and the OData `$metadata` are automatically updated, allowing for near-instant access to newly created BigQuery tables without a full server restart.
 - **Type Casting:** Automatically applies `TO_JSON_STRING()` to BigQuery `RECORD` and `REPEATED` types to ensure lossless transport of nested structures.
@@ -54,3 +60,4 @@ The system follows a **Layered API Gateway / Data Proxy** pattern with a **Trust
 - **Graceful Shutdown:** The system natively handles `SIGTERM` signals. When a shutdown is initiated, the gateway stops accepting new requests but stays alive to finish streaming data for all active connections.
 - **Job Lifecycle Management:** To prevent financial leakage, the gateway monitors every active connection. If a client disconnects prematurely (e.g., closing Excel during a refresh), the system catches the `ERR_STREAM_PREMATURE_CLOSE` error and automatically sends a cancellation signal to the corresponding BigQuery job.
 - **Deterministic Error Codes:** System failures are translated into standard OData error codes (e.g., `BudgetExceeded`, `Unauthorized`) to ensure compatible error handling in Excel and Power BI.
+

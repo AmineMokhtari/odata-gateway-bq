@@ -77,12 +77,12 @@ inputDocuments:
 
 We explored multiple iterations of the "Cloud Native" aesthetic, focusing on how to adapt Google Cloud's Material Design 3 system to a focused OData Gateway experience.
 
-### Chosen Direction: "The Cloud Native Marketplace"
+### Chosen Direction: "The Cloud Native Catalog"
 
 This direction prioritizes functional density and platform consistency.
-- **Layout**: Sticky top-bar navigation for primary modules with a centered, high-focus Marketplace layout. Removed the persistent left sidebar to maximize horizontal space for complex OData URL builders.
+- **Layout**: Sticky top-bar navigation for primary modules with a centered, high-focus Catalog layout. Removed the persistent left sidebar to maximize horizontal space for complex OData URL builders.
 - **Identity Context**: A high-visibility "Identity Pill" in the top-bar provides real-time status of the verified organizational or anonymous session.
-- **Dashboard Layout**: A focused Connection Builder model. The Marketplace provides a streamlined interface for tenant and dataset selection, with real-time connection status feedback.
+- **Dashboard Layout**: A focused Connection Builder model. The Catalog provides a streamlined interface for tenant and dataset selection, with real-time connection status feedback.
 - **Interaction Pattern**: "Proactive Guidance" using the side-drawers for "Elena's Advice" to keep the main content focused on connection parameters.
 
 ### Design Rationale
@@ -104,7 +104,7 @@ This journey focuses on getting an analyst from a raw BigQuery dataset to a func
 ```mermaid
 graph TD
     A[Landing Page Hero] --> B[Project Switcher]
-    B -->|Select Project| C[Marketplace Grid]
+    B -->|Select Project| C[Catalog Grid]
     C -->|Select Dataset| D[Dataset Detail View]
     D --> E[Open URL Builder Drawer]
     E --> F[Select EntitySet]
@@ -134,7 +134,7 @@ graph TD
 ### Journey Patterns
 
 Across these flows, we standardize on the following patterns:
-- **Navigation**: Use the standard Google Cloud sidebar for switching between "Marketplace" (Discovery) and "Governance" (Usage/Budgets).
+- **Navigation**: Use the standard Google Cloud sidebar for switching between "Catalog" (Discovery) and "Governance" (Usage/Budgets).
 - **Configuration**: All "Build-time" configurations (URL parameters, filters) happen in **Side Drawers** to keep the main data view clean.
 - **Feedback**: Use "Pulse Badges" (Emerald for connected, Amber for caution) to signal connection health and budget status.
 
@@ -191,7 +191,7 @@ We follow the Material Design 3 elevation and color system for all user actions.
 ### Navigation Patterns
 
 - **Global Context**: The top-bar **Identity Pill** is the "Source of Truth" for security. It dynamically reflects the verified organizational or anonymous session.
-- **Top-Bar Navigation**: Unified navigation for switching between the Marketplace and other core modules, reducing vertical clutter.
+- **Top-Bar Navigation**: Unified navigation for switching between the Catalog and other core modules, reducing vertical clutter.
 - **Configuration**: All query builders and Elena's advice are housed in **Right-aligned Drawers (Sheets)** to maintain focus on the underlying connection parameters.
 
 ### Additional Patterns
@@ -205,8 +205,8 @@ We follow the Material Design 3 elevation and color system for all user actions.
 ### Responsive Strategy
 
 We prioritize a high-density interface that adapts across devices while maintaining platform consistency.
-- **Desktop (1024px+)**: Fixed left-hand sidebar. Project Switcher in the top-bar. High-density Marketplace grid.
-- **Tablet (768px - 1023px)**: Sidebar collapses to icons-only. Marketplace grid adjusts to 2 columns.
+- **Desktop (1024px+)**: Fixed left-hand sidebar. Project Switcher in the top-bar. High-density Catalog grid.
+- **Tablet (768px - 1023px)**: Sidebar collapses to icons-only. Catalog grid adjusts to 2 columns.
 - **Mobile (320px - 767px)**: Sidebar moves to a "Hamburger" menu. Primary CTAs (like "Copy URL") are pinned to a fixed **Bottom Action Bar** for thumb-friendly reachability.
 
 ### Breakpoint Strategy
@@ -218,7 +218,7 @@ We prioritize a high-density interface that adapts across devices while maintain
 ### Accessibility Strategy (WCAG 2.1 Level AA)
 
 - **Contrast**: All Google Blue `#1a73e8` links and primary buttons maintain a 4.5:1 ratio.
-- **Keyboard Navigation**: Full tabbing support for the Marketplace discovery flow with high-visibility blue focus rings.
+- **Keyboard Navigation**: Full tabbing support for the Catalog discovery flow with high-visibility blue focus rings.
 - **Screen Readers**: "Elena's Tips" drawers use `aria-live="polite"` to announce new guidance.
 - **Touch Targets**: Minimum 44x44px for all mobile interaction points.
 
@@ -232,3 +232,4 @@ We prioritize a high-density interface that adapts across devices while maintain
 
 - **Units**: Use `rem` for typography and standard `8px` increments for spacing.
 - **Semantic HTML**: Mandatory use of `<main>`, `<nav>`, `<aside>`, and `<section>` to ensure structural clarity for assistive technologies.
+

@@ -176,7 +176,7 @@ _Source: synthesis of current 2025-2026 market trends_
 
 [In large enterprises, data access decisions are a cross-functional negotiation between speed and security.]
 _Decision Stages: Problem Discovery (Shadow IT crisis) -> Technical Feasibility (OData vs. ODBC) -> Security & Compliance Vetting -> Budget Approval -> Implementation._
-_Decision Timelines: 2-4 weeks for departmental POCs; 3-6 months for enterprise-wide data marketplace rollouts._
+_Decision Timelines: 2-4 weeks for departmental POCs; 3-6 months for enterprise-wide data Catalog rollouts._
 _Complexity Levels: High. Requires alignment between Data Engineering (GCP) and Desktop Engineering (Microsoft Office)._
 _Evaluation Methods: Technical trials focused on "Time to First Row" and Security reviews focused on OIDC integration._
 _Source: paperclip.com, ISG Buyers Guide 2025_
@@ -272,7 +272,7 @@ _Source: ISG Buyers Guide 2025, G2.com_
 - **CData:** "The Universal Data Layer for AI."
 - **Progress:** "Secure Hybrid Connectivity for Enterprise."
 - **Skyvia:** "No-Code Data Integration in 5 Minutes."
-- **OData-Gateway-BQ (You):** "The Zero-Trust, Cost-Governed Data Marketplace for BigQuery."
+- **OData-Gateway-BQ (You):** "The Zero-Trust, Cost-Governed Data Catalog for BigQuery."
 _Source: competitive website analysis Nov 2025_
 
 ### Strengths and Weaknesses (SWOT)
@@ -355,3 +355,4 @@ The **OData Gateway for BigQuery** is uniquely positioned to disrupt the high-pr
 **Research Period:** 2024-2026 Comprehensive Analysis
 **Source Verification:** Verified via G2, Gartner, Reddit Technical Forums, and GCP/Microsoft Documentation.
 **Market Confidence Level:** High.
+

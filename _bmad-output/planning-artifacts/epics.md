@@ -72,10 +72,10 @@ This document provides the complete epic and story breakdown for odata-gateway-b
 
 ### FR Coverage Map
 
-- **FR1-FR5**: Epic 2 - Automated Data Marketplace
+- **FR1-FR5**: Epic 2 - Automated Data Catalog
 - **FR6, FR9, FR20, FR24**: Epic 1 - Identity & Trusted Access
 - **FR11, FR12, FR16-FR19, FR26**: Epic 3 - Governed Data Streaming
-- **FR13-FR15, FR21, FR22**: Epic 4 - Data Marketplace Web Portal
+- **FR13-FR15, FR21, FR22**: Epic 4 - Data Catalog Web Portal
 - **FR13-FR15 (Advanced/Guided)**: Epic 6 - Self-Service Governance
 
 ## Epic List
@@ -84,7 +84,7 @@ This document provides the complete epic and story breakdown for odata-gateway-b
 Users can securely authenticate via OIDC and be authorized against internal application rules to access BigQuery via a master account.
 **FRs covered:** FR6, FR9, FR20, FR24
 
-### Epic 2: Automated Data Marketplace
+### Epic 2: Automated Data Catalog
 Users can automatically discover authorized BigQuery datasets as standard OData EntitySets with sub-2s latency.
 **FRs covered:** FR1, FR2, FR3, FR4, FR5
 
@@ -92,7 +92,7 @@ Users can automatically discover authorized BigQuery datasets as standard OData 
 The system translates OData queries to SQL, enforces proactive scan budgets, and streams results directly to the user.
 **FRs covered:** FR11, FR12, FR16, FR17, FR18, FR19, FR26
 
-### Epic 4: Data Marketplace Web Portal
+### Epic 4: Data Catalog Web Portal
 A modern, story-driven web interface that provides analysts with the tools and confidence to connect their favorite BI tools.
 **FRs covered:** FR13, FR14, FR15, FR21, FR22
 
@@ -143,7 +143,7 @@ As a Security Architect, I want the system to check extracted identities against
 
 ---
 
-## Epic 2: Automated Data Marketplace
+## Epic 2: Automated Data Catalog
 
 Enable frictionless discovery. Users can automatically discover authorized BigQuery datasets as standard OData EntitySets.
 
@@ -192,7 +192,7 @@ As a User, I want my OData query parameters ($filter, $select, $orderby) transla
 
 ---
 
-## Epic 4: Data Marketplace Web Portal
+## Epic 4: Data Catalog Web Portal
 
 Empower the Analyst. A story-driven web interface that allows users like 'Elena' to discover datasets and generate connection URLs.
 
@@ -291,4 +291,5 @@ As an Analyst (Elena), I want to perform sums, averages, and groupings at the so
 - **When** the SQL is generated.
 - **Then** the system produces a BigQuery `GROUP BY Region` query with `SUM(Amount) AS Total`.
 - **And** the system supports multiple aggregations and grouping columns.
+
 

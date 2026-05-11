@@ -32,3 +32,4 @@ so that I can **separate the costs of data scanning from the projects where the 
 
 - **BigQuery Client**: `new BigQuery({ projectId: billingId })` sets the billing project.
 - **Dataset Access**: `bq.dataset(id, { projectId: dataId })` allows cross-project metadata access.
+

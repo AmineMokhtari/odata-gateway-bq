@@ -11,7 +11,7 @@ Common questions and solutions for the OData Gateway for BigQuery.
 ### 2. Error: "Budget Exceeded" (OData Error: `BudgetExceeded`)
 - **Cause:** The query you are trying to run would scan more data than your allowed limit (e.g., > 10GB).
 - **Solution:** 
-  - Look for **"Elena's Advice"** in the Marketplace UI. The gateway automatically analyzes your query and provides a slide-out drawer with specific recommendations.
+  - Look for **"Elena's Advice"** in the Catalog UI. The gateway automatically analyzes your query and provides a slide-out drawer with specific recommendations.
   - Apply the suggested **"Quick Fixes"** (e.g., "Last 7 Days" or "Essential Columns") provided in the drawer.
   - If you are connecting from a third-party tool like Excel, ensure you have added a `$filter` or `$select` clause to reduce the scan volume.
   - Contact an administrator if you genuinely need a permanent budget increase for a specific project.
@@ -44,3 +44,4 @@ These are "Nested" fields from BigQuery. Because Excel doesn't support nested st
 
 ### What is the maximum data I can pull?
 While there is no hard limit on the *number of rows*, there is a limit on the **amount of data scanned** (the "Budget"). Additionally, Excel has its own row limit (approx. 1 million rows). Power BI is better suited for larger volumes.
+

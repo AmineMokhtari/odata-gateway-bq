@@ -108,3 +108,4 @@ Our frontend should feel premium, alive, and encouraging.
 4. Submit your PR with a link to your `walkthrough.md`.
 
 Thank you for helping us empower the next generation of analysts! 🚀
+

@@ -52,3 +52,4 @@ Returns the server status (`"status": "ok"`) and version information. This endpo
 All endpoints (except `/health`) require one of the following:
 1. **OIDC Bearer Token:** A valid JWT in the `Authorization` header.
 2. **Offloaded Headers:** When `ANONYMOUS_MODE` is active, identity is extracted from `X-Forwarded-Email`, `X-Forwarded-Groups`, and `X-Forwarded-Sub`.
+

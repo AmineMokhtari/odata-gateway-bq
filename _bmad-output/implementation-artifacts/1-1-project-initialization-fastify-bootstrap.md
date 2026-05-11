@@ -88,3 +88,4 @@ Gemini 2.0 Flash
 - [x] [Review][Defer] Global App Options Leakage [src/app.ts:28-40] — deferred, pre-existing Fastify CLI boilerplate
 
 
+

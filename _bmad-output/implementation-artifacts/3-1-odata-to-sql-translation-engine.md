@@ -40,3 +40,4 @@ so that I don't need to write SQL.
 ### Agent Model Used
 
 gemini-2.0-flash-thinking-exp-1219 (via Gemini CLI)
+

@@ -1,4 +1,4 @@
-# Getting Started Guide: Connecting to the Data Marketplace
+# Getting Started Guide: Connecting to the Data Catalog
 
 Welcome to the **OData Gateway for BigQuery**. This guide will help you connect your favorite data tools (Excel, Power BI, etc.) to your organization's BigQuery datasets in minutes.
 
@@ -39,3 +39,4 @@ Welcome to the **OData Gateway for BigQuery**. This guide will help you connect 
 - **Use Filters:** If you are working with large datasets, use the OData filter options or the "Transform Data" view in Power BI to limit the data you pull.
 - **Stay Connected:** Your credentials are saved securely. You can refresh your data anytime by clicking **Refresh** in your tool.
 - **Budget Limits:** Each request is scanned for cost. If your query is too large, you may receive a "Budget Exceeded" message (see [Troubleshooting](./troubleshooting.md)).
+

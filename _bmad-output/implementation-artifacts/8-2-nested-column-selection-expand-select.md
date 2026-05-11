@@ -41,7 +41,7 @@ so that I can **reduce the scan cost of my joins and only see the data I need in
 
 ### Paths
 - Backend Translation: `backend/src/routes/v1/index.ts` (or dedicated lib)
-- Frontend Builder: `frontend/src/components/marketplace/ODataUrlBuilder.tsx`
+- Frontend Builder: `frontend/src/components/Catalog/ODataUrlBuilder.tsx`
 
 ## Dev Agent Record
 
@@ -64,8 +64,9 @@ Gemini 2.0 Flash
    - [x] [Review][Patch] Add visual column selector for primary table to match expand UI
    - [x] [Review][Patch] Invalid table reference when `table` has no dots [backend/src/lib/sql-generator.ts:50]
    - [x] [Review][Patch] Missing backticks on referenced table [backend/src/lib/sql-generator.ts:54]
-   - [x] [Review][Patch] Potential NPE on `prop.type` [frontend/src/components/marketplace/ODataUrlBuilder.tsx:369]
-   - [x] [Review][Patch] Stale expansion columns state [frontend/src/components/marketplace/ODataUrlBuilder.tsx:98]
+   - [x] [Review][Patch] Potential NPE on `prop.type` [frontend/src/components/Catalog/ODataUrlBuilder.tsx:369]
+   - [x] [Review][Patch] Stale expansion columns state [frontend/src/components/Catalog/ODataUrlBuilder.tsx:98]
 
 3. **`defer`** findings:
    - [x] [Review][Defer] No handling for 1:N expansions — deferred, pre-existing. Current flat OData transformer limits 1:N depth/structure.
+

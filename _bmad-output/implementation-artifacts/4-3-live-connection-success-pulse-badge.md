@@ -73,3 +73,4 @@ Gemini 2.0 Flash (CLI Agent)
 
 - Story initialized with detailed technical guardrails for long-polling and animation.
 - Identified the need for a user-scoped connection status endpoint.
+

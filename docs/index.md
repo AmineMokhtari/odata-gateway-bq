@@ -29,4 +29,5 @@ Welcome to the technical documentation for the **odata-gateway-bq**. This guide 
 - **[Project Scan Report](./project-scan-report.json)** - Machine-readable state of the latest project documentation scan.
 
 ---
-*Last updated: 2026-05-09*
+*Last updated: 2026-05-11*
+

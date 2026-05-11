@@ -12,9 +12,10 @@
 
 ## Coverage
 - **API Endpoints:** Added coverage for admin routes and advanced error scenarios.
-- **UI Features:** Added E2E coverage for the core Marketplace connection builder and Hero section.
+- **UI Features:** Added E2E coverage for the core Catalog connection builder and Hero section.
 
 ## Next Steps
 1. **Debug Backend Test Runner:** Resolve the `uncaughtException` issue affecting the entire backend test suite.
 2. **CI Integration:** Add Playwright to the CI pipeline to ensure frontend stability.
 3. **Browser Testing:** Run E2E tests against multiple browsers (Firefox, Webkit) once basic Chromium tests are stable.
+

@@ -9,7 +9,7 @@
 ---
 
 ## 🌟 What is it?
-The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge that transforms your BigQuery datasets into a governed **Data Marketplace**. It allows business users to access petabyte-scale data directly from tools like **Microsoft Excel**, **Power BI**, and **Microsoft Copilot** using the standard OData V4 protocol.
+The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge that transforms your BigQuery datasets into a governed **Data Catalog**. It allows business users to access petabyte-scale data directly from tools like **Microsoft Excel**, **Power BI**, and **Microsoft Copilot** using the standard OData V4 protocol.
 
 ### Who is it for?
 *   **Data Engineers:** Who want to stop writing manual SQL exports and "SQL Tax" requests.
@@ -28,7 +28,7 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 | **Zero-Footprint Streaming** | **Infinite Scale.** Data is streamed directly from BigQuery to the client. The gateway maintains a near-zero memory footprint (< 256MB) even when handling millions of rows. |
 | **Auto-Discovery (EDM)** | **Frictionless Onboarding.** The gateway automatically crawls your BigQuery schema. New tables appear in Excel/Power BI navigators automatically within 24 hours. |
 | **Live Discovery Fallback** | **Zero-Wait Access.** If a table is missing from the cache, the gateway performs a targeted live check. Newly created tables are accessible instantly without waiting for a full refresh. |
-| **Metadata Descriptions** | **Rich Context.** Table and column descriptions from BigQuery are exposed as OData annotations and surfaced in the Marketplace UI. |
+| **Metadata Descriptions** | **Rich Context.** Table and column descriptions from BigQuery are exposed as OData annotations and surfaced in the Catalog UI. |
 | **Lossless Data Integrity** | **Complex Data, Simplified.** Automatically handles BigQuery `RECORD` and `REPEATED` types by casting them to JSON strings, ensuring nested data is readable in spreadsheets. |
 
 ---
@@ -61,7 +61,7 @@ Get the gateway running locally in three simple steps:
     ```bash
     npm run dev
     ```
-    *   **Marketplace UI:** `http://localhost:3000`
+    *   **Catalog UI:** `http://localhost:3000`
     *   **OData API:** `http://localhost:3001/v1/your-project/your-dataset/$metadata`
 
 > [!TIP]
@@ -92,3 +92,4 @@ This project is built to make data access simple and secure. If this gateway hel
 *   **💡 Share Feedback:** Tell us how you're using the gateway!
 
 **Made with ❤️ for the Data Community.**
+

@@ -48,3 +48,4 @@ Antigravity (Claude 3.5 Sonnet)
 - [x] Implemented $apply parsing.
 - [x] Added aggregation function mapping.
 - [x] Added groupby support.
+

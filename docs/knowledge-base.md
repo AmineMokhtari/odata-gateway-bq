@@ -32,3 +32,4 @@ To prevent accidental costs from querying massive datasets, the Gateway performs
 - **Read-Only:** The Gateway is strictly read-only. You cannot delete or modify data in BigQuery through this interface.
 - **Auditing:** Every query you run is logged with your identity. This is injected into the BigQuery logs as a "Correlation ID," ensuring full transparency and compliance.
 - **Streaming:** Data is streamed directly to your tool. The Gateway does not "save" or "store" your data locally, ensuring it stays within the secure cloud environment.
+

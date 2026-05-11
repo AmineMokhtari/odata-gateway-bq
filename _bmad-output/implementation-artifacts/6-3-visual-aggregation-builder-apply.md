@@ -41,7 +41,7 @@ so that I can **generate summary data without writing manual OData `$apply` synt
 - **Reference**: [OData Data Aggregation Extension](https://docs.oasis-open.org/odata/odata-data-aggregation-ext/v4.0/odata-data-aggregation-ext-v4.0.html)
 
 ### Paths
-- Frontend View: `frontend/src/components/marketplace/ODataUrlBuilder.tsx`
+- Frontend View: `frontend/src/components/Catalog/ODataUrlBuilder.tsx`
 - Logic: `frontend/src/lib/odata-utils.ts`
 
 ## Dev Agent Record
@@ -55,3 +55,4 @@ Antigravity (Claude 3.5 Sonnet)
 ### Completion Notes List
 
 ### File List
+

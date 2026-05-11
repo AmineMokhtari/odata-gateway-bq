@@ -60,3 +60,4 @@ const { sql, params } = translator.translate(ast);
 // sql: "SELECT `Id`, `Name` FROM `Table` WHERE (`Price` > @p0)"
 // params: { "p0": 100 }
 ```
+

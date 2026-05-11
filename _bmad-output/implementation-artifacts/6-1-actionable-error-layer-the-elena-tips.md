@@ -27,7 +27,7 @@ so that I can **fix the issue myself** without needing to contact IT or learn co
 - [x] **Create `ElenaAdviceCard` Component** (AC: 2, 4)
   - [x] Build a premium, story-driven component featuring Elena's persona.
   - [x] Use `lucide-react` icons (Lightbulb, Sparkles).
-- [x] **Integrate Error Layer into Marketplace UI** (AC: 3, 5)
+- [x] **Integrate Error Layer into Catalog UI** (AC: 3, 5)
   - [x] Update `ODataUrlBuilder` to handle dry-run failures gracefully.
   - [x] Display the `ElenaAdviceCard` prominently when an error is detected.
 - [x] **Verify Success Flow**
@@ -40,8 +40,8 @@ so that I can **fix the issue myself** without needing to contact IT or learn co
 - **Existing Asset**: Leverage `CostSavingTips.tsx` as a baseline for the visual style.
 - **Paths**:
   - Utility: `frontend/src/lib/error-mapping.ts`
-  - Component: `frontend/src/components/marketplace/ElenaAdviceCard.tsx`
-  - View: `frontend/app/web/marketplace/[projectId]/[datasetId]/[entitySet]/page.tsx`
+  - Component: `frontend/src/components/Catalog/ElenaAdviceCard.tsx`
+  - View: `frontend/app/web/Catalog/[projectId]/[datasetId]/[entitySet]/page.tsx`
 
 ### Project Structure Notes
 
@@ -72,5 +72,6 @@ Antigravity (Claude 3.5 Sonnet)
 ### File List
 
 - `frontend/src/lib/error-mapping.ts`
-- `frontend/src/components/marketplace/ElenaAdviceCard.tsx`
-- `frontend/src/app/marketplace/[projectId]/[datasetId]/[entitySet]/explain/page.tsx`
+- `frontend/src/components/Catalog/ElenaAdviceCard.tsx`
+- `frontend/src/app/Catalog/[projectId]/[datasetId]/[entitySet]/explain/page.tsx`
+

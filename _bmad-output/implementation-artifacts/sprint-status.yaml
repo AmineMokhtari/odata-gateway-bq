@@ -50,7 +50,7 @@ development_status:
   1-4-stateless-audit-traceability-bigquery-job-labels: done
   epic-1-retrospective: done
 
-  # Epic 2: Automated Data Marketplace
+  # Epic 2: Automated Data Catalog
   epic-2: done
   2-1-multi-tenant-url-routing-v1projectiddatasetid: done
   2-2-bigquery-metadata-introspection: done
@@ -70,10 +70,10 @@ development_status:
   3-7-job-lifecycle-management-cancel-on-disconnect: done
   epic-3-retrospective: done
 
-  # Epic 4: Data Marketplace Web Portal
+  # Epic 4: Data Catalog Web Portal
   epic-4: done
   4-1-story-driven-hero-section-the-elena-narrative: done
-  4-2-odata-url-builder-marketplace-connect: done
+  4-2-odata-url-builder-Catalog-connect: done
   4-3-live-connection-success-pulse-badge: done
   4-4-proactive-dry-run-visualizer: done
   4-5-mobile-first-responsive-connection-guide: done
@@ -112,3 +112,4 @@ development_status:
   8-3-odata-count-backend-support: done
   8-4-odata-apply-backend-support: done
   8-5-odata-persistent-logs: done
+

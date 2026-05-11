@@ -30,3 +30,4 @@ The system dynamically generates the Entity Data Model (EDM) by mapping BigQuery
 
 ## Lossless JSON Casting
 BigQuery `RECORD` (struct) and `REPEATED` (array) types are not natively supported by the base OData-to-SQL translator in a streaming-compatible way. To ensure 100% data fidelity, the gateway automatically injects `TO_JSON_STRING()` into the BigQuery SQL projection for these columns. This ensures that complex nested enterprise data is delivered as a JSON-encoded string within the OData payload.
+

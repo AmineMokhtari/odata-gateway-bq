@@ -29,7 +29,7 @@ so that I can **manage my data consumption proactively** without waiting for a f
 - [x] **Frontend: Create `UsageDashboard` Component**
   - [x] Build a premium card with a progress bar and usage stats.
   - [x] Use `framer-motion` for smooth progress animations.
-- [x] **Frontend: Integrate into Marketplace**
+- [x] **Frontend: Integrate into Catalog**
   - [x] Add a "My Usage" section to the URL Builder view.
 - [x] **Verification**
   - [x] Verify that usage data is displayed correctly.
@@ -44,7 +44,7 @@ so that I can **manage my data consumption proactively** without waiting for a f
 ### Paths
 - Backend Service: `backend/src/services/usage-tracker.ts`
 - Backend Route: `backend/src/routes/v1/index.ts`
-- Frontend Component: `frontend/src/components/marketplace/UsageDashboard.tsx`
+- Frontend Component: `frontend/src/components/Catalog/UsageDashboard.tsx`
 
 ## Dev Agent Record
 
@@ -57,3 +57,4 @@ Antigravity (Claude 3.5 Sonnet)
 ### Completion Notes List
 
 ### File List
+

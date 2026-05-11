@@ -2,7 +2,7 @@
   "workflow_version": "1.2.0",
   "timestamps": {
     "started": "2026-04-25T14:30:00Z",
-    "last_updated": "2026-04-27T22:01:00Z",
+    "last_updated": "2026-05-11T08:05:00Z",
     "completed": "2026-04-27T22:05:00Z"
   },
   "mode": "initial_scan",
@@ -87,6 +87,12 @@
       "status": "completed",
       "timestamp": "2026-04-27T22:05:00Z",
       "summary": "Engine Upgrade: Replaced legacy odata-v4-sql with native odata-v4-gcp library. Added $expand, $search, $compute, and metadata descriptions."
+    },
+    {
+      "step": "step_15",
+      "status": "completed",
+      "timestamp": "2026-05-11T08:05:00Z",
+      "summary": "Catalog & Elena Update: Documented full-width layout, branded loading states, Elena Advice Layer decoration, and Hybrid LRU sharded caching."
     }
   ],
   "current_step": "completed",
@@ -98,17 +104,17 @@
       "project_type_id": "backend;web"
     },
     "technology_stack": {
-      "framework": "Fastify v5 / Next.js 15",
+      "framework": "Fastify v5 / Next.js 16",
       "language": "TypeScript 5.9 (ESM)",
       "primary_services": ["BigQuery", "OIDC (jose)"],
       "core_lib": "odata-v4-gcp (Custom Engine)",
-      "architecture_pattern": "Layered API Gateway / Marketplace UI"
+      "architecture_pattern": "Layered API Gateway / Catalog UI"
     },
     "analysis_summary": {
       "api_endpoints": 14,
       "streaming_memory": "O(1)",
       "security_model": "Trusted Subsystem",
-      "new_features": ["Usage Hub", "Visual Join Builder", "Elena Advice Layer", "Decoupled Billing", "odata-v4-gcp Engine", "Metadata Descriptions"]
+      "new_features": ["Usage Hub", "Visual Join Builder", "Elena Advice Layer", "Decoupled Billing", "odata-v4-gcp Engine", "Metadata Descriptions", "Full-width Catalog UI", "Hybrid LRU Cache"]
     }
   },
   "project_types": [

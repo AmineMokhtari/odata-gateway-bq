@@ -10,3 +10,4 @@
 
 ## Deferred from: code review of 8-2-nested-column-selection-expand-select.md (2026-04-26)
 - **No handling for 1:N expansions**: Current implementation uses `LIMIT 1` for expanded entities. This works for 1:1 and N:1 relationships but truncates data for 1:N. Supporting 1:N requires `ARRAY_AGG(STRUCT(...))` and updating the frontend to handle nested arrays.
+

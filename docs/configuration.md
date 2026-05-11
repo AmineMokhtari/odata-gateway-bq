@@ -12,7 +12,7 @@ These variables control the core behavior and security of the application.
 | `OIDC_ISSUER` | **Yes*** | - | The OIDC discovery URL (e.g., `https://login.microsoftonline.com/[ID]/v2.0/`). |
 | `OIDC_AUDIENCE` | **Yes*** | - | The Client ID/Audience registered in your Identity Provider (e.g., Entra ID). |
 | `ANONYMOUS_MODE` | No | `false` | If `true`, authentication is disabled. Use for local development or behind Cloud IAP. |
-| `ENABLE_QUERY_BUILDER` | No | `false` | If `true`, enables the Visual Join and Aggregation builder in the Marketplace UI. |
+| `ENABLE_QUERY_BUILDER` | No | `false` | If `true`, enables the Visual Join and Aggregation builder in the Catalog UI. |
 | `ENABLE_COMPRESSION` | No | `false` | If `true`, enables Gzip/Brotli response compression (recommended for Excel/Power BI). |
 | `TENANTS_CONFIG_PATH` | No | `config/tenants.yaml` | The filesystem path to your tenant configuration file. |
 | `PORT` | No | `3000` | The port the Fastify server will listen on. |
@@ -65,3 +65,4 @@ tenants:
 - The gateway uses the official `@google-cloud/bigquery` SDK.
 - Clients are cached per `projectId:location` to optimize connection pooling.
 - **Location Sensing:** The gateway detects dataset regions dynamically to ensure compliance with data residency rules.
+

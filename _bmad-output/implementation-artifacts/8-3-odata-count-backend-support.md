@@ -50,3 +50,4 @@ Antigravity (Claude 3.5 Sonnet)
 - [ ] Implemented $count detection.
 - [ ] Updated transformer to inject @odata.count.
 - [ ] Optimized count retrieval from Job metadata.
+

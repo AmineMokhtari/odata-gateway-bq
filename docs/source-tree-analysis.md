@@ -18,10 +18,10 @@ odata-gateway-bq/
 │   │       ├── usage-audit.ts # Consumption tracking logic
 │   │       ├── bq-introspection.ts # FK relationship discovery
 │   │       └── odata-metadata.ts # $metadata XML generator
-├── frontend/                # Marketplace UI (Next.js)
+├── frontend/                # Catalog UI (Next.js)
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── marketplace/
+│   │   ├── app/             # Application routes
+│   │   │   ├── catalog/
 │   │   │   │   ├── ODataUrlBuilder.tsx # Visual Join & Aggregation UI
 │   │   │   │   ├── UsageDashboard.tsx # Personal Consumption Hub
 │   │   │   │   └── ElenaAdviceCard.tsx # Narrative Error UI
@@ -56,3 +56,4 @@ odata-gateway-bq/
 - **Service Root:** `GET /v1/:projectId/:datasetId` - Entry point for OData navigators.
 - **Metadata:** `GET /v1/:projectId/:datasetId/$metadata` - Technical schema discovery for Excel/Power BI.
 - **Data Fetch:** `GET /v1/:projectId/:datasetId/:entitySet` - High-throughput data streaming path.
+

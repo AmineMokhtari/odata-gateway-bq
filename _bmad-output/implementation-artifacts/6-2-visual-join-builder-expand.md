@@ -43,12 +43,12 @@ so that I can **fetch linked data without writing OData `$expand` syntax** manua
   - [ ] [Review][Patch] SQL Injection in Metadata Queries [backend/src/services/bq-introspection.ts]
   - [ ] [Review][Patch] XML Injection in EDM Generation [backend/src/services/odata-metadata.ts]
   - [ ] [Review][Patch] Composite FK Cartesian Product Logic Bug [backend/src/services/bq-introspection.ts]
-  - [ ] [Review][Patch] Invalid $apply Syntax (Commas vs Slashes) [frontend/src/components/marketplace/ODataUrlBuilder.tsx]
-  - [ ] [Review][Patch] Stale Aggregation State on Table Change [frontend/src/components/marketplace/ODataUrlBuilder.tsx]
+  - [ ] [Review][Patch] Invalid $apply Syntax (Commas vs Slashes) [frontend/src/components/Catalog/ODataUrlBuilder.tsx]
+  - [ ] [Review][Patch] Stale Aggregation State on Table Change [frontend/src/components/Catalog/ODataUrlBuilder.tsx]
   - [ ] [Review][Patch] Fragile Primary Key Mapping Heuristic [backend/src/services/odata-metadata.ts]
   - [ ] [Review][Patch] Incomplete Metadata in getTableMetadata [backend/src/services/bq-introspection.ts]
-  - [ ] [Review][Patch] Lack of User Feedback on Metadata Errors [frontend/src/components/marketplace/ODataUrlBuilder.tsx]
-  - [x] [Review][Defer] Missing Nested Selection Implementation [frontend/src/components/marketplace/ODataUrlBuilder.tsx] — deferred, pre-existing (Stretch Goal AC4)
+  - [ ] [Review][Patch] Lack of User Feedback on Metadata Errors [frontend/src/components/Catalog/ODataUrlBuilder.tsx]
+  - [x] [Review][Defer] Missing Nested Selection Implementation [frontend/src/components/Catalog/ODataUrlBuilder.tsx] — deferred, pre-existing (Stretch Goal AC4)
 
   ## Dev Notes
 
@@ -59,7 +59,7 @@ so that I can **fetch linked data without writing OData `$expand` syntax** manua
 ### Paths
 - Backend Service: `backend/src/services/bq-introspection.ts`
 - CSDL Service: `backend/src/services/odata-metadata.ts`
-- Frontend View: `frontend/src/components/marketplace/ODataUrlBuilder.tsx`
+- Frontend View: `frontend/src/components/Catalog/ODataUrlBuilder.tsx`
 
 ## Dev Agent Record
 
@@ -72,3 +72,4 @@ Antigravity (Claude 3.5 Sonnet)
 ### Completion Notes List
 
 ### File List
+

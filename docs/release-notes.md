@@ -1,5 +1,23 @@
 # Release Notes
 
+## Version 1.2.0 (Catalog Experience)
+*Release Date: May 11, 2026*
+
+This release focuses on professionalizing the data discovery journey through a full-width catalog interface and refined reactive guidance.
+
+### New Features
+- **Full-Width Catalog Layout**: Redesigned the Catalog and Connection Builder into a professional, responsive full-width interface aligned with the Google Cloud Console identity.
+- **Branded Discovery Feedback**: Implemented centralized, branded loading states providing transparent progress during BigQuery metadata discovery.
+- **"Elena" Advice Layer (Native Drawer)**: Integrated a reactive MD3-compliant drawer that triggers actionable "Elena Tips" for budget (403) and session (401) errors.
+- **Google Cloud Design System**: Migrated the entire frontend to the Roboto font family and a curated Neutral/Primary color palette for a native platform feel.
+
+### Enhancements
+- **Hybrid LRU Metadata Cache**: Optimized backend performance with a sharded in-memory cache (`projectId:datasetId`) featuring a 24h sliding TTL.
+- **Metadata Description Support**: Added support for surfacing BigQuery table and column descriptions directly in the UI.
+
+### How to Upgrade
+No breaking changes. The UI will automatically adopt the new full-width layout upon deployment.
+
 ## Version 1.1.0 (Self-Service Governance)
 *Release Date: May 09, 2026*
 
@@ -10,7 +28,7 @@ This release introduces the **"Elena" Experience**—a set of features designed 
 - **Visual Join Builder (`$expand`):** Automatic discovery of foreign key relationships allowing users to build complex joins visually.
 - **Visual Aggregation Builder (`$apply`):** Interactive UI for building GroupBy and Aggregate queries without knowing OData syntax.
 - **"Elena Tips" Finalized Integration:** Reactive slide-out guidance for 403 (Budget Exceeded) and 401 (Authentication) errors.
-- **Marketplace UI Streamlining:** Cleaned up navigation, removed redundant sidebars, and optimized for high-density data discovery.
+- **Catalog UI Streamlining:** Cleaned up navigation, removed redundant sidebars, and optimized for high-density data discovery.
 - **Identity Pill (Top Bar):** Persistent, high-visibility security status pill in the navigation bar.
 - **Secure Identity Propagation:** Architectural shift to server-to-client identity prop for enhanced security boundaries.
 - **Decoupled Billing (Enterprise Mode):** Support for `BQ_BILLING_PROJECT_ID` to separate query execution costs from source data projects.
@@ -46,3 +64,4 @@ The initial launch of the **OData Gateway for BigQuery** focuses on enabling sec
 
 ### How to Upgrade
 As this is the initial release, no upgrade steps are required. Simply deploy the service and share the URLs with your users.
+

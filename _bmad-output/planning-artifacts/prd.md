@@ -29,7 +29,7 @@ editHistory:
 
 ## Executive Summary
 
-The **odata-gateway-bq** is a production-grade, zero-trust data gateway designed to transform the enterprise lakehouse into a governed **Data Marketplace**. It eliminates the "SQL Tax" by providing business users in Excel, Power BI, and Microsoft Copilot with read-only, protocol-native access to BigQuery datasets via simple, URL-routed endpoints. By abstracting petabyte-scale complexity behind a standardized OData V4 interface, the gateway enables seamless data discovery while enforcing strict, multi-tenant architectural isolation.
+The **odata-gateway-bq** is a production-grade, zero-trust data gateway designed to transform the enterprise lakehouse into a governed **Data Catalog**. It eliminates the "SQL Tax" by providing business users in Excel, Power BI, and Microsoft Copilot with read-only, protocol-native access to BigQuery datasets via simple, URL-routed endpoints. By abstracting petabyte-scale complexity behind a standardized OData V4 interface, the gateway enables seamless data discovery while enforcing strict, multi-tenant architectural isolation.
 
 ### What Makes This Special
 
@@ -53,7 +53,7 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 
 - **SQL Tax Abolition:** 80% reduction in ad-hoc SQL query requests within the first 90 days of deployment.
 - **Zero Cost Leakage:** $0.00 spent on un-audited scans, enforced by mandatory pre-execution Dry Runs.
-- **Marketplace Adoption:** Successful multi-tenant deployment across at least 3 distinct business departments.
+- **Catalog Adoption:** Successful multi-tenant deployment across at least 3 distinct business departments.
 
 ### Technical Success
 
@@ -86,7 +86,7 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 ### Vision (Phase 3)
 
 - **AI Ecosystem:** Specialized protocol shims for Microsoft Copilot agents.
-- **Marketplace UI:** A web-based "Data Catalog" for searching and discovering authorized endpoints.
+- **Catalog UI:** A web-based "Data Catalog" for searching and discovering authorized endpoints.
 
 ## User Journeys
 
@@ -194,3 +194,4 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 ### Scalability
 - **Multi-Tenant Sprawl:** Support for 100+ concurrent tenant-URLs.
 - **Connection Concurrency:** Support for at least 50 simultaneous data streams.
+
