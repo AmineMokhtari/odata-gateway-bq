@@ -107,8 +107,8 @@ export async function getDatasetMetadata(
       \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE\` c
     ON
       k.constraint_name = c.constraint_name
-      AND k.table_catalog = c.table_catalog
-      AND k.table_schema = c.table_schema
+      AND k.constraint_catalog = c.constraint_catalog
+      AND k.constraint_schema = c.constraint_schema
     JOIN
       \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLE_CONSTRAINTS\` tc
     ON

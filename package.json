@@ -14,6 +14,7 @@
     "build:backend": "cd backend && tsc",
     "watch:backend": "cd backend && tsc -w",
     "dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:clean": "fuser -k 3002/tcp 3000/tcp || true && npm run dev",
     "dev:backend": "npm run build:backend && fastify start -a 0.0.0.0 --ignore-watch=.ts$ -w -l info -P backend/dist/backend/src/app.js --port 3002",
     "dev:frontend": "cd frontend && npm run dev"
   },

@@ -134,7 +134,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || (typeof window !== 'undefined' ? `${window.location.origin}/web/api/gateway` : 'http://127.0.0.1:3002');
+  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || (typeof window !== 'undefined' ? `${window.location.origin}/web/api/gateway` : 'http://localhost:3002');
   const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   const serviceRoot = selectedProject && selectedDataset ? `${normalizedBase}/v1/${selectedProject}/${selectedDataset}` : '';
 
@@ -509,7 +509,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
         )}
 
         {/* Visual Join Builder (Story 6.2) */}
-        {isEnabled && selectedTable && navProps.length > 0 && (
+        {isEnabled && selectedTable && (
           <div className="space-y-4 p-6 bg-accent/20 border border-accent rounded animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-primary">
@@ -519,47 +519,61 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
               <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Visual $expand</span>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {navProps.map(prop => (
-                <div key={prop.name} className={`flex flex-col space-y-2 bg-card p-4 rounded border transition-all cursor-pointer group ${
-                  selectedExpands.includes(prop.name) ? 'border-primary/50 ring-1 ring-primary/10' : 'border-border hover:border-primary/30'
-                }`}
-                     onClick={() => toggleExpand(prop.name)}>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox 
-                      id={`expand-${prop.name}`} 
-                      checked={selectedExpands.includes(prop.name)}
-                      onCheckedChange={() => toggleExpand(prop.name)}
-                      className="border-border data-[state=checked]:bg-primary"
-                    />
-                    <div className="space-y-0.5">
-                      <label 
-                        htmlFor={`expand-${prop.name}`}
-                        className="text-xs font-bold text-foreground leading-none cursor-pointer"
-                      >
-                        {prop.name}
-                      </label>
-                      <p className="text-[10px] text-muted-foreground font-medium">Automatic Join</p>
+            {navProps.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {navProps.map(prop => (
+                  <div key={prop.name} className={`flex flex-col space-y-2 bg-card p-4 rounded border transition-all cursor-pointer group ${
+                    selectedExpands.includes(prop.name) ? 'border-primary/50 ring-1 ring-primary/10' : 'border-border hover:border-primary/30'
+                  }`}
+                       onClick={() => toggleExpand(prop.name)}>
+                    <div className="flex items-center space-x-3">
+                      <Checkbox 
+                        id={`expand-${prop.name}`} 
+                        checked={selectedExpands.includes(prop.name)}
+                        onCheckedChange={() => toggleExpand(prop.name)}
+                        className="border-border data-[state=checked]:bg-primary"
+                      />
+                      <div className="space-y-0.5">
+                        <label 
+                          htmlFor={`expand-${prop.name}`}
+                          className="text-xs font-bold text-foreground leading-none cursor-pointer"
+                        >
+                          {prop.name}
+                        </label>
+                        <p className="text-[10px] text-muted-foreground font-medium">Automatic Join</p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Nested Column Selector (Story 8.2) */}
-                  {selectedExpands.includes(prop.name) && (
-                    <ExpandColumnSelector 
-                      baseUrl={serviceRoot}
-                      entitySet={prop.type.split('.').pop() || prop.name}
-                      selectedColumns={selectedExpandColumns[prop.name] || []}
-                      onChange={(cols) => {
-                        setSelectedExpandColumns(prev => ({
-                          ...prev,
-                          [prop.name]: cols
-                        }));
-                      }}
-                    />
-                  )}
+                    {/* Nested Column Selector (Story 8.2) */}
+                    {selectedExpands.includes(prop.name) && (
+                      <ExpandColumnSelector 
+                        baseUrl={serviceRoot}
+                        entitySet={prop.type.split('.').pop() || prop.name}
+                        selectedColumns={selectedExpandColumns[prop.name] || []}
+                        onChange={(cols) => {
+                          setSelectedExpandColumns(prev => ({
+                            ...prev,
+                            [prop.name]: cols
+                          }));
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-card/50 rounded border border-dashed border-primary/20 text-center space-y-2">
+                <div className="flex justify-center">
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <LinkIcon className="w-5 h-5 text-primary opacity-50" />
+                  </div>
                 </div>
-              ))}
-            </div>
+                <p className="text-xs font-bold text-foreground">No automatic joins discovered</p>
+                <p className="text-[10px] text-muted-foreground max-w-xs mx-auto">
+                  Elena suggests defining <span className="font-bold">Foreign Keys</span> in BigQuery to enable automatic relationship discovery.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
