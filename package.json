@@ -14,7 +14,7 @@
     "build:backend": "cd backend && tsc",
     "watch:backend": "cd backend && tsc -w",
     "dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",
-    "dev:clean": "fuser -k 3002/tcp 3000/tcp 2>/dev/null || true && npm run dev",
+    "dev:clean": "npx kill-port 3002 3000 && npm run dev",
     "dev:backend": "npm run build:backend && fastify start -a 0.0.0.0 --ignore-watch=.ts$ -w -l info -P backend/dist/backend/src/app.js --port 3002",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:frontend:delayed": "npx wait-on tcp:127.0.0.1:3002 -t 60000 --interval 500 && cd frontend && npm run dev"
@@ -50,6 +50,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "~5.9.2",
+    "kill-port": "^2.0.1",
     "wait-on": "^9.0.10"
   }
 }
