@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { name: 'Dashboard', href: '/', icon: Activity },
   { name: 'Catalog', href: '/catalog', icon: LayoutDashboard },
+  { name: 'Query Builder', href: '/builder', icon: Database },
 ];
 
 interface NavigationProps {

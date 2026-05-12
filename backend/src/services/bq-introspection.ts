@@ -67,18 +67,22 @@ export async function getDatasetMetadata(
   // 2. Query INFORMATION_SCHEMA.TABLES for all tables
   // We use backtick escaping for identifiers to prevent SQL injection
   const tablesQuery = `
-    SELECT table_name
-    FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLES\`
-    WHERE table_type = 'BASE TABLE' OR table_type = 'VIEW'
+    SELECT t.table_name, o.option_value as description
+    FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLES\` t
+    LEFT JOIN \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLE_OPTIONS\` o
+      ON t.table_name = o.table_name AND o.option_name = 'description'
+    WHERE t.table_type = 'BASE TABLE' OR t.table_type = 'VIEW'
   `
   const [tableRows] = await bq.query({ query: tablesQuery, location })
 
   // 3. Query INFORMATION_SCHEMA.COLUMNS for all columns, including partitioning info
   const columnsQuery = `
-    SELECT table_name, column_name, data_type, is_nullable,
-           is_partitioning_column
-    FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.COLUMNS\`
-    ORDER BY table_name, ordinal_position
+    SELECT c.table_name, c.column_name, c.data_type, c.is_nullable,
+           c.is_partitioning_column, f.description
+    FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.COLUMNS\` c
+    LEFT JOIN \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS\` f
+      ON c.table_name = f.table_name AND c.column_name = f.column_name AND c.column_name = f.field_path
+    ORDER BY c.table_name, c.ordinal_position
   `
   const [columnRows] = await bq.query({ query: columnsQuery, location })
 
@@ -127,7 +131,8 @@ export async function getDatasetMetadata(
     tablesMap.set(row.table_name, {
       name: row.table_name,
       columns: [],
-      relationships: []
+      relationships: [],
+      description: row.description || undefined
     })
   }
 
@@ -138,7 +143,8 @@ export async function getDatasetMetadata(
       table.columns.push({
         name: row.column_name,
         type: row.data_type,
-        isNullable: row.is_nullable === 'YES'
+        isNullable: row.is_nullable === 'YES',
+        description: row.description || undefined
       })
       if (row.is_partitioning_column === 'YES') {
         table.partitionColumn = row.column_name
@@ -239,11 +245,13 @@ export async function getDatasetsDescriptions(
 ): Promise<Record<string, string>> {
   if (datasetIds.length === 0) return {}
 
-  // INFORMATION_SCHEMA.SCHEMATA contains schema_name and description
+  // INFORMATION_SCHEMA.SCHEMATA usually has description, but SCHEMA_OPTIONS is more reliable across regions
   const query = `
-    SELECT schema_name, description
-    FROM \`${projectId.replace(/`/g, '``')}.INFORMATION_SCHEMA.SCHEMATA\`
-    WHERE schema_name IN UNNEST(@datasetIds)
+    SELECT s.schema_name, o.option_value as description
+    FROM \`${projectId.replace(/`/g, '``')}.INFORMATION_SCHEMA.SCHEMATA\` s
+    LEFT JOIN \`${projectId.replace(/`/g, '``')}.INFORMATION_SCHEMA.SCHEMA_OPTIONS\` o
+      ON s.schema_name = o.schema_name AND o.option_name = 'description'
+    WHERE s.schema_name IN UNNEST(@datasetIds)
   `
 
   const [rows] = await bq.query({

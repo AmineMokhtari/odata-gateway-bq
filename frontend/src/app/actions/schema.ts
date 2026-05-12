@@ -16,26 +16,24 @@
 
 'use server'
 
+import { cookies } from 'next/headers';
 import { fetchWithRetry } from '@/lib/fetch-retry';
 
-export async function getGlobalUsage() {
+export async function getDatasetSchema(projectId: string, datasetId: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3002';
-    const response = await fetchWithRetry(`${baseUrl}/internal/usage`, {
+    const response = await fetchWithRetry(`${baseUrl}/v1/${projectId}/${datasetId}/schema`, {
       cache: 'no-store'
     });
 
     if (!response.ok) {
-      throw new Error(`Backend returned ${response.status}`);
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch dataset schema');
     }
 
     return await response.json();
   } catch (err: any) {
-    console.error('Failed to fetch global usage:', err.message);
-    return {
-      totalBytesBilled: 0,
-      lastJobs: [],
-      budgetBytes: 1024 * 1024 * 1024 // Default 1GB
-    };
+    console.error('Failed to fetch dataset schema:', err.message);
+    throw err;
   }
 }

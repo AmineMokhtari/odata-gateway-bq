@@ -10,6 +10,7 @@ This project transforms a BigQuery lakehouse into a governed **Data Catalog**. B
 - **The "Elena" Experience:** Reactive advice layer that transforms technical errors into actionable guidance via the "Elena Drawer".
 - **Professional Catalog UI:** Full-width discovery interface aligned with Google Cloud Console aesthetics for a premium user experience.
 - **Frictionless Discovery:** Automatic introspection of BigQuery datasets to generate OData metadata.
+- **Personal Usage Hub:** A self-service dashboard for users to track their personal BigQuery consumption against their monthly limits.
 - **Hybrid LRU Caching:** Sub-2s metadata retrieval via sharded in-memory caching with sliding TTL.
 - **Zero Cost Leakage:** A proactive "Dry-Run" circuit breaker that enforces scan budgets *before* query execution.
 - **Zero Trust Security:** Secure identity verification via OIDC (Azure AD/Entra ID) with app-level data access rules.
@@ -22,7 +23,8 @@ This project transforms a BigQuery lakehouse into a governed **Data Catalog**. B
 - **Framework:** Fastify (Node.js/TypeScript)
 
 ## Key Components
-- **Catalog UI:** Next.js based discovery portal with Visual Join Builder and consumption dashboards.
+- **Catalog UI:** Next.js based discovery portal with Visual Join Builder, One-Click Excel integration, and consumption dashboards.
+- **API Proxy Bridge:** Next.js rewrites to proxy API requests securely to the backend, circumventing CORS and simplifying the connection UI.
 - **Elena Advice Layer:** Global error decoration plugin and reactive drawer for actionable troubleshooting.
 - **Processing Engine:** Hand-written `odata-v4-gcp` SQL generator with full parameterization.
 - **Hybrid Cache:** Sharded metadata cache for high-concurrency discovery performance.

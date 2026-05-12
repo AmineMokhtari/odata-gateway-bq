@@ -16,10 +16,10 @@
 
 'use client'
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import { type TenantConfig } from '@common/src/types/tenant';
 import { DatasetCatalog } from '@/components/catalog/DatasetCatalog';
-import { ODataUrlBuilder } from '@/components/catalog/ODataUrlBuilder';
 
 interface CatalogViewProps {
   tenants: TenantConfig[];
@@ -27,21 +27,7 @@ interface CatalogViewProps {
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({ tenants, isQueryBuilderEnabled }) => {
-  const [selectedTenant, setSelectedTenant] = useState<TenantConfig | null>(null);
-
-  if (selectedTenant) {
-    return (
-      <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <ODataUrlBuilder 
-          tenants={tenants} 
-          isEnabled={isQueryBuilderEnabled} 
-          initialProjectId={selectedTenant.project_id}
-          initialDatasetId={selectedTenant.dataset_id}
-          onBack={() => setSelectedTenant(null)}
-        />
-      </div>
-    );
-  }
+  const router = useRouter();
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
@@ -56,7 +42,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ tenants, isQueryBuilde
 
       <DatasetCatalog 
         tenants={tenants} 
-        onSelect={(tenant) => setSelectedTenant(tenant)} 
+        onSelect={(tenant) => router.push(`/catalog/${tenant.project_id}/${tenant.dataset_id}`)} 
       />
     </div>
   );

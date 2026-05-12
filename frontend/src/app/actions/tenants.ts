@@ -20,11 +20,12 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import yaml from 'js-yaml'
 import { type GatewayConfig, type TenantConfig } from '@common/src/types/tenant'
+import { fetchWithRetry } from '@/lib/fetch-retry';
 
 export async function getTenants(): Promise<TenantConfig[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
-    const response = await fetch(`${baseUrl}/v1/catalog`, {
+    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3002';
+    const response = await fetchWithRetry(`${baseUrl}/v1/catalog`, {
       next: { revalidate: 60 } // Cache for 60 seconds
     });
 

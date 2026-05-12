@@ -28,6 +28,12 @@ Welcome to the technical documentation for the **odata-gateway-bq**. This guide 
 - **[Knowledge Base](./knowledge-base.md)** - Collection of distilled technical decisions and research.
 - **[Project Scan Report](./project-scan-report.json)** - Machine-readable state of the latest project documentation scan.
 
+## Deep-Dive Documentation
+
+Detailed exhaustive analysis of specific areas:
+- [Recent Commits Deep-Dive](./deep-dive-recent-commits.md) - Comprehensive analysis of the last 10 commits (Usage Hub, Catalog UI, API Proxy, Elena Tips) - Generated 2026-05-12
+
 ---
-*Last updated: 2026-05-11*
+*Last updated: 2026-05-12*
+Deep-Dives: 1
 

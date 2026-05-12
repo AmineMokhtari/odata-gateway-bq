@@ -113,6 +113,50 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
   })
 
+  // Dataset Schema (Full Metadata)
+  fastify.get('/:projectId/:datasetId/schema', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+        },
+        required: ['projectId', 'datasetId']
+      }
+    }
+  }, async function (request, reply) {
+    const { projectId, datasetId } = request.params as { projectId: string, datasetId: string }
+    const cacheKey = `${projectId}:${datasetId}`
+    
+    // 1. Authenticate & Authorize
+    const tenantConfig = fastify.tenantsConfig.get(projectId, datasetId)
+    if (request.user && tenantConfig) {
+      const isAuthorized = checkTenantAccess(request.user, tenantConfig, fastify.isAnonymousMode)
+      if (!isAuthorized) {
+        return reply.code(403).send({
+          error: { code: 'Unauthorized', message: 'Access denied to this catalog' }
+        })
+      }
+    }
+
+    let metadata = fastify.metadataCache.get(cacheKey)
+    if (!metadata) {
+      const bq = fastify.getBQClient(projectId)
+      console.log(`[DEBUG] Fetching metadata for ${projectId}:${datasetId}...`)
+      try {
+        metadata = await getDatasetMetadata(bq, datasetId)
+        console.log(`[DEBUG] Successfully fetched metadata for ${projectId}:${datasetId}`)
+        fastify.metadataCache.set(cacheKey, metadata)
+      } catch (err: any) {
+        console.error(`[ERROR] Failed to fetch metadata for ${projectId}:${datasetId}:`, err.message)
+        throw err
+      }
+    }
+
+    return metadata
+  })
+
   // OData $metadata
   fastify.get('/:projectId/:datasetId/$metadata', {
     schema: {

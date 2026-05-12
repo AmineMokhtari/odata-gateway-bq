@@ -22,6 +22,9 @@ Every architectural decision is guided by our primary persona:
 ## Architecture Pattern
 The system follows a **Layered API Gateway / Data Proxy** pattern with a **Trusted Subsystem** security model.
 
+### Frontend Integration (API Proxy Bridge)
+The Next.js frontend utilizes a built-in proxy bridge (`/web/api/gateway/*`) to route all client-side data discovery requests directly to the Fastify backend. This architecture circumvents CORS limitations and ensures the Catalog UI and One-Click Excel integration flows can safely request OData metadata without exposing direct backend ports to the browser.
+
 ### Request Pipeline (The "Audit-Execute" Pattern)
 1. **Identify:** Extract and verify OIDC token or offloaded headers (Anonymous Mode).
 2. **Authorize:** Validate user against internal `tenants.yaml` rules (Email/Group membership).
