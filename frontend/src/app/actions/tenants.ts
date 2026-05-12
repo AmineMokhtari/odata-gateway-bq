@@ -24,9 +24,10 @@ import { fetchWithRetry } from '@/lib/fetch-retry';
 
 export async function getTenants(): Promise<TenantConfig[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3002';
+    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
     const response = await fetchWithRetry(`${baseUrl}/v1/catalog`, {
-      next: { revalidate: 60 } // Cache for 60 seconds
+      next: { revalidate: 60 }, // Cache for 60 seconds
+      signal: undefined,
     });
 
     if (!response.ok) {

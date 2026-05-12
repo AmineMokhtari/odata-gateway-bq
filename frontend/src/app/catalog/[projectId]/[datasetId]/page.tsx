@@ -28,22 +28,21 @@ interface PageProps {
 export default async function DatasetPage({ params }: PageProps) {
   const { projectId, datasetId } = await params;
 
-  try {
-    const metadata = await getDatasetSchema(projectId, datasetId);
-    
-    return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <main className="flex-1 container mx-auto px-6 py-12 lg:py-20">
-          <div className="max-w-7xl mx-auto">
-          <DatasetDescriptionView 
-            metadata={metadata} 
-          />
-          </div>
-        </main>
-      </div>
-    );
-  } catch (err) {
-    console.error('Failed to load dataset details:', err);
+  const metadata = await getDatasetSchema(projectId, datasetId);
+
+  if (!metadata) {
     redirect('/catalog');
   }
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <main className="flex-1 container mx-auto px-6 py-12 lg:py-20">
+        <div className="max-w-7xl mx-auto">
+          <DatasetDescriptionView
+            metadata={metadata}
+          />
+        </div>
+      </main>
+    </div>
+  );
 }

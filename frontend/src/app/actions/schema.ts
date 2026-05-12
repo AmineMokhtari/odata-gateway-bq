@@ -16,24 +16,28 @@
 
 'use server'
 
-import { cookies } from 'next/headers';
 import { fetchWithRetry } from '@/lib/fetch-retry';
 
 export async function getDatasetSchema(projectId: string, datasetId: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3002';
+    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
+    // BigQuery introspection can be slow on cold start — allow 30s before retrying.
+    // signal: undefined opts out of Next.js's injected AbortSignal for this server-to-server call.
     const response = await fetchWithRetry(`${baseUrl}/v1/${projectId}/${datasetId}/schema`, {
-      cache: 'no-store'
-    });
+      cache: 'no-store',
+      signal: undefined,
+    }, 3, 1000, 30_000);
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch dataset schema');
+      const body = await response.json().catch(() => ({}));
+      const message = body?.error?.message || body?.message || `Backend returned ${response.status}`;
+      console.error(`[schema] Failed to fetch schema for ${projectId}/${datasetId}: ${message}`);
+      return null;
     }
 
     return await response.json();
   } catch (err: any) {
-    console.error('Failed to fetch dataset schema:', err.message);
-    throw err;
+    console.error(`[schema] Failed to fetch schema for ${projectId}/${datasetId}:`, err.message);
+    return null;
   }
 }

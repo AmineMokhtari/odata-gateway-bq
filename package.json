@@ -13,10 +13,11 @@
     "start": "npm run build:backend && fastify start -a 0.0.0.0 -l info backend/dist/backend/src/app.js",
     "build:backend": "cd backend && tsc",
     "watch:backend": "cd backend && tsc -w",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend\"",
-    "dev:clean": "fuser -k 3002/tcp 3000/tcp || true && npm run dev",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",
+    "dev:clean": "fuser -k 3002/tcp 3000/tcp 2>/dev/null || true && npm run dev",
     "dev:backend": "npm run build:backend && fastify start -a 0.0.0.0 --ignore-watch=.ts$ -w -l info -P backend/dist/backend/src/app.js --port 3002",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:frontend:delayed": "npx wait-on tcp:127.0.0.1:3002 -t 60000 --interval 500 && cd frontend && npm run dev"
   },
   "keywords": [],
   "author": "Amine MOKHTARI",
@@ -48,6 +49,7 @@
     "msw": "^2.14.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "wait-on": "^9.0.10"
   }
 }

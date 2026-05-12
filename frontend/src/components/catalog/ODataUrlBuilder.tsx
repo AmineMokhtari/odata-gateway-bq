@@ -169,6 +169,12 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
       // Fetch Tables
       fetch(serviceRoot)
         .then(async (res) => {
+          // Guard: proxy may return plain-text errors (e.g. "Internal Server Error")
+          const contentType = res.headers.get('content-type') || '';
+          if (!contentType.includes('application/json')) {
+            const text = await res.text();
+            throw new Error(`Gateway returned non-JSON response (${res.status}): ${text.slice(0, 120)}`);
+          }
           const data = await res.json();
           console.log('[ODataBuilder] Tables response:', data);
           if (!res.ok) {
@@ -200,8 +206,16 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
       // Fetch Usage (Story 6.4)
       setLoadingUsage(true);
       fetch(`${serviceRoot}/usage`)
-        .then(res => res.json())
-        .then(data => setUsageData(data))
+        .then(async (res) => {
+          // Guard: proxy may return plain-text errors — don't attempt JSON parse
+          const contentType = res.headers.get('content-type') || '';
+          if (!res.ok || !contentType.includes('application/json')) {
+            // Usage is non-critical: silently ignore errors
+            return null;
+          }
+          return res.json();
+        })
+        .then(data => { if (data) setUsageData(data); })
         .catch(err => {
           if (err.message && !/fetch/i.test(err.message)) {
             console.error('Failed to fetch usage:', err);

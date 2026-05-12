@@ -18,11 +18,14 @@
 
 import { fetchWithRetry } from '@/lib/fetch-retry';
 
+const GATEWAY_URL = process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://127.0.0.1:3002';
+
 export async function getGlobalUsage() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3002';
-    const response = await fetchWithRetry(`${baseUrl}/internal/usage`, {
-      cache: 'no-store'
+    console.log(`[usage] fetching from ${GATEWAY_URL}/internal/usage`);
+    const response = await fetchWithRetry(`${GATEWAY_URL}/internal/usage`, {
+      cache: 'no-store',
+      signal: undefined,
     });
 
     if (!response.ok) {
@@ -31,7 +34,7 @@ export async function getGlobalUsage() {
 
     return await response.json();
   } catch (err: any) {
-    console.error('Failed to fetch global usage:', err.message);
+    console.error(`[usage] Failed to fetch global usage (url=${GATEWAY_URL}):`, err.message);
     return {
       totalBytesBilled: 0,
       lastJobs: [],
