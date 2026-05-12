@@ -20,7 +20,7 @@ import { fetchWithRetry } from '@/lib/fetch-retry';
 
 export async function getDatasetSchema(projectId: string, datasetId: string) {
   try {
-    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
+    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
     // BigQuery introspection can be slow on cold start — allow 30s before retrying.
     // signal: undefined opts out of Next.js's injected AbortSignal for this server-to-server call.
     const response = await fetchWithRetry(`${baseUrl}/v1/${projectId}/${datasetId}/schema`, {

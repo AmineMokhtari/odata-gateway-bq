@@ -17,6 +17,7 @@
 import fp from 'fastify-plugin'
 import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose'
 import { fetchWithRetry } from '../../../common/src/utils/fetch-retry.js'
+import { config } from '../config.js'
 
 export interface UserIdentity {
   email?: string
@@ -37,7 +38,7 @@ export interface AuthPluginOptions {
 }
 
 export default fp<AuthPluginOptions>(async (fastify, opts) => {
-  const anonymousMode = opts.anonymousMode !== undefined ? opts.anonymousMode : process.env.ANONYMOUS_MODE === 'true'
+  const anonymousMode = opts.anonymousMode !== undefined ? opts.anonymousMode : config.anonymousMode
   let issuer = opts.issuer !== undefined ? opts.issuer : process.env.OIDC_ISSUER
   const audience = opts.audience !== undefined ? opts.audience : process.env.OIDC_AUDIENCE
   const fetchImpl = opts.fetch || globalThis.fetch

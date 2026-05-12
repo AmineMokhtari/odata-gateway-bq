@@ -17,7 +17,12 @@
 import { config as loadEnv } from 'dotenv'
 
 // Load environment variables from .env file (Story 8.5)
-loadEnv()
+const envResult = loadEnv()
+if (envResult.error) {
+  console.error('[Config] Error loading .env file:', envResult.error)
+} else {
+  console.log('[Config] .env file loaded successfully')
+}
 
 export const config = {
   // GCP / BigQuery Core
@@ -36,8 +41,9 @@ export const config = {
   defaultScanBudgetGb: parseInt(process.env.DEFAULT_SCAN_BUDGET_GB || '1', 10),
   
   // App
-  port: parseInt(process.env.PORT || '3002', 10),
-  isDev: process.env.NODE_ENV !== 'production'
+  port: parseInt(process.env.PORT || '3005', 10),
+  isDev: process.env.NODE_ENV !== 'production',
+  anonymousMode: process.env.ANONYMOUS_MODE === 'true'
 }
 
 /**
@@ -56,4 +62,5 @@ export function validateConfig() {
   }
 
   console.log('[Config] Configuration validated successfully.')
+  console.log(`[Config] Anonymous Mode: ${config.anonymousMode}`)
 }

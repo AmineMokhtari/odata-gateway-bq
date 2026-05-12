@@ -24,9 +24,9 @@ import { fetchWithRetry } from '@/lib/fetch-retry';
 
 export async function getTenants(): Promise<TenantConfig[]> {
   try {
-    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
+    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
     const response = await fetchWithRetry(`${baseUrl}/v1/catalog`, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      next: { revalidate: process.env.NODE_ENV === 'production' ? 60 : 0 }, // No cache in dev
       signal: undefined,
     });
 
@@ -45,7 +45,9 @@ export async function getTenants(): Promise<TenantConfig[]> {
       const pathsToTry = [
         join(process.cwd(), envPath),
         join(process.cwd(), '..', envPath),
-        join(process.cwd(), '..', '..', envPath)
+        join(process.cwd(), '..', '..', envPath),
+        join(process.cwd(), 'dev-tenants.yaml'),
+        join(process.cwd(), '..', 'dev-tenants.yaml')
       ];
 
       let fileContents = '';

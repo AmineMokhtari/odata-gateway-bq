@@ -136,7 +136,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
 
   const baseUrl = (typeof window !== 'undefined') 
     ? `${window.location.origin}/web/api/gateway` 
-    : (process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002');
+    : (process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005');
   const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   const serviceRoot = selectedProject && selectedDataset ? `${normalizedBase}/v1/${selectedProject}/${selectedDataset}` : '';
 

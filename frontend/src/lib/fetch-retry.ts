@@ -22,7 +22,7 @@
 export async function fetchWithRetry(
   url: string,
   options: RequestInit = {},
-  retries = 3,
+  retries = process.env.NODE_ENV === 'development' ? 30 : 3,
   delay = 500,
   timeoutMs = 10_000,
 ): Promise<Response> {

@@ -37,7 +37,7 @@ export interface AuditEvent {
  * [Source: Story 8.5 Tech Debt Fix]
  */
 export class BigQueryStorageService {
-  private client!: BigQueryWriteClient
+  private _client: BigQueryWriteClient | null = null
   private billingProjectId: string
   private auditDataset: string
   private auditTable: string
@@ -51,7 +51,7 @@ export class BigQueryStorageService {
     auditDataset: string = config.auditDataset, 
     auditTable: string = config.auditTable
   ) {
-    this.client = new BigQueryWriteClient()
+    // Do NOT eagerly initialize the gRPC client here — it blocks startup
     this.billingProjectId = billingProjectId
     this.auditDataset = auditDataset
     this.auditTable = auditTable
@@ -78,6 +78,17 @@ export class BigQueryStorageService {
     // Create the descriptor that BigQuery Write API requires
     // @ts-ignore
     this.descriptorProto = this.protoRoot.toDescriptor('proto3')
+  }
+
+  /**
+   * Lazy accessor — creates the gRPC client only on first use.
+   * Avoids blocking Fastify plugin startup with credential resolution.
+   */
+  private get client(): BigQueryWriteClient {
+    if (!this._client) {
+      this._client = new BigQueryWriteClient()
+    }
+    return this._client
   }
 
   /**

@@ -41,7 +41,7 @@ export default async function ExplainPage({ params, searchParams }: ExplainPageP
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
 
-  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3002';
+  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
   
   // Fetch detailed explanation from the backend
   let explainData = null;

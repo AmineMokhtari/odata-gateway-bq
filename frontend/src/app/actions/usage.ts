@@ -18,7 +18,7 @@
 
 import { fetchWithRetry } from '@/lib/fetch-retry';
 
-const GATEWAY_URL = process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://127.0.0.1:3002';
+const GATEWAY_URL = process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://127.0.0.1:3005';
 
 export async function getGlobalUsage() {
   try {

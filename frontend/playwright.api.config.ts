@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/api',
   use: {
-    baseURL: 'http://127.0.0.1:3002',
+    baseURL: 'http://127.0.0.1:3005',
   },
   reporter: 'list',
 });
