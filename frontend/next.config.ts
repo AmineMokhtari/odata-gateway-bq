@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
         destination: 'http://localhost:3002/:path*'
       }
     ]
+  },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/web',
+        permanent: true,
+        basePath: false,
+      },
+    ]
   }
 };
 

@@ -17,7 +17,7 @@
 import { type FastifyPluginAsync } from 'fastify'
 import { Readable } from 'node:stream'
 import { getDatasetMetadata, getTableMetadata, getDatasetsDescriptions } from '../../services/bq-introspection.js'
-import { getUserUsage } from '../../services/usage-audit.js'
+import { getUserUsage, getGlobalUserUsage } from '../../services/usage-audit.js'
 import { generateEdm } from '../../services/odata-metadata.js'
 import { translateODataToSql, PartitionFilterRequiredError } from '../../lib/sql-generator.js'
 import { createBigQueryStream, getJob, getJobResultStream } from '../../services/bq-executor.js'

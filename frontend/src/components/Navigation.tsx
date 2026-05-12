@@ -23,7 +23,8 @@ import {
   Menu, 
   Database, 
   LayoutDashboard, 
-  Lock 
+  Lock,
+  Activity
 } from 'lucide-react';
 import { 
   Sheet, 
@@ -36,6 +37,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
+  { name: 'Dashboard', href: '/', icon: Activity },
   { name: 'Catalog', href: '/catalog', icon: LayoutDashboard },
 ];
 

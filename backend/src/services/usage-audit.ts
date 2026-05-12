@@ -97,3 +97,63 @@ export async function getUserUsage(
     }))
   };
 }
+
+/**
+ * Service to track global BigQuery usage across all projects for a user.
+ */
+export async function getGlobalUserUsage(
+  bq: BigQuery,
+  email: string
+): Promise<UserUsage> {
+  const auditTable = `\`${config.billingProjectId}.${config.auditDataset}.${config.auditTable}\``;
+
+  // 1. Query for total monthly usage across all projects
+  const usageQuery = `
+    SELECT
+      IFNULL(SUM(bytesProcessed), 0) as total_bytes
+    FROM
+      ${auditTable}
+    WHERE
+      userEmail = @email
+      AND timestamp >= TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), MONTH)
+  `;
+
+  // 2. Query for last 50 activities (Story 8.5)
+  const activitiesQuery = `
+    SELECT
+      correlationId as id,
+      timestamp,
+      bytesProcessed as bytes,
+      action,
+      status,
+      projectId,
+      datasetId
+    FROM
+      ${auditTable}
+    WHERE
+      userEmail = @email
+      AND action = 'QUERY'
+    ORDER BY timestamp DESC
+    LIMIT 50
+  `;
+
+  const [usageRows] = await bq.query({
+    query: usageQuery,
+    params: { email: email }
+  }).catch(() => [[{ total_bytes: 0 }]]);
+
+  const [activityRows] = await bq.query({
+    query: activitiesQuery,
+    params: { email: email }
+  }).catch(() => [[]]);
+
+  return {
+    totalBytesBilled: usageRows[0]?.total_bytes || 0,
+    lastJobs: activityRows.map((row: any) => ({
+      id: row.id,
+      creationTime: bigQueryValueReplacer('', row.timestamp),
+      bytes: row.bytes,
+      status: row.status === 'SUCCESS' ? 'DONE' : 'FAILURE'
+    }))
+  };
+}
