@@ -25,7 +25,10 @@
   "dependencies": {
     "@fastify/autoload": "^6.0.0",
     "@fastify/compress": "^8.3.1",
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
+    "@fastify/oauth2": "^8.2.0",
+    "@fastify/secure-session": "^8.3.0",
     "@fastify/sensible": "^6.0.0",
     "@google-cloud/bigquery": "^8.1.1",
     "@google-cloud/bigquery-storage": "^5.0.0",
@@ -46,11 +49,11 @@
     "concurrently": "^9.0.0",
     "cross-env": "^10.1.0",
     "fastify-tsconfig": "^3.0.0",
+    "kill-port": "^2.0.1",
     "msw": "^2.14.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "~5.9.2",
-    "kill-port": "^2.0.1",
     "wait-on": "^9.0.10"
   }
 }

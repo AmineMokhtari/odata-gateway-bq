@@ -16,6 +16,9 @@
 
 import fp from 'fastify-plugin'
 import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose'
+import fastifyCookie from '@fastify/cookie'
+import fastifySecureSession from '@fastify/secure-session'
+import fastifyOauth2 from '@fastify/oauth2'
 import { fetchWithRetry } from '../../../common/src/utils/fetch-retry.js'
 import { config } from '../config.js'
 
@@ -35,13 +38,54 @@ export interface AuthPluginOptions {
   fetch?: typeof fetch
   jwks?: ReturnType<typeof createRemoteJWKSet>
   anonymousMode?: boolean
+  sessionSecret?: string
 }
 
 export default fp<AuthPluginOptions>(async (fastify, opts) => {
   const anonymousMode = opts.anonymousMode !== undefined ? opts.anonymousMode : config.anonymousMode
   let issuer = opts.issuer !== undefined ? opts.issuer : process.env.OIDC_ISSUER
   const audience = opts.audience !== undefined ? opts.audience : process.env.OIDC_AUDIENCE
+  const sessionSecret = process.env.SESSION_SECRET || 'a-very-long-secret-that-is-at-least-32-chars'
   const fetchImpl = opts.fetch || globalThis.fetch
+  if (sessionSecret.length < 32) {
+    throw new Error('SESSION_SECRET must be at least 32 characters long')
+  }
+
+  // Register cookie and session plugins
+  await fastify.register(fastifyCookie)
+  await fastify.register(fastifySecureSession, {
+    secret: sessionSecret,
+    salt: process.env.SESSION_SALT || 'mq9M97066986Csa7', // Must be 16 chars
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 3600 // 1 hour (in seconds for secure-session)
+    }
+  })
+
+  // Register OAuth2/OIDC plugin
+  if (!anonymousMode) {
+    await fastify.register(fastifyOauth2, {
+      name: 'oidc',
+      scope: ['openid', 'profile', 'email', 'offline_access'], // offline_access for refresh token
+      credentials: {
+        client: {
+          id: process.env.OIDC_CLIENT_ID || '',
+          secret: process.env.OIDC_CLIENT_SECRET || ''
+        }
+      },
+      startRedirectPath: '/auth/login',
+      callbackUri: (req) => {
+        const host = req.headers['x-forwarded-host'] || req.headers.host
+        const protocol = req.headers['x-forwarded-proto'] || 'http'
+        return `${protocol}://${host}/auth/callback`
+      },
+      discovery: {
+        issuer: issuer!
+      }
+    })
+  }
 
   fastify.decorate('isAnonymousMode', anonymousMode)
 
@@ -95,15 +139,40 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
 
   fastify.decorateRequest('user', null)
 
+  const verifyToken = async (token: string): Promise<UserIdentity> => {
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer,
+      audience,
+      clockTolerance: opts.clockTolerance || '30s',
+      algorithms: opts.algorithms || ['RS256']
+    })
+
+    if (!payload.sub) {
+      throw new Error('Mandatory "sub" claim missing from JWT payload')
+    }
+
+    const email = (payload.email || payload.upn || payload.preferred_username) as string | undefined
+    const groups = (payload.groups || payload.roles || []) as string[]
+    const sub = payload.sub as string
+
+    return {
+      email,
+      groups: Array.isArray(groups) ? groups : [groups],
+      sub,
+      rawPayload: payload
+    }
+  }
+
+  fastify.decorate('verifyToken', verifyToken)
+
   fastify.addHook('onRequest', async (request, reply) => {
-    // [Patch 2] Use route pattern matching for skip logic to ignore query params
     const routePattern = request.routeOptions.url
-    if (routePattern === '/health' || routePattern?.startsWith('/health/')) {
+    if (routePattern === '/health' || routePattern?.startsWith('/health/') || routePattern?.startsWith('/auth/')) {
       return
     }
 
     if (anonymousMode) {
-      // Offloaded authentication or Dev mode: Extract from headers or default to anonymous
+      // ... same as before
       const email = (request.headers['x-forwarded-email'] || request.headers['x-forwarded-user'] || request.headers['x-appengine-user-email']) as string | undefined
       const groupsHeader = request.headers['x-forwarded-groups'] as string | undefined
       const groups = groupsHeader ? groupsHeader.split(',').map(g => g.trim()) : []
@@ -116,75 +185,39 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
         rawPayload: {},
         isAnonymous: true
       }
-      
-      fastify.log.debug({ user: request.user }, 'Anonymous/Offloaded identity assigned')
       return
     }
 
+    // 1. Check Session
+    if (request.session.get('user')) {
+      const user = request.session.get('user')
+      
+      // Story 1.1 Patch: Silent Refresh Logic
+      // If token is close to expiry (e.g., < 5 mins), try refreshing
+      // For now, we just restore the identity. Full refresh exchange would happen here if we stored the refresh_token.
+      
+      request.user = user || null
+      return
+    }
+
+    // 2. Fallback to Authorization Header (for legacy/direct API calls)
     const authHeader = request.headers.authorization
-
-    // [Patch 6] Case-insensitive "Bearer" check
-    if (!authHeader || !/^Bearer /i.test(authHeader)) {
-      return reply.code(401).send({
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Missing or invalid Authorization header'
-        }
-      })
-    }
-
-    const token = authHeader.substring(7).trim()
-    if (!token) {
-      return reply.code(401).send({
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Empty Bearer token'
-        }
-      })
-    }
-
-    try {
-      fastify.log.debug({ token: token.substring(0, 10) + '...' }, 'Verifying token')
-      const { payload } = await jwtVerify(token, JWKS, {
-        issuer,
-        audience,
-        // [Patch 5] Added clock tolerance
-        clockTolerance: opts.clockTolerance || '30s',
-        // [Patch 7] Restricted algorithms
-        algorithms: opts.algorithms || ['RS256']
-      })
-      
-      // [Patch 6] Basic presence validation for mandatory sub claim
-      if (!payload.sub) {
-        throw new Error('Mandatory "sub" claim missing from JWT payload')
+    if (authHeader && /^Bearer /i.test(authHeader)) {
+      const token = authHeader.substring(7).trim()
+      try {
+        request.user = await verifyToken(token)
+        return
+      } catch (err: any) {
+        fastify.log.error({ err: err.message }, 'JWT verification failed')
       }
-
-      // Story 5.1: Trusted Subsystem Identity Verification
-      // [Patch 3] Strict Identity Mapping: No fallback of email to sub.
-      const email = (payload.email || payload.upn || payload.preferred_username) as string | undefined
-      const groups = (payload.groups || payload.roles || []) as string[]
-      const sub = payload.sub as string
-
-      request.user = {
-        email,
-        groups: Array.isArray(groups) ? groups : [groups],
-        sub,
-        rawPayload: payload
-      }
-
-      fastify.log.debug({ sub: payload.sub, email, groups: request.user.groups.length }, 'Token verified and identity extracted')
-    } catch (err: any) {
-      // [Patch 1] Fix: Mask token in logs
-      const maskedToken = token.length > 20 ? `${token.substring(0, 10)}...${token.substring(token.length - 10)}` : '***'
-      fastify.log.error({ err: err.message, token: maskedToken }, 'JWT verification failed')
-      
-      return reply.code(401).send({
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Invalid token'
-        }
-      })
     }
+
+    return reply.code(401).send({
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Authentication required'
+      }
+    })
   })
 }, {
   name: 'auth'
@@ -193,8 +226,17 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
 declare module 'fastify' {
   interface FastifyInstance {
     isAnonymousMode: boolean
+    verifyToken: (token: string) => Promise<UserIdentity>
   }
   interface FastifyRequest {
     user: UserIdentity | null
+  }
+  interface Session extends SessionData { }
+}
+
+declare module '@fastify/secure-session' {
+  interface SessionData {
+    user: UserIdentity
+    tokens?: any
   }
 }

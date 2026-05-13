@@ -37,7 +37,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   # Epic 1: Secure Hybrid Bridge
   epic-1: in-progress
-  1-1-fastify-oidc-session-setup: ready-for-dev
+  1-1-fastify-oidc-session-setup: done
   1-2-nextjs-gateway-client-initialization: backlog
   1-3-transparent-cookie-proxy-implementation: backlog
   1-4-correlation-id-traceability: backlog

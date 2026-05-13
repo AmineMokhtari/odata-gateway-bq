@@ -1,12 +1,12 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 4, 5, 6, 7, 8]
+stepsCompleted: [1, 2, 3, 4, 5, 6]
 inputDocuments: ['_bmad-output/planning-artifacts/prd.md', '_bmad-output/brainstorming/brainstorming-session-2026-04-23-16-30.md']
 workflowType: 'architecture'
 project_name: 'odata-gateway-bq'
 user_name: 'Amine_mokhtari'
-date: '2026-04-24'
-lastStep: 8
-status: 'complete'
+date: '2026-05-13'
+lastStep: 6
+status: 'in-progress'
 completedAt: '2026-05-09'
 ---
 
@@ -291,15 +291,21 @@ The primary boundary is the **URL-Based Tenant Segment** (`/v1/:projectId`). The
 - **Cost Awareness (Pulse Badge)**: `src/backend/routes/v1/dry-run.ts` + `src/frontend/hooks/useDryRun.ts`
 - **Elena's Guidance**: `src/backend/plugins/elena-tips.ts` + `src/frontend/components/drawers/ElenaDrawer.tsx`
 
-### Integration Points
+### Integration Points (Revised: Hybrid Model)
 
 **Data Flow:**
 1. **User Action**: Change an OData parameter in the UI.
-2. **Audit (Frontend)**: Hook calls `/dry-run` endpoint.
-3. **Audit (Backend)**: BQ Dry-Run executed via `bq-executor.ts`.
-4. **Signal (Frontend)**: Pulse Badge updates color based on safety status.
-5. **Advice (Backend)**: If audit fails, Elena plugin decorates the error.
-6. **Guidance (Frontend)**: Elena Drawer opens to show actionable fixes.
+2. **Audit (Frontend)**: Hook calls a **Next.js Server Action**.
+3. **Gateway Client (Next.js Server)**: The action uses `lib/gateway-client.ts` to forward the request to Fastify, including browser cookies.
+4. **Audit (Backend)**: BQ Dry-Run executed via `bq-executor.ts` in Fastify.
+5. **Signal (Frontend)**: Pulse Badge updates color based on safety status.
+6. **Advice (Backend)**: If audit fails, Elena plugin decorates the error; Fastify returns it to the Server Action.
+7. **Guidance (Frontend)**: Server Action returns the decorated error to the UI; Elena Drawer opens.
+
+**Direct Streaming (External Tools):**
+1. **Tool Action**: Excel/PowerBI sends a GET request to the **Fastify Public Data URL**.
+2. **Identity**: Fastify verifies the session cookie natively.
+3. **Stream**: Data is streamed directly from BigQuery to the tool, bypassing Next.js.
 
 ## Architecture Validation Results
 
@@ -392,3 +398,118 @@ npx fastify-cli generate src/backend --lang=ts
 cd src/frontend && npx create-vite . --template react-ts
 ```
 
+## Architectural Revision: Hybrid & Centric-Auth (2026-05-13)
+
+### Decision Priority Analysis
+
+**Critical Decisions:**
+- **Hybrid Communication Model**: Next.js Server Actions handle UI metadata/audit logic; Fastify handles direct OData streaming for external tools (Excel/PowerBI).
+- **Fastify-Centric Authentication**: All OIDC and session management is centralized in the Fastify backend.
+- **Transparent Cookie Proxy**: Next.js acts as a stateless forwarder, passing cookies from the browser to Fastify and propagating `Set-Cookie` responses back to the client.
+
+**Important Decisions:**
+- **Dedicated Data Endpoint**: Fastify is exposed via a dedicated public URL for high-performance, unbuffered OData streaming.
+- **Centralized Gateway Client**: `lib/gateway-client.ts` implements the cookie-forwarding and retry logic for all Server Actions.
+
+### API & Communication Patterns
+
+- **UI Passthrough (Server Actions)**:
+    - **Logic**: Actions use the `gatewayClient` to fetch from Fastify.
+    - **Header Propagation**: The client must manually forward the `Cookie` header and propagate `Set-Cookie` headers to maintain the session.
+- **Direct Data Path (Fastify)**:
+    - **Mechanism**: Direct GET requests from external tools.
+    - **Authentication**: Fastify validates cookies/tokens natively.
+
+### Decision Impact Analysis
+
+**Implementation Sequence:**
+1. **Core Client**: Implement `gateway-client.ts` with header propagation.
+2. **Metadata Migration**: Move catalog and explain logic to Server Actions.
+3. **Infrastructure**: Expose Fastify on a public data endpoint.
+
+
+## Implementation Patterns & Consistency Rules (Revision: 2026-05-13)
+
+### Naming Patterns
+
+**Server Actions:**
+- **Location**: `src/app/actions/[domain].ts` (e.g., `odata.ts`, `tenants.ts`).
+- **Convention**: `[verb][Subject]Action` (e.g., `auditQueryAction`).
+- **Rationale**: Ensures clear separation from client-side hooks and internal utilities.
+
+**Gateway Client:**
+- **Location**: `src/lib/gateway-client.ts`.
+- **Pattern**: Functional wrapper using the native `fetch` API.
+
+### Format Patterns
+
+**The Advice-Enriched Union (ActionResult):**
+All Server Actions must return a consistent discriminated union that carries the **Elena Advice Layer**:
+```typescript
+export type ActionResult<T> = {
+  elena_tip?: ElenaTip; // Guidance available on both success (warnings) and failure (errors)
+} & (
+  | { success: true; data: T }
+  | { success: false; error: { code: string; message: string } }
+);
+```
+
+### Process Patterns
+
+**Transparent Cookie Handshake:**
+1. **Request**: `gatewayClient` pulls cookies from `next/headers` and forwards them to Fastify.
+2. **Response**: If Fastify returns a `Set-Cookie` header (e.g., after a token refresh), the `gatewayClient` must use the Next.js `cookies().set()` API to propagate the update back to the browser.
+3. **Traceability**: Every request must inject a `x-correlation-id` header derived from the parent Next.js request.
+
+**Error Mapping Flow:**
+- **Backend**: Fastify plugin (`elena-tips.ts`) decorates raw BigQuery/Auth errors with `elena_tip` metadata.
+- **BFF**: Next.js Server Action captures the decorated error and returns it via the `ActionResult` type.
+- **Frontend**: Component checks `!result.success` and passes `result.elena_tip` to the `ElenaDrawer`.
+
+### Enforcement Guidelines
+
+**All AI Agents MUST:**
+- Use the `gatewayClient` for ALL communication with the Fastify backend.
+- Never return raw `fetch` responses from a Server Action.
+
+## Project Structure & Boundaries (Revision: 2026-05-13)
+
+### Complete Project Directory Structure (Hybrid Model)
+
+```text
+odata-gateway-bq/
+├── backend/                     # THE DATA SOURCE (Fastify)
+│   ├── src/
+│   │   ├── plugins/
+│   │   │   ├── auth.ts          # Master OIDC Client & Session Logic
+│   │   │   └── elena-tips.ts    # Error Decoration Engine
+│   │   └── routes/v1/
+│   │       ├── data.ts          # DIRECT STREAMING (Public)
+│   │       └── audit.ts         # Internal Private Audit API (used by Actions)
+└── frontend/                    # THE UI GATEWAY (Next.js)
+    ├── src/
+    │   ├── app/
+    │   │   ├── actions/         # UI BACKEND (Server Actions)
+    │   │   │   ├── odata.ts     # Metadata & Audit passthrough
+    │   │   │   └── tenants.ts   # Catalog discovery
+    │   ├── lib/
+    │   │   └── gateway-client.ts # Cookie-forwarding Fetch Wrapper
+```
+
+### Architectural Boundaries
+
+**API Boundaries:**
+- **Management Endpoint (Internal)**: Next.js Server Actions communicate with Fastify's `/v1/audit` and `/v1/metadata` endpoints via a private network path.
+- **Streaming Endpoint (Public)**: Fastify exposes `/v1/data` directly for external OData consumption (Excel/PowerBI).
+
+**Authentication Boundaries:**
+- **Primary Auth Provider**: Fastify handles all OIDC redirects and token exchanges.
+- **Session Bridge**: The browser stores the Fastify session cookie. Next.js Server Actions act as a "Transparent Proxy," forwarding this cookie to authorize backend calls.
+
+**Data Flow (Revised):**
+1. **User Action**: Change query in UI.
+2. **Management Call**: UI triggers `auditQueryAction`.
+3. **Passthrough**: `gateway-client.ts` forwards cookies to Fastify's `/audit` path.
+4. **Execution**: Fastify runs Dry-Run and returns decorated results (Elena Tips).
+5. **Streaming**: For actual data retrieval, the UI provides the user with the direct Fastify URL.
+- Ensure that `elena_tip` metadata is never stripped or ignored during the passthrough.
