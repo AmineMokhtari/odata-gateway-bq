@@ -30,7 +30,9 @@ export const ElenaDrawer: React.FC = () => {
               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <SheetTitle className="text-2xl font-bold text-foreground">Elena&apos;s Advice</SheetTitle>
+              <SheetTitle className="text-2xl font-bold text-foreground">
+                {activeTip.title || "Elena's Advice"}
+              </SheetTitle>
               <p className="text-xs font-bold text-primary uppercase tracking-widest">Self-Service Governance</p>
             </div>
           </div>
@@ -46,6 +48,11 @@ export const ElenaDrawer: React.FC = () => {
                 <p className="text-sm font-medium text-foreground leading-relaxed italic">
                   &quot;{activeTip.message}&quot;
                 </p>
+                {activeTip.advice && (
+                  <p className="text-xs text-muted-foreground font-medium border-t border-border pt-2">
+                    {activeTip.advice}
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 # Story 6.4: Self-Service Usage Dashboard
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

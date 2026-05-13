@@ -1,6 +1,6 @@
 # Story 6.3: Visual Aggregation Builder ($apply)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

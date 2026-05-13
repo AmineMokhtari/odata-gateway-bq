@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 
 export interface ElenaTip {
+  title?: string
   message: string
+  advice?: string
   quick_fixes?: Array<{ label: string, action: string }>
   action?: string
 }

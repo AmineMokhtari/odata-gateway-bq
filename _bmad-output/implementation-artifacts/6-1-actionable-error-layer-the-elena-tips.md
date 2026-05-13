@@ -1,6 +1,6 @@
 # Story 6.1: Actionable Error Layer (The 'Elena' Tips)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

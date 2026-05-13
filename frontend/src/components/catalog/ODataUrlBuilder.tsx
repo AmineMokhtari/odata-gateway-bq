@@ -36,8 +36,9 @@ import { type TenantConfig } from '@common/src/types/tenant';
 import { SuccessPulseBadge, type ConnectionState } from './SuccessPulseBadge';
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { MobileActionBar } from '@/components/MobileActionBar';
-import { useProjectStore } from '@/store/project-store';
+import { useProjectStore, type ElenaTip } from '@/store/project-store';
 import { downloadODataODC } from '@/lib/excel-generator';
+import { mapErrorToElenaAdvice } from '@/lib/error-mapping';
 
 interface ODataUrlBuilderProps {
   tenants: TenantConfig[];
@@ -186,15 +187,41 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
           const data = await res.json();
           console.log('[ODataBuilder] Tables response:', data);
           if (!res.ok) {
+            let tip: ElenaTip | null = null;
+            
+            // 1. Try to extract from custom field (Legacy/Custom)
             if (data.elena_tip) {
-              setElenaTip(data.elena_tip);
+              tip = data.elena_tip;
+            } 
+            // 2. Try to extract from standard OData error details
+            else if (data.error?.details?.find((d: any) => d.code === 'ELENA_TIP')) {
+              const detail = data.error.details.find((d: any) => d.code === 'ELENA_TIP');
+              tip = {
+                title: data.error.code,
+                message: detail.message.replace('Elena Tip: ', ''),
+                advice: 'Elena says: Check your query parameters or contact your administrator.'
+              };
+            }
+            // 3. Map known error code using utility
+            else if (data.error?.code) {
+              const advice = mapErrorToElenaAdvice(data.error.code, selectedDataset);
+              tip = {
+                title: advice.title,
+                message: advice.message,
+                advice: advice.advice
+              };
+            }
+
+            if (tip) {
+              setElenaTip(tip);
               setLocalConnectionState('blocked');
               openElenaDrawer();
-              toast.error('Query blocked by governance rules', {
+              toast.error(tip.title || 'Query blocked', {
                 description: 'Elena has some tips to help you fix this.'
               });
             } else {
               setLocalConnectionState('listening');
+              setFetchError(data.error?.message || 'Failed to connect to gateway');
             }
             return;
           }
