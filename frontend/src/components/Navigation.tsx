@@ -37,7 +37,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { name: 'Dashboard', href: '/', icon: Activity },
+  { name: 'Home', href: '/', icon: Activity },
+  { name: 'Dashboard', href: '/dashboard', icon: Activity },
   { name: 'Catalog', href: '/catalog', icon: LayoutDashboard },
   { name: 'Query Builder', href: '/builder', icon: Database },
 ];

@@ -134,14 +134,22 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  const baseUrl = (typeof window !== 'undefined') 
+  // Internal proxy URL for browser-side fetches (respects auth cookies)
+  const internalProxyBase = (typeof window !== 'undefined') 
     ? `${window.location.origin}/web/api/gateway` 
     : (process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005');
-  const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const serviceRoot = selectedProject && selectedDataset ? `${normalizedBase}/v1/${selectedProject}/${selectedDataset}` : '';
+  
+  // Public OData URL for BI tools (must not include /web/ prefix)
+  const publicGatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL || internalProxyBase.replace('/web/api/gateway', '');
+  
+  const normalizedInternalBase = internalProxyBase.endsWith('/') ? internalProxyBase.slice(0, -1) : internalProxyBase;
+  const normalizedPublicBase = publicGatewayBase.endsWith('/') ? publicGatewayBase.slice(0, -1) : publicGatewayBase;
+  
+  const internalServiceRoot = selectedProject && selectedDataset ? `${normalizedInternalBase}/v1/${selectedProject}/${selectedDataset}` : '';
+  const publicServiceRoot = selectedProject && selectedDataset ? `${normalizedPublicBase}/v1/${selectedProject}/${selectedDataset}` : '';
 
   // Discovery hook for joins & properties
-  const { navProps, properties, tableDescription, loading: loadingMetadata } = useEntityMetadata(serviceRoot, selectedTable);
+  const { navProps, properties, tableDescription, loading: loadingMetadata } = useEntityMetadata(internalServiceRoot, selectedTable);
 
   // Hook for real-time connection status pulse
   const { state: connectionState, lastActive } = useConnectionStatus({ 
@@ -162,12 +170,12 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
 
   // Fetch usage and tables when dataset changes
   useEffect(() => {
-    if (serviceRoot) {
+    if (internalServiceRoot) {
       setLoadingTables(true);
       setFetchError(null);
       setLocalConnectionState('verifying');
       // Fetch Tables
-      fetch(serviceRoot)
+      fetch(internalServiceRoot)
         .then(async (res) => {
           // Guard: proxy may return plain-text errors (e.g. "Internal Server Error")
           const contentType = res.headers.get('content-type') || '';
@@ -205,7 +213,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
 
       // Fetch Usage (Story 6.4)
       setLoadingUsage(true);
-      fetch(`${serviceRoot}/usage`)
+      fetch(`${internalServiceRoot}/usage`)
         .then(async (res) => {
           // Guard: proxy may return plain-text errors — don't attempt JSON parse
           const contentType = res.headers.get('content-type') || '';
@@ -234,11 +242,11 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
       setUsageData(null);
       setLocalConnectionState('listening');
     }
-  }, [serviceRoot, setElenaTip, openElenaDrawer]);
+  }, [internalServiceRoot, setElenaTip, openElenaDrawer]);
 
   useEffect(() => {
     if (selectedProject && selectedDataset) {
-      let url = `${normalizedBase}/v1/${selectedProject}/${selectedDataset}`;
+      let url = publicServiceRoot;
       if (selectedTable) {
         url += `/${selectedTable}`;
         
@@ -291,7 +299,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
       setGeneratedUrl('');
     }
     setCopied(false);
-  }, [selectedProject, selectedDataset, selectedTable, selectedExpands, selectedExpandColumns, selectedColumns, selectedGroupBy, selectedAggs, normalizedBase]);
+  }, [selectedProject, selectedDataset, selectedTable, selectedExpands, selectedExpandColumns, selectedColumns, selectedGroupBy, selectedAggs, publicServiceRoot]);
 
   const toggleExpand = (name: string) => {
     setSelectedExpands(prev => 

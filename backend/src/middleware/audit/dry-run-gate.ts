@@ -25,6 +25,8 @@ export interface DryRunGateOptions {
   budgetBytes: number
   userEmail: string
   correlationId: string
+  dataProjectId?: string
+  datasetId?: string
 }
 
 /**
@@ -32,9 +34,9 @@ export interface DryRunGateOptions {
  * [Source: _bmad-output/planning-artifacts/epics.md#Story 4.1]
  */
 export async function validateScanBudget(options: DryRunGateOptions): Promise<number> {
-  const { bq, sql, params, location, budgetBytes, userEmail, correlationId } = options
+  const { bq, sql, params, location, budgetBytes, userEmail, correlationId, dataProjectId, datasetId } = options
 
-  const estimatedBytes = await performDryRun(bq, sql, userEmail, correlationId, params, location)
+  const estimatedBytes = await performDryRun(bq, sql, userEmail, correlationId, dataProjectId, datasetId, params, location)
 
   if (estimatedBytes > budgetBytes) {
     const error = new Error(`Query estimate (${estimatedBytes} bytes) exceeds budget (${budgetBytes} bytes)`)

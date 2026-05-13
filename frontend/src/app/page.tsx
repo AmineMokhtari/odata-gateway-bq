@@ -14,70 +14,65 @@
  * limitations under the License.
  */
 
-import { getGlobalUsage } from "@/app/actions/usage";
-import { UsageDashboard } from "@/components/catalog/UsageDashboard";
-import { ElenaAdviceCard } from "@/components/catalog/ElenaAdviceCard";
-import { mapErrorToElenaAdvice } from "@/lib/error-mapping";
-import { Activity, History } from "lucide-react";
+import { HeroSection } from "@/components/marketing/hero-section";
 
-export default async function DashboardPage() {
-  const usage = await getGlobalUsage();
-  const defaultAdvice = mapErrorToElenaAdvice("Welcome");
-  defaultAdvice.title = "Welcome back!";
-  defaultAdvice.message = "I've compiled your latest data usage stats for the month.";
-  defaultAdvice.advice = "Elena says: Keep an eye on your consumption to avoid hitting your monthly quota early!";
-
+export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
-      <main className="flex-1 container mx-auto px-6 py-12 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Header Section */}
-          <div className="lg:col-span-3 space-y-4 mb-4">
-            <div className="flex items-center gap-3 text-indigo-600">
-              <Activity className="w-8 h-8" />
-              <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight font-sans">
-                Personal Usage Hub
-              </h1>
-            </div>
-            <p className="text-xl text-slate-500 max-w-3xl leading-relaxed">
-              Monitor your data consumption and track your query history across all your BigQuery connections.
+    <div className="flex flex-col min-h-screen">
+      <HeroSection />
+      
+      {/* Social Proof / Trust Section */}
+      <section className="py-12 bg-white border-y border-slate-100">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-40 grayscale">
+            <span className="text-2xl font-black text-slate-400 font-sans tracking-tighter">FINANCE_CORE</span>
+            <span className="text-2xl font-black text-slate-400 font-sans tracking-tighter">DATA_OPS</span>
+            <span className="text-2xl font-black text-slate-400 font-sans tracking-tighter">GOV_TECH</span>
+            <span className="text-2xl font-black text-slate-400 font-sans tracking-tighter">CLOUD_ALB</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Highlight Section */}
+      <section className="py-20 bg-slate-50">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4 font-sans">Built for Trusted Data Access</h2>
+            <p className="text-lg text-slate-500 leading-relaxed">
+              Why settle for risky CSV exports when you can have a live, audited, and governed connection directly to BigQuery?
             </p>
           </div>
 
-          {/* Main Dashboard Column */}
-          <div className="lg:col-span-2 space-y-8">
-            <UsageDashboard 
-              totalBytesBilled={usage.totalBytesBilled} 
-              budgetBytes={usage.budgetBytes} 
-              lastJobs={usage.lastJobs} 
-            />
-          </div>
-
-          {/* Sidebar / Advice Column */}
-          <div className="space-y-8">
-            <ElenaAdviceCard advice={defaultAdvice} />
-            
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center gap-2 text-slate-900 font-bold uppercase text-xs tracking-widest">
-                <History className="w-4 h-4 text-indigo-600" />
-                Quick Tips
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { 
+                title: "No Drivers Needed", 
+                desc: "Standard OData V4 protocol means no ODBC/JDBC drivers to install on user machines.",
+                icon: "Zap"
+              },
+              { 
+                title: "Dry-Run Safety", 
+                desc: "Every query is audited and cost-estimated before execution. No more surprise billing.",
+                icon: "ShieldCheck"
+              },
+              { 
+                title: "Direct Streaming", 
+                desc: "Massive results stream directly from BigQuery to your tool with zero server buffering.",
+                icon: "Database"
+              }
+            ].map((feature, i) => (
+              <div key={i} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-6">
+                  {/* Icons are handled by Lucide in the actual component, using placeholders here for simplicity or can import */}
+                  <div className="font-bold text-xl">{i+1}</div>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2 font-sans">{feature.title}</h3>
+                <p className="text-slate-500 leading-relaxed">{feature.desc}</p>
               </div>
-              <ul className="space-y-3">
-                {[
-                  "Use $select to only fetch the columns you need.",
-                  "Apply $filter early to reduce scanned data.",
-                  "Check the cost estimate before running large exports."
-                ].map((tip, i) => (
-                  <li key={i} className="text-sm text-slate-600 flex gap-3">
-                    <span className="text-indigo-400 font-bold">•</span>
-                    {tip}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ))}
           </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

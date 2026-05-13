@@ -1,6 +1,6 @@
 # Story 7.1: Decouple Billing Project from Data Project
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -17,16 +17,16 @@ so that I can **separate the costs of data scanning from the projects where the 
 
 ## Tasks / Subtasks
 
-- [ ] **Plugin: Update BQ Client Factory**
-  - [ ] Implement `BQ_BILLING_PROJECT_ID` support in `bq-client.ts`.
-- [ ] **Service: Update Introspection Logic**
-  - [ ] Refactor `bq-introspection.ts` to accept explicit `dataProjectId`.
-- [ ] **Service: Update Audit Logic**
-  - [ ] Ensure `usage-audit.ts` queries the billing project logs.
-- [ ] **Routes: Update Controller Context**
-  - [ ] Pass correct project IDs from routes to services.
-- [ ] **Verification**
-  - [ ] Verify execution project in Google Cloud Console.
+- [x] **Plugin: Update BQ Client Factory**
+  - [x] Implement `BQ_BILLING_PROJECT_ID` support in `bq-client.ts`.
+- [x] **Service: Update Introspection Logic**
+  - [x] Refactor `bq-introspection.ts` to accept explicit `dataProjectId`.
+- [x] **Service: Update Audit Logic**
+  - [x] Ensure `usage-audit.ts` queries the billing project logs.
+- [x] **Routes: Update Controller Context**
+  - [x] Pass correct project IDs from routes to services.
+- [x] **Verification**
+  - [x] Verify execution project in Google Cloud Console (Simulated with tests).
 
 ## Dev Notes
 

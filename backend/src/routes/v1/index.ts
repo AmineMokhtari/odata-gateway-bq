@@ -381,7 +381,9 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           location: metadata.location,
           budgetBytes,
           userEmail,
-          correlationId
+          correlationId,
+          dataProjectId: projectId,
+          datasetId
         })
       } catch (err: any) {
         if (err.code === 'BudgetExceeded') {
@@ -421,6 +423,8 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         translation.sql,
         userEmail,
         correlationId,
+        projectId,
+        datasetId,
         translation.params,
         metadata.location
       )

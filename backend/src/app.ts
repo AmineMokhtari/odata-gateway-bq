@@ -29,7 +29,9 @@ export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPlugin
 }
 // Pass --options via CLI arguments in command to enable these options.
 const options: AppOptions = {
-  pluginTimeout: 30000
+  pluginTimeout: 30000,
+  requestIdHeader: 'x-correlation-id',
+  requestIdLogLabel: 'correlation_id'
 }
 
 const app: FastifyPluginAsync<AppOptions> = async (
@@ -38,6 +40,11 @@ const app: FastifyPluginAsync<AppOptions> = async (
 ): Promise<void> => {
   // Fail fast if configuration is missing (Story 8.5 Tech Debt CFG)
   validateConfig()
+
+  // Story 1.4: Echo x-correlation-id in every response for end-to-end tracing
+  fastify.addHook('onSend', async (request, reply) => {
+    reply.header('x-correlation-id', request.id)
+  })
 
   // Place here your custom code!
 

@@ -20,24 +20,24 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import yaml from 'js-yaml'
 import { type GatewayConfig, type TenantConfig } from '@common/src/types/tenant'
-import { fetchWithRetry } from '@/lib/fetch-retry';
+import { gatewayClient } from '@/lib/gateway-client';
 
 export async function getTenants(): Promise<TenantConfig[]> {
   try {
-    const baseUrl = process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
-    const response = await fetchWithRetry(`${baseUrl}/v1/catalog`, {
-      next: { revalidate: process.env.NODE_ENV === 'production' ? 60 : 0 }, // No cache in dev
-      signal: undefined,
-    });
+    const response = await gatewayClient.get('/v1/catalog');
 
     if (!response.ok) {
+      if (response.status === 401) {
+        // Log unauthorized but let it fallback for now or we could redirect
+        console.warn('[getTenants] Unauthorized access to catalog');
+      }
       throw new Error(`Backend returned ${response.status}`);
     }
 
     const data = await response.json();
     return data.value || [];
   } catch (err: any) {
-    console.warn('Failed to fetch tenants from backend, falling back to local config:', err.message);
+    console.warn('[getTenants] Failed to fetch tenants from backend, falling back to local config:', err.message);
     
     // Fallback to local file reading if backend is unavailable
     try {

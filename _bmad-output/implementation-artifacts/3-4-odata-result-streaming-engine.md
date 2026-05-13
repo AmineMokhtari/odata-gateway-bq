@@ -1,6 +1,6 @@
 # Story 3.4: OData Result Streaming Engine
 
-Status: in-progress
+Status: done
 
 ## Story
 
@@ -17,17 +17,17 @@ so that memory footprint is < 256MB.
 
 ## Tasks / Subtasks
 
-- [ ] Implement OData Envelope Transformer
-  - [ ] Create `src/lib/transformers/odata-envelope.ts`.
-  - [ ] Implement a `Transform` stream that wraps individual BigQuery rows into an OData JSON structure (`{ "value": [ ... ] }`).
-- [ ] Integrate Streaming into Route Handler
-  - [ ] Update `src/routes/v1/index.ts` to handle data fetch requests (e.g., `/v1/:projectId/:datasetId/:table`).
-  - [ ] Use `translateODataToSql` (Story 3.1) to generate the SQL.
-  - [ ] Use `createBigQueryStream` (Story 3.2) to start the job.
-  - [ ] Pipe the BQ stream through the `odata-envelope` transformer directly to `reply.raw`.
-- [ ] Verify with Tests
-  - [ ] Create `test/lib/transformers/odata-envelope.test.ts`.
-  - [ ] Add integration test in `test/routes/v1-data.test.ts` for a full data fetch request.
+- [x] Implement OData Envelope Transformer
+  - [x] Create `src/lib/transformers/odata-envelope.ts`.
+  - [x] Implement a `Transform` stream that wraps individual BigQuery rows into an OData JSON structure (`{ "value": [ ... ] }`).
+- [x] Integrate Streaming into Route Handler
+  - [x] Update `src/routes/v1/index.ts` to handle data fetch requests (e.g., `/v1/:projectId/:datasetId/:table`).
+  - [x] Use `translateODataToSql` (Story 3.1) to generate the SQL.
+  - [x] Use `createBigQueryStream` (Story 3.2) to start the job.
+  - [x] Pipe the BQ stream through the `odata-envelope` transformer directly to `reply.raw`.
+- [x] Verify with Tests
+  - [x] Create `test/lib/transformers/odata-envelope.test.ts`.
+  - [x] Add integration test in `test/routes/v1-data.test.ts` for a full data fetch request.
 
 ## Dev Notes
 

@@ -15,6 +15,7 @@
  */
 
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, ArrowRight, Zap, Database, Lock } from 'lucide-react';
@@ -43,13 +44,17 @@ export const HeroSection: React.FC = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <Button size="lg" className="bg-indigo-700 hover:bg-indigo-800 text-white px-8 h-14 text-lg font-bold rounded-xl shadow-lg shadow-indigo-200 group">
-                Deploy for Free
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button variant="ghost" className="text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 font-semibold h-14 px-6 text-lg">
-                Watch Elena&apos;s Story
-              </Button>
+              <Link href="/catalog">
+                <Button size="lg" className="bg-indigo-700 hover:bg-indigo-800 text-white px-8 h-14 text-lg font-bold rounded-xl shadow-lg shadow-indigo-200 group">
+                  Deploy for Free
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link href="#">
+                <Button variant="ghost" className="text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 font-semibold h-14 px-6 text-lg">
+                  Watch Elena&apos;s Story
+                </Button>
+              </Link>
             </div>
             
             <div className="flex items-center justify-center lg:justify-start gap-6 pt-4">

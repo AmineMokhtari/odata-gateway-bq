@@ -38,11 +38,20 @@ export function sanitizeLabelValue(value: string): string {
 /**
  * Common helper to generate audit labels.
  */
-function getAuditLabels(userEmail: string, correlationId: string) {
-  return {
+function getAuditLabels(userEmail: string, correlationId: string, dataProjectId?: string, datasetId?: string) {
+  const labels: Record<string, string> = {
     user_identity: sanitizeLabelValue(userEmail),
     correlation_id: sanitizeLabelValue(correlationId)
   }
+
+  if (dataProjectId) {
+    labels.data_project_id = sanitizeLabelValue(dataProjectId)
+  }
+  if (datasetId) {
+    labels.dataset_id = sanitizeLabelValue(datasetId)
+  }
+
+  return labels
 }
 
 export interface BQStreamResponse {
@@ -59,6 +68,8 @@ export async function createBigQueryStream(
   sql: string,
   userEmail: string,
   correlationId: string,
+  dataProjectId?: string,
+  datasetId?: string,
   params?: Record<string, any>,
   location?: string
 ): Promise<BQStreamResponse> {
@@ -66,7 +77,7 @@ export async function createBigQueryStream(
     query: sql,
     params,
     location,
-    labels: getAuditLabels(userEmail, correlationId)
+    labels: getAuditLabels(userEmail, correlationId, dataProjectId, datasetId)
   }
 
   const [job] = await bq.createQueryJob(queryOptions)
@@ -106,6 +117,8 @@ export async function performDryRun(
   sql: string,
   userEmail: string,
   correlationId: string,
+  dataProjectId?: string,
+  datasetId?: string,
   params?: Record<string, any>,
   location?: string
 ): Promise<number> {
@@ -114,7 +127,7 @@ export async function performDryRun(
     params,
     location,
     dryRun: true,
-    labels: getAuditLabels(userEmail, correlationId)
+    labels: getAuditLabels(userEmail, correlationId, dataProjectId, datasetId)
   })
 
   const totalBytesProcessed = parseInt(job.metadata.statistics.totalBytesProcessed, 10)
