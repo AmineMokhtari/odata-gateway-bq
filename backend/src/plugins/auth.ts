@@ -26,7 +26,7 @@ export interface UserIdentity {
   email?: string
   groups: string[]
   sub: string
-  rawPayload: JWTPayload
+  rawPayload?: JWTPayload
   isAnonymous?: boolean
 }
 
@@ -223,6 +223,8 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
   name: 'auth'
 })
 
+import { Session } from '@fastify/secure-session'
+
 declare module 'fastify' {
   interface FastifyInstance {
     isAnonymousMode: boolean
@@ -230,13 +232,19 @@ declare module 'fastify' {
   }
   interface FastifyRequest {
     user: UserIdentity | null
+    session: Session
   }
-  interface Session extends SessionData { }
+}
+
+export interface SessionUser {
+  sub: string
+  email?: string
+  groups: string[]
 }
 
 declare module '@fastify/secure-session' {
   interface SessionData {
-    user: UserIdentity
+    user: SessionUser
     tokens?: any
   }
 }

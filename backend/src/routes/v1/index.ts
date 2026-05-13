@@ -20,7 +20,7 @@ import { getDatasetMetadata, getTableMetadata, getDatasetsDescriptions } from '.
 import { getUserUsage, getGlobalUserUsage } from '../../services/usage-audit.js'
 import { generateEdm } from '../../services/odata-metadata.js'
 import { translateODataToSql, PartitionFilterRequiredError } from '../../lib/sql-generator.js'
-import { createBigQueryStream, getJob, getJobResultStream } from '../../services/bq-executor.js'
+import { createBigQueryStream, getJob, getJobResultStream, sanitizeLabelValue } from '../../services/bq-executor.js'
 import { ODataEnvelopeTransformer } from '../../lib/transformers/odata-envelope.js'
 import { pipeline } from 'node:stream/promises'
 import { validateScanBudget } from '../../middleware/audit/dry-run-gate.js'
@@ -331,6 +331,20 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       
       try {
         job = await getJob(bq, jobId, metadata.location)
+        
+        // [Security] User Isolation for Job IDs (Story 8.1)
+        const jobLabels = job.metadata.configuration?.labels || job.metadata.labels || {}
+        const expectedUserIdentity = sanitizeLabelValue(userEmail)
+        if (jobLabels.user_identity !== expectedUserIdentity) {
+          request.log.error({ jobId, expected: expectedUserIdentity, actual: jobLabels.user_identity }, 'Job isolation breach attempt: user identity mismatch')
+          return reply.code(403).send({
+            error: {
+              code: 'AccessDenied',
+              message: 'You are not authorized to access this query session'
+            }
+          })
+        }
+
         // Record Pulse for cached hit (Story 8.1 Transparency)
         if (request.user) {
           fastify.usageTracker.recordPulse(projectId, datasetId, userEmail, correlationId)

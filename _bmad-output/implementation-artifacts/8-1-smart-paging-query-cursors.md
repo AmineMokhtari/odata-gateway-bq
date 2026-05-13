@@ -1,6 +1,6 @@
 # Story 8.1: Smart Paging (Query Cursors)
 
-Status: in-progress
+Status: done
 
 ## Story
 
@@ -18,18 +18,18 @@ so that I can **scroll through thousands of rows in Excel without paying for ful
 
 ## Tasks / Subtasks
 
-- [ ] **Backend: Enhance `bq-executor.ts`**
-  - [ ] Implement `getJobResultStream(bq: BigQuery, jobId: string, options: { skip: number, limit: number })`.
-  - [ ] Add logic to retrieve a `Job` instance by ID.
-- [ ] **Backend: Update OData Translation**
-  - [ ] Implement `parseSkipToken(skiptoken: string)` to extract `jobId` and `offset`.
-  - [ ] Implement `generateNextLink(baseUrl: string, jobId: string, nextOffset: number)` helper.
-- [ ] **Backend: Update Result Transformer**
-  - [ ] Update `ODataEnvelopeTransformer` to support an optional `nextLink` property in the `_flush` or constructor.
-- [ ] **Backend: Update Route Handler (`routes/v1/index.ts`)**
-  - [ ] Detect `$skiptoken` in query params.
-  - [ ] If present, bypass Dry-Run and SQL translation; call `getJobResultStream` directly.
-  - [ ] Calculate if a "next page" exists (e.g., if current page is full) and generate `nextLink`.
+- [x] **Backend: Enhance `bq-executor.ts`**
+  - [x] Implement `getJobResultStream(bq: BigQuery, jobId: string, options: { skip: number, limit: number })`.
+  - [x] Add logic to retrieve a `Job` instance by ID.
+- [x] **Backend: Update OData Translation**
+  - [x] Implement `parseSkipToken(skiptoken: string)` to extract `jobId` and `offset`.
+  - [x] Implement `generateNextLink(baseUrl: string, jobId: string, nextOffset: number)` helper.
+- [x] **Backend: Update Result Transformer**
+  - [x] Update `ODataEnvelopeTransformer` to support an optional `nextLink` property in the `_flush` or constructor.
+- [x] **Backend: Update Route Handler (`routes/v1/index.ts`)**
+  - [x] Detect `$skiptoken` in query params.
+  - [x] If present, bypass Dry-Run and SQL translation; call `getJobResultStream` directly.
+  - [x] Calculate if a "next page" exists (e.g., if current page is full) and generate `nextLink`.
 - [ ] **Frontend: Update Usage Dashboard**
   Status: done
 

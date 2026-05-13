@@ -36,33 +36,70 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Secure Hybrid Bridge
-  epic-1: in-progress
+  epic-1: done
   1-1-fastify-oidc-session-setup: done
+  1-1-project-initialization-fastify-bootstrap: done
   1-2-nextjs-gateway-client-initialization: backlog
   1-3-transparent-cookie-proxy-implementation: backlog
   1-4-correlation-id-traceability: backlog
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Intelligent Data Catalog
-  epic-2: backlog
-  2-1-tenant-project-discovery-action: backlog
-  2-2-bigquery-dataset-introspection-action: backlog
-  2-3-sharded-metadata-cache-lookup: backlog
-  2-4-odata-edm-generation-direct-path: backlog
-  epic-2-retrospective: optional
+  epic-2: done
+  2-1-multi-tenant-url-routing: done
+  2-2-bigquery-metadata-introspection: done
+  2-3-sharded-metadata-cache: done
+  2-4-odata-edm-generation: done
+  2-5-admin-metadata-refresh-health: done
+  epic-2-retrospective: done
 
   # Epic 3: Governed Data Streaming
-  epic-3: backlog
-  3-1-bigquery-dry-run-audit-action: backlog
-  3-2-elena-advice-decorator-fastify-plugin: backlog
-  3-3-direct-streaming-data-route: backlog
-  3-4-resilient-stream-keep-alive-job-reaper: backlog
-  epic-3-retrospective: optional
+  epic-3: in-progress
+  3-1-odata-to-sql-translation-engine: done
+  3-2-bigquery-query-execution-service: done
+  3-3-lossless-json-type-casting: done
+  3-4-odata-result-streaming-engine: in-progress
+  3-7-job-lifecycle-management-cancel-on-disconnect: done
+  epic-3-retrospective: done
 
   # Epic 4: Visual Connection Builder
-  epic-4: backlog
-  4-1-reactive-url-builder-component: backlog
-  4-2-circuit-breaker-safety-status-ui: backlog
-  4-3-elena-advice-drawer-reactive-ui: backlog
-  4-4-success-pulse-health-signal: backlog
-  epic-4-retrospective: optional
+  epic-4: in-progress
+  4-1-pre-flight-dry-run-interceptor: done
+  4-1-story-driven-hero-section-the-elena-narrative: ready-for-dev
+  4-2-odata-url-builder-marketplace-connect: ready-for-dev
+  4-2-per-project-scan-budgets: done
+  4-3-live-connection-success-pulse-badge: ready-for-dev
+  4-3-odata-usage-explain-endpoints: done
+  4-4-proactive-dry-run-visualizer: ready-for-dev
+  4-4-stateless-audit-labels: done
+  4-5-mobile-first-responsive-connection-guide: ready-for-dev
+  epic-4-retrospective: done
+
+  # Epic 5: Trusted Subsystem
+  epic-5: done
+  5-1-trusted-subsystem-identity-verification: done
+  5-2-internal-access-rule-engine: done
+  5-3-master-service-account-execution: done
+  epic-5-retrospective: done
+
+  # Epic 6: Guided Queries
+  epic-6: in-progress
+  6-1-actionable-error-layer-the-elena-tips: review
+  6-2-visual-join-builder-expand: done
+  6-3-visual-aggregation-builder-apply: review
+  6-4-self-service-usage-dashboard: review
+  epic-6-retrospective: done
+
+  # Epic 7: Enterprise Governance
+  epic-7: in-progress
+  7-1-decouple-billing-project: ready-for-dev
+  epic-7-retrospective: done
+
+  # Epic 8: Performance & Scalability
+  epic-8: done
+  8-1-smart-paging-query-cursors: done
+  8-2-nested-column-selection-expand-select: done
+  8-3-odata-count-backend-support: done
+  8-4-odata-apply-backend-support: done
+  8-5-odata-persistent-logs: done
+  epic-8-retrospective: optional
