@@ -32,8 +32,9 @@ Welcome to the technical documentation for the **odata-gateway-bq**. This guide 
 
 Detailed exhaustive analysis of specific areas:
 - [Recent Commits Deep-Dive](./deep-dive-recent-commits.md) - Comprehensive analysis of the last 10 commits (Usage Hub, Catalog UI, API Proxy, Elena Tips) - Generated 2026-05-12
+- [Core Gateway & Governance Deep-Dive](./deep-dive-core-gateway-governance.md) - Comprehensive analysis of OData translation, budget enforcement, and Elena Tips (7 files, 1949 LOC) - Generated 2026-05-13
 
 ---
-*Last updated: 2026-05-12*
-Deep-Dives: 1
+*Last updated: 2026-05-13*
+Deep-Dives: 2
 
