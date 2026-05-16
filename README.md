@@ -30,6 +30,8 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 | **Live Discovery Fallback** | **Zero-Wait Access.** If a table is missing from the cache, the gateway performs a targeted live check. Newly created tables are accessible instantly without waiting for a full refresh. |
 | **Metadata Descriptions** | **Rich Context.** Table and column descriptions from BigQuery are exposed as OData annotations and surfaced in the Catalog UI. |
 | **Lossless Data Integrity** | **Complex Data, Simplified.** Automatically handles BigQuery `RECORD` and `REPEATED` types by casting them to JSON strings, ensuring nested data is readable in spreadsheets. |
+| **Advanced 1:N Joins** | **Full Relationship Fidelity.** Automatically discover and expand To-Many relationships using BigQuery's native nested `ARRAY` structures. |
+| **Identity-Job Isolation** | **Strict Security.** BigQuery jobs are strictly bound to the user's OIDC identity, ensuring multi-tenant isolation at the data execution level. |
 
 ---
 

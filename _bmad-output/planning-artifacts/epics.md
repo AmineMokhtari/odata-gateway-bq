@@ -279,3 +279,46 @@ So that I have confidence that the gateway is operational before I start work.
 **Then** the UI displays a pulsing "Verified" status.
 **And** indicates the current tenant context.
 
+### Epic 9: Performance & Scalability Resilience
+Architectural hardening to ensure long-term stability and security. This epic enforces a strict server-centric metadata layer and implements advanced data relationships.
+**FRs covered:** AR2, AR3, AR4, FR2, FR13, FR15, FR20
+
+---
+
+## Epic 9: Performance & Scalability Resilience
+
+Architectural hardening to ensure long-term stability and security. This epic enforces a strict server-centric metadata layer and implements advanced data relationships.
+
+### Story 9.1: Server-Centric Metadata Layer
+As a Developer,
+I want all UI-driven metadata discovery to route through Next.js Server Actions,
+So that the backend infrastructure is hidden from the client and authentication is unified.
+
+**Acceptance Criteria:**
+**Given** the OData Dashboard UI.
+**When** discovering tables or connection status.
+**Then** the UI calls a Next.js Server Action.
+**And** the action use the `gatewayClient` to communicate with Fastify.
+**And** parses XML metadata on the server using `fast-xml-parser`.
+
+### Story 9.2: 1:N Expansion Support (Nested BigQuery Structs)
+As a Data Analyst,
+I want to expand 1:N relationships (To-Many) in the Visual Join Builder,
+So that I can build complex queries across related tables with high fidelity.
+
+**Acceptance Criteria:**
+**Given** a Foreign Key relationship pointing to the current table.
+**When** browsing for joins.
+**Then** the gateway identifies the relationship as a "Collection".
+**And** uses `ARRAY(SELECT AS STRUCT ...)` in the generated BigQuery SQL.
+
+### Story 9.3: Identity-Job Binding (Security Isolation)
+As a Security Architect,
+I want to bind BigQuery Job IDs to the user's OIDC identity,
+So that users cannot guess Job IDs to access each other's query results.
+
+**Acceptance Criteria:**
+**Given** a BigQuery job created by User A.
+**When** User B attempts to resume the result via `$skiptoken` (Job ID).
+**Then** the gateway verifies the `user_identity` label on the job.
+**And** returns a `403 Forbidden` error because the identity does not match.

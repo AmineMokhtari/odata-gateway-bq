@@ -27,6 +27,7 @@ odata-gateway-bq/
 │   │   │   │   └── ElenaAdviceCard.tsx # Narrative Error UI
 │   │   │   └── ui/          # Shared Shadcn components
 │   │   └── lib/
+│   │       ├── gateway-client.ts # Unified cookie-aware fetch client
 │   │       └── error-mapping.ts # Technical to Narrative mapping
 ├── odata-v4-gcp/            # Custom OData V4 to BQ Engine (TS)
 │   ├── src/

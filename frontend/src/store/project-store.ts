@@ -17,7 +17,9 @@ interface ProjectState {
   closeElenaDrawer: () => void
   
   // Pivot Logic: Quick Fix Actions
+  lastFixAction: string | null
   applyFix: (action: string) => void
+  clearFix: () => void
 }
 
 /**
@@ -27,6 +29,7 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>((set) => ({
   isElenaDrawerOpen: false,
   activeTip: null,
+  lastFixAction: null,
   
   setElenaTip: (tip) => set({ activeTip: tip }),
   openElenaDrawer: () => set({ isElenaDrawerOpen: true }),
@@ -34,8 +37,11 @@ export const useProjectStore = create<ProjectState>((set) => ({
   
   applyFix: (action) => {
     console.log(`[Store] Applying fix: ${action}`)
-    // In a real app, this would trigger state changes in the URL builder
-    // For the pivot demo, we just signal completion
-    set({ isElenaDrawerOpen: false, activeTip: null })
-  }
+    set({ 
+      isElenaDrawerOpen: false, 
+      activeTip: null,
+      lastFixAction: action 
+    })
+  },
+  clearFix: () => set({ lastFixAction: null })
 }))

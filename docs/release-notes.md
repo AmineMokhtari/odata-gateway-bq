@@ -1,5 +1,24 @@
 # Release Notes
 
+## Version 1.3.0 (Architecture Hardening & 1:N Expansion)
+*Release Date: May 16, 2026*
+
+This release introduces a major architectural hardening phase, migrating all metadata discovery to secure Server Actions and enabling full 1:N expansion support for complex data relationships.
+
+### New Features
+- **1:N Relationship Expansion**: Full support for "To-Many" relationships in the Visual Join Builder. The gateway now automatically identifies inbound Foreign Keys and uses BigQuery's nested `ARRAY` structures for high-fidelity data retrieval.
+- **Server-Action Based Discovery**: Migrated all UI metadata, pulse checks, and cost auditing to Next.js Server Actions. This hides backend infrastructure from the client and ensures unified session propagation.
+- **Identity-Job Binding**: Enhanced security isolation by binding BigQuery Job IDs to the user's OIDC identity via audit labels. This prevents unauthorized result resumption across different user sessions.
+
+### Enhancements
+- **Unified Gateway Client**: Centralized all server-to-backend communication in a robust, cookie-aware client (`GatewayClient`) with automatic correlation ID injection.
+- **Server-Side XML Parsing**: Optimized OData metadata processing by moving XML-to-JSON transformation to the server layer using `fast-xml-parser`.
+- **Relationship Discovery**: Refactored the metadata crawler to perform a bi-directional scan of BigQuery `INFORMATION_SCHEMA` for improved relationship mapping.
+
+### How to Upgrade
+This release contains internal architectural shifts. Ensure the `GATEWAY_URL` environment variable is correctly set in your Next.js environment. No breaking changes for end-users.
+
+
 ## Version 1.2.0 (Catalog Experience)
 *Release Date: May 11, 2026*
 

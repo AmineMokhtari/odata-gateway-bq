@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Copy, Check, Database, Globe, Link as LinkIcon, Table, Sigma, ListTree, Activity, ChevronLeft, Loader2 } from 'lucide-react';
 import { useEntityMetadata } from '@/hooks/useEntityMetadata';
+import { getServiceRoot } from '@/app/actions/odata';
+import { getDatasetUsage } from '@/app/actions/usage';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UsageDashboard } from './UsageDashboard';
 import { toast } from 'sonner';
@@ -60,12 +62,13 @@ interface UsageData {
 }
 
 const ExpandColumnSelector: React.FC<{
-  baseUrl: string;
+  projectId: string;
+  datasetId: string;
   entitySet: string;
   selectedColumns: string[];
   onChange: (cols: string[]) => void;
-}> = ({ baseUrl, entitySet, selectedColumns, onChange }) => {
-  const { properties, loading } = useEntityMetadata(baseUrl, entitySet);
+}> = ({ projectId, datasetId, entitySet, selectedColumns, onChange }) => {
+  const { properties, loading } = useEntityMetadata(projectId, datasetId, entitySet);
 
   if (loading) return <div className="text-[10px] text-primary italic">Discovering fields...</div>;
 
@@ -134,23 +137,13 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
-
-  // Internal proxy URL for browser-side fetches (respects auth cookies)
-  const internalProxyBase = (typeof window !== 'undefined') 
-    ? `${window.location.origin}/web/api/gateway` 
-    : (process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005');
-  
-  // Public OData URL for BI tools (must not include /web/ prefix)
-  const publicGatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL || internalProxyBase.replace('/web/api/gateway', '');
-  
-  const normalizedInternalBase = internalProxyBase.endsWith('/') ? internalProxyBase.slice(0, -1) : internalProxyBase;
+  // Public OData URL for BI tools
+  const publicGatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
   const normalizedPublicBase = publicGatewayBase.endsWith('/') ? publicGatewayBase.slice(0, -1) : publicGatewayBase;
-  
-  const internalServiceRoot = selectedProject && selectedDataset ? `${normalizedInternalBase}/v1/${selectedProject}/${selectedDataset}` : '';
   const publicServiceRoot = selectedProject && selectedDataset ? `${normalizedPublicBase}/v1/${selectedProject}/${selectedDataset}` : '';
 
-  // Discovery hook for joins & properties
-  const { navProps, properties, tableDescription, loading: loadingMetadata } = useEntityMetadata(internalServiceRoot, selectedTable);
+  // Discovery hook for joins & properties (Story 9.1: Server Action Migration)
+  const { navProps, properties, tableDescription, loading: loadingMetadata } = useEntityMetadata(selectedProject, selectedDataset, selectedTable);
 
   // Hook for real-time connection status pulse
   const { state: connectionState, lastActive } = useConnectionStatus({ 
@@ -166,66 +159,31 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
     .filter(t => t.project_id === selectedProject)
     .map(t => t.dataset_id);
 
-  const { setElenaTip, openElenaDrawer } = useProjectStore();
+  const { setElenaTip, openElenaDrawer, lastFixAction, clearFix } = useProjectStore();
   const [localConnectionState, setLocalConnectionState] = useState<ConnectionState>('listening');
+
+  // Handle Quick Fixes from Elena
+  useEffect(() => {
+    if (lastFixAction === 'SELECT_COLUMNS') {
+      // simulate a fix by selecting only one column (e.g. the first one available)
+      if (properties.length > 0) {
+        setSelectedColumns([properties[0].name]);
+        toast.success('Elena applied a column filter to reduce query size.');
+      }
+      clearFix();
+    }
+  }, [lastFixAction, properties, clearFix]);
 
   // Fetch usage and tables when dataset changes
   useEffect(() => {
-    if (internalServiceRoot) {
+    if (selectedProject && selectedDataset) {
       setLoadingTables(true);
       setFetchError(null);
       setLocalConnectionState('verifying');
-      // Fetch Tables
-      fetch(internalServiceRoot)
-        .then(async (res) => {
-          // Guard: proxy may return plain-text errors (e.g. "Internal Server Error")
-          const contentType = res.headers.get('content-type') || '';
-          if (!contentType.includes('application/json')) {
-            const text = await res.text();
-            throw new Error(`Gateway returned non-JSON response (${res.status}): ${text.slice(0, 120)}`);
-          }
-          const data = await res.json();
-          console.log('[ODataBuilder] Tables response:', data);
-          if (!res.ok) {
-            let tip: ElenaTip | null = null;
-            
-            // 1. Try to extract from custom field (Legacy/Custom)
-            if (data.elena_tip) {
-              tip = data.elena_tip;
-            } 
-            // 2. Try to extract from standard OData error details
-            else if (data.error?.details?.find((d: any) => d.code === 'ELENA_TIP')) {
-              const detail = data.error.details.find((d: any) => d.code === 'ELENA_TIP');
-              tip = {
-                title: data.error.code,
-                message: detail.message.replace('Elena Tip: ', ''),
-                advice: 'Elena says: Check your query parameters or contact your administrator.'
-              };
-            }
-            // 3. Map known error code using utility
-            else if (data.error?.code) {
-              const advice = mapErrorToElenaAdvice(data.error.code, selectedDataset);
-              tip = {
-                title: advice.title,
-                message: advice.message,
-                advice: advice.advice
-              };
-            }
-
-            if (tip) {
-              setElenaTip(tip);
-              setLocalConnectionState('blocked');
-              openElenaDrawer();
-              toast.error(tip.title || 'Query blocked', {
-                description: 'Elena has some tips to help you fix this.'
-              });
-            } else {
-              setLocalConnectionState('listening');
-              setFetchError(data.error?.message || 'Failed to connect to gateway');
-            }
-            return;
-          }
-          
+      
+      // Fetch Tables via Server Action (Story 9.1)
+      getServiceRoot(selectedProject, selectedDataset)
+        .then(data => {
           if (data.value) {
             setAvailableTables(data.value.map((v: { name: string }) => v.name));
             setLocalConnectionState('connected');
@@ -233,29 +191,35 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
         })
         .catch(err => {
           console.error('Failed to fetch tables:', err);
-          setFetchError(err.message || 'Failed to connect to gateway');
-          setLocalConnectionState('listening');
+          
+          // Attempt to extract Elena Tip from error message (serialized JSON in throw)
+          let tip: ElenaTip | null = null;
+          try {
+             // If the error message is a JSON string from the server action
+             const errorData = JSON.parse(err.message);
+             if (errorData.elena_tip) tip = errorData.elena_tip;
+          } catch {
+             // Fallback to mapping
+             const advice = mapErrorToElenaAdvice(err.message, selectedDataset);
+             tip = { title: advice.title, message: advice.message, advice: advice.advice };
+          }
+
+          if (tip) {
+            setElenaTip(tip);
+            setLocalConnectionState('blocked');
+            openElenaDrawer();
+          } else {
+            setFetchError(err.message || 'Failed to connect to gateway');
+            setLocalConnectionState('listening');
+          }
         })
         .finally(() => setLoadingTables(false));
 
-      // Fetch Usage (Story 6.4)
+      // Fetch Usage via Server Action (Story 9.1)
       setLoadingUsage(true);
-      fetch(`${internalServiceRoot}/usage`)
-        .then(async (res) => {
-          // Guard: proxy may return plain-text errors — don't attempt JSON parse
-          const contentType = res.headers.get('content-type') || '';
-          if (!res.ok || !contentType.includes('application/json')) {
-            // Usage is non-critical: silently ignore errors
-            return null;
-          }
-          return res.json();
-        })
+      getDatasetUsage(selectedProject, selectedDataset)
         .then(data => { if (data) setUsageData(data); })
-        .catch(err => {
-          if (err.message && !/fetch/i.test(err.message)) {
-            console.error('Failed to fetch usage:', err);
-          }
-        })
+        .catch(() => { /* Usage is non-critical */ })
         .finally(() => setLoadingUsage(false));
 
       // Reset state when dataset changes (Story 8.2 Patch)
@@ -269,7 +233,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
       setUsageData(null);
       setLocalConnectionState('listening');
     }
-  }, [internalServiceRoot, setElenaTip, openElenaDrawer]);
+  }, [selectedProject, selectedDataset, setElenaTip, openElenaDrawer]);
 
   useEffect(() => {
     if (selectedProject && selectedDataset) {
@@ -598,7 +562,8 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
                     {/* Nested Column Selector (Story 8.2) */}
                     {selectedExpands.includes(prop.name) && (
                       <ExpandColumnSelector 
-                        baseUrl={serviceRoot}
+                        projectId={selectedProject}
+                        datasetId={selectedDataset}
                         entitySet={prop.type.split('.').pop() || prop.name}
                         selectedColumns={selectedExpandColumns[prop.name] || []}
                         onChange={(cols) => {

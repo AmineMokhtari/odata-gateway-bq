@@ -513,3 +513,26 @@ odata-gateway-bq/
 4. **Execution**: Fastify runs Dry-Run and returns decorated results (Elena Tips).
 5. **Streaming**: For actual data retrieval, the UI provides the user with the direct Fastify URL.
 - Ensure that `elena_tip` metadata is never stripped or ignored during the passthrough.
+
+## Architectural Revision: Epic 9 Hardening (2026-05-16)
+
+### Decision Priority Analysis
+
+**Critical Decisions:**
+- **Strict Server-Centric Metadata**: All metadata discovery (CSDL, Service Root, Connection Status) must route through Next.js Server Actions. Direct client-side calls to the Fastify gateway for metadata are strictly prohibited.
+- **Bi-directional Relationship Discovery**: The metadata manager must crawl both Inbound and Outbound Foreign Keys to support 1:N expansions.
+- **Identity-Job Security Boundary**: BigQuery Jobs must be strictly isolated by `user_identity` labels. The gateway must verify the identity on every result resumption request.
+
+**Important Decisions:**
+- **Server-Side XML Parsing**: Use `fast-xml-parser` in Server Actions to process CSDL metadata, avoiding dependency on browser-native APIs.
+- **BigQuery Nested Structs (1:N)**: Leverage `ARRAY(SELECT AS STRUCT ...)` for OData expansions that map to 1:N relationships.
+
+### Data Architecture (Revision: 2026-05-16)
+
+**1:N Expansion Pattern:**
+- **Logic**: If a navigation property represents a "Collection", the generator creates a correlated subquery.
+- **Type Mapping**: Navigation properties are wrapped in `Collection(Type)` in the EDM.
+
+**Security Isolation Pattern:**
+- **Logic**: Every Job ID is tagged with the user's verified identity.
+- **Verification**: On resumption via `$skiptoken`, the gateway checks the job's `user_identity` label against the requester's session.

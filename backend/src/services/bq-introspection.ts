@@ -30,6 +30,7 @@ export interface RelationshipMetadata {
   referencedDataset?: string
   referencedTable: string
   referencedColumn: string
+  type: 'TO_ONE' | 'TO_MANY'
 }
 
 export interface TableMetadata {
@@ -94,17 +95,19 @@ export async function getDatasetMetadata(
   `
   const [optionRows] = await bq.query({ query: optionsQuery, location })
 
-  // 4. Query INFORMATION_SCHEMA for Foreign Key relationships
-  // Fixed: Join on ordinal_position to correctly handle composite keys
+  // 4. Query INFORMATION_SCHEMA for Foreign Key relationships (Outbound and Inbound)
+  // Story 9.1: Identifying 1:N vs N:1 cardinalities
   const relationshipsQuery = `
+    -- Outbound Relationships (N:1)
     SELECT
-      k.constraint_name,
+      k.constraint_name as name,
       k.table_name,
       k.column_name,
-      c.table_catalog AS referenced_project_id,
-      c.table_schema AS referenced_dataset_id,
-      c.table_name AS referenced_table_name,
-      c.column_name AS referenced_column_name
+      c.table_catalog AS referenced_project,
+      c.table_schema AS referenced_dataset,
+      c.table_name AS referenced_table,
+      c.column_name AS referenced_column,
+      'TO_ONE' as rel_type
     FROM
       \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE\` k
     JOIN
@@ -120,6 +123,34 @@ export async function getDatasetMetadata(
       AND k.table_name = tc.table_name
     WHERE
       tc.constraint_type = 'FOREIGN KEY'
+
+    UNION ALL
+
+    -- Inbound Relationships (1:N)
+    -- We flip the perspective: tables that point TO us are our 'To-Many' relationships
+    SELECT
+      CONCAT('FK_IN_', k.table_name, '_', k.column_name) as name,
+      c.table_name, -- This is US (referenced table)
+      c.column_name, -- This is OUR column (PK/referenced column)
+      k.table_catalog AS referenced_project, -- This is THEM (source project)
+      k.table_schema AS referenced_dataset, -- This is THEM (source dataset)
+      k.table_name AS referenced_table, -- This is THEM (source table)
+      k.column_name AS referenced_column, -- This is THEIR column (FK)
+      'TO_MANY' as rel_type
+    FROM
+      \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE\` k
+    JOIN
+      \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE\` c
+    ON
+      k.constraint_name = c.constraint_name
+    JOIN
+      \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.TABLE_CONSTRAINTS\` tc
+    ON
+      k.constraint_name = tc.constraint_name
+      AND k.table_name = tc.table_name
+    WHERE
+      tc.constraint_type = 'FOREIGN KEY'
+      AND c.table_name != k.table_name -- Exclude self-references for simplicity in this pass
   `
   const [relRows] = await bq.query({ query: relationshipsQuery, location })
 
@@ -167,12 +198,13 @@ export async function getDatasetMetadata(
     const table = tablesMap.get(row.table_name)
     if (table) {
       table.relationships.push({
-        name: row.constraint_name,
+        name: row.name,
         column: row.column_name,
-        referencedProject: row.referenced_project_id,
-        referencedDataset: row.referenced_dataset_id,
-        referencedTable: row.referenced_table_name,
-        referencedColumn: row.referenced_column_name
+        referencedProject: row.referenced_project,
+        referencedDataset: row.referenced_dataset,
+        referencedTable: row.referenced_table,
+        referencedColumn: row.referenced_column,
+        type: row.rel_type
       })
     }
   }

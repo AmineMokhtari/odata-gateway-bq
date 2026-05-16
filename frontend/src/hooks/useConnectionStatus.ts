@@ -18,17 +18,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { type ConnectionState } from '@/components/catalog/SuccessPulseBadge';
+import { getConnectionStatus } from '@/app/actions/odata';
 
 interface UseConnectionStatusProps {
   projectId: string;
   datasetId: string;
   interval?: number;
-}
-
-interface ConnectionStatusResponse {
-  status: 'listening' | 'connected' | 'anonymous';
-  lastActive: number | null;
-  serverTime: number;
 }
 
 export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: UseConnectionStatusProps) {
@@ -40,14 +35,8 @@ export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: U
     if (!projectId || !datasetId) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || (typeof window !== 'undefined' ? `${window.location.origin}/web/api/gateway` : 'http://localhost:3005');
-      const response = await fetch(`${baseUrl}/v1/connection-status/${projectId}/${datasetId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch connection status');
-      }
-
-      const data: ConnectionStatusResponse = await response.json();
+      // Use Server Action (Story 9.1)
+      const data = await getConnectionStatus(projectId, datasetId);
       
       if (data.status === 'connected') {
         setState('connected');
@@ -58,10 +47,6 @@ export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: U
         setState('listening');
       }
     } catch (err: any) {
-      // Silence standard network fetch errors in console as they are expected during startup/restarts
-      if (err.message && !/fetch/i.test(err.message)) {
-        console.error('Polling error:', err.message);
-      }
       setError(err.message);
       setState('listening');
     }

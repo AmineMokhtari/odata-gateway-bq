@@ -35,6 +35,6 @@ Detailed exhaustive analysis of specific areas:
 - [Core Gateway & Governance Deep-Dive](./deep-dive-core-gateway-governance.md) - Comprehensive analysis of OData translation, budget enforcement, and Elena Tips (7 files, 1949 LOC) - Generated 2026-05-13
 
 ---
-*Last updated: 2026-05-13*
+*Last updated: 2026-05-16*
 Deep-Dives: 2
 

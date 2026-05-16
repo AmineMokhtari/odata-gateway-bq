@@ -61,6 +61,7 @@ The easiest way to connect to a dataset is via the Catalog's One-Click Excel int
 ## Tips for Success & Elena's Advice
 - **Use Filters:** If you are working with large datasets, use the OData filter options or the "Transform Data" view in Power BI to limit the data you pull.
 - **Stay Connected:** Your credentials are saved securely. You can refresh your data anytime by clicking **Refresh** in your tool.
+- **Advanced Joins (1:N):** You can now build complex joins visually in the Data Catalog. If a table has related data (e.g., an Order having multiple Line Items), you can select these in the "Related Data" section to include them in your export.
 - **Elena's Tips:** If you encounter an error (such as a 403 Budget Exceeded or 401 Unauthorized), the Catalog UI will automatically slide out the **Elena Drawer**. This provides you with plain-English explanations and actionable buttons to fix the issue (e.g., "Select fewer columns").
 - **Budget Limits:** Keep an eye on your Personal Usage Hub. Every query is pre-estimated to protect your organization from cost spikes.
 

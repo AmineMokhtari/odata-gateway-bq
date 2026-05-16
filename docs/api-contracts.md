@@ -16,9 +16,10 @@ Returns the dynamically generated OData Entity Data Model (EDM) in XML format.
 ### EntitySet (Data Fetch)
 `GET /v1/:projectId/:datasetId/:entitySet`
 The primary endpoint for fetching data.
-- **Query Parameters:** Supports OData V4 filtering (`$filter`), sorting (`$orderby`), paging (`$top`, `$skip`, `$skiptoken`), selection (`$select`), navigation (`$expand`), text search (`$search`), and calculated columns (`$compute`).
+- **Query Parameters:** Supports OData V4 filtering (`$filter`), sorting (`$orderby`), paging (`$top`, `$skip`, `$skiptoken`), selection (`$select`), navigation (`$expand` including 1:N collections), text search (`$search`), and calculated columns (`$compute`).
 - **Custom Parameters:** 
   - `?$explain=true`: Returns the generated SQL and Dry-Run cost estimate instead of the data.
+- **Security:** Every query job is isolated by user identity. Resuming results via `$skiptoken` is only permitted for the user who initiated the job.
 - **Response:** JSON-formatted OData envelope with results streamed directly from BigQuery.
 
 ### User Consumption (Usage Hub)

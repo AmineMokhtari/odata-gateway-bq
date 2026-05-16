@@ -20,6 +20,8 @@ editHistory:
     changes: 'Applied Top 3 validation improvements: implemented technology-agnostic phrasing in NFRs, added deterministic OData error codes, and specified metadata cache isolation logic.'
   - date: '2026-04-24'
     changes: 'Simplified architecture by removing Impersonation Mode. Transitioned to exclusive Trusted Subsystem model.'
+  - date: '2026-05-16'
+    changes: 'Architectural Hardening: Migrated all UI metadata to Server Actions (Server-to-Server). Implemented 1:N relationship discovery and Identity-Job security binding.'
 ---
 
 # Product Requirements Document - odata-gateway-bq

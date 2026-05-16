@@ -84,7 +84,8 @@ export class GatewayClient {
       ...options,
       headers: mergedHeaders,
       next: { 
-        revalidate: 0 
+        revalidate: 0,
+        ...(options as any).next
       }
     })
 

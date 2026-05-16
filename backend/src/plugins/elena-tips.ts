@@ -87,7 +87,19 @@ export default fp(async (fastify) => {
             return JSON.stringify(body)
           }
         } catch (e) {
-          // Payload is not JSON or malformed
+          // Payload is not JSON or malformed - wrap it to prevent browser syntax errors (Story 6.1 Pivot Stability)
+          console.log(`[ElenaTips] Wrapping non-JSON payload: ${payload}`)
+          const wrapped = {
+            error: {
+              code: statusCode === 403 ? 'BudgetExceeded' : statusCode === 401 ? 'Unauthorized' : 'ServerError',
+              message: payload,
+              elena_tip: statusCode === 403 ? {
+                message: 'Query too large for current budget. Elena suggests selecting fewer columns.',
+                quick_fixes: [{ label: 'Select fewer columns', action: 'SELECT_COLUMNS' }]
+              } : null
+            }
+          }
+          return JSON.stringify(wrapped)
         }
       }
     }

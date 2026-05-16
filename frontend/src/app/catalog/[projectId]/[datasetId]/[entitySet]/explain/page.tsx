@@ -22,6 +22,7 @@ import { ChevronLeft, Code, ExternalLink, Info } from 'lucide-react';
 import Link from 'next/link';
 import { mapErrorToElenaAdvice } from '@/lib/error-mapping';
 import { ElenaAdviceCard } from '@/components/catalog/ElenaAdviceCard';
+import { explainQuery } from '@/app/actions/odata';
 
 interface ExplainPageProps {
   params: Promise<{
@@ -41,21 +42,8 @@ export default async function ExplainPage({ params, searchParams }: ExplainPageP
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
 
-  const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
-  
-  // Fetch detailed explanation from the backend
-  let explainData = null;
-  try {
-    const response = await fetch(
-      `${baseUrl}/v1/${projectId}/${datasetId}/${entitySet}?${odataQuery}&explain=true`,
-      { cache: 'no-store' }
-    );
-    if (response.ok) {
-      explainData = await response.json();
-    }
-  } catch (err) {
-    console.error('Failed to fetch explain data:', err);
-  }
+  // Fetch detailed explanation from the backend via Server Action (Story 9.1)
+  const explainData = await explainQuery(projectId, datasetId, entitySet, odataQuery);
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 lg:py-20">

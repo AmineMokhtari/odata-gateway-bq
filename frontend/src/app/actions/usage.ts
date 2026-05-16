@@ -16,16 +16,12 @@
 
 'use server'
 
-import { fetchWithRetry } from '@/lib/fetch-retry';
-
-const GATEWAY_URL = process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://127.0.0.1:3005';
+import { gatewayClient } from '@/lib/gateway-client';
 
 export async function getGlobalUsage() {
   try {
-    console.log(`[usage] fetching from ${GATEWAY_URL}/internal/usage`);
-    const response = await fetchWithRetry(`${GATEWAY_URL}/internal/usage`, {
+    const response = await gatewayClient.get('/internal/usage', {
       cache: 'no-store',
-      signal: undefined,
     });
 
     if (!response.ok) {
@@ -40,5 +36,21 @@ export async function getGlobalUsage() {
       lastJobs: [],
       budgetBytes: 1024 * 1024 * 1024 // Default 1GB
     };
+  }
+export async function getDatasetUsage(projectId: string, datasetId: string) {
+  try {
+    const response = await gatewayClient.get(`/v1/${projectId}/${datasetId}/usage`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) return null; // Usage not available for this dataset yet
+      throw new Error(`Backend returned ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (err: any) {
+    console.error(`[usage] Failed to fetch usage for ${projectId}/${datasetId}:`, err.message);
+    return null;
   }
 }

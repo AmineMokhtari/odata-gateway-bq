@@ -88,6 +88,7 @@ development_status:
   6-2-visual-join-builder-expand: done
   6-3-visual-aggregation-builder-apply: done
   6-4-self-service-usage-dashboard: done
+  6-1-pivot-cloud-native-elena-tips: review
   epic-6-retrospective: done
 
   # Epic 7: Enterprise Governance
@@ -102,4 +103,11 @@ development_status:
   8-3-odata-count-backend-support: done
   8-4-odata-apply-backend-support: done
   8-5-odata-persistent-logs: done
-  epic-8-retrospective: optional
+  epic-8-retrospective: done
+
+  # Epic 9: Performance & Scalability Resilience
+  epic-9: done
+  9-1-server-centric-metadata-layer: done
+  9-2-1-n-expansion-support: done
+  9-3-identity-job-binding: done
+  epic-9-retrospective: done

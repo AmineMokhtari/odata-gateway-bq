@@ -79,7 +79,11 @@ export function generateEdm(metadata: DatasetMetadata): string {
       // Use Relationship Name for NavigationProperty to avoid collisions
       // if multiple FKs point to the same table.
       const navPropName = escapeXml(rel.name)
-      navigationProperties += `        <NavigationProperty Name="${navPropName}" Type="${namespace}.${escapeXml(rel.referencedTable)}">
+      const isCollection = rel.type === 'TO_MANY'
+      const targetType = `${namespace}.${escapeXml(rel.referencedTable)}`
+      const typeAttr = isCollection ? `Collection(${targetType})` : targetType
+      
+      navigationProperties += `        <NavigationProperty Name="${navPropName}" Type="${typeAttr}">
           <ReferentialConstraint Property="${escapeXml(rel.column)}" ReferencedProperty="${escapeXml(rel.referencedColumn)}" />
         </NavigationProperty>\n`
     }
