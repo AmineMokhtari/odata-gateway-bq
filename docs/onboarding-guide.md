@@ -46,7 +46,6 @@ npm run dev
 ```
 - **Backend API**: `http://127.0.0.1:3002` (Note: We use 127.0.0.1 and port 3002 to avoid IPv6 loopback issues).
 - **Frontend / Catalog UI**: `http://localhost:3000`
-- **Frontend API Proxy**: `/web/api/gateway/*` (Proxies to the backend to avoid CORS).
 
 > [!TIP]
 > The backend compiled code resides in `backend/dist/backend/src/app.js`. This nested structure is due to the inclusion of shared libraries in the build.
