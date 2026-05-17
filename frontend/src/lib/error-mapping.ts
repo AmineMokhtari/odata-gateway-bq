@@ -67,6 +67,7 @@ export const mapErrorToElenaAdvice = (code: string, datasetId?: string): ElenaAd
     default:
       return {
         title: 'Something Unexpected',
+        message: 'Something went wrong while processing your request.',
         advice: "Elena says: Double-check your connection or try refreshing the page. If it keeps happening, I'm here to help!",
         nextStepLink: {
           label: 'Refresh Page',

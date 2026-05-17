@@ -30,13 +30,15 @@ export async function getGlobalUsage() {
 
     return await response.json();
   } catch (err: any) {
-    console.error(`[usage] Failed to fetch global usage (url=${GATEWAY_URL}):`, err.message);
+    console.error(`[usage] Failed to fetch global usage (url=${process.env.GATEWAY_URL}):`, err.message);
     return {
       totalBytesBilled: 0,
       lastJobs: [],
       budgetBytes: 1024 * 1024 * 1024 // Default 1GB
     };
   }
+}
+
 export async function getDatasetUsage(projectId: string, datasetId: string) {
   try {
     const response = await gatewayClient.get(`/v1/${projectId}/${datasetId}/usage`, {
