@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
 
-import { validateConfig } from './config.js'
+import { validateConfig, config } from './config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -31,7 +31,19 @@ export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPlugin
 const options: AppOptions = {
   pluginTimeout: 30000,
   requestIdHeader: 'x-correlation-id',
-  requestIdLogLabel: 'correlation_id'
+  requestIdLogLabel: 'correlation_id',
+  logger: config.isDev
+    ? {
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'HH:MM:ss Z',
+            ignore: 'pid,hostname'
+          }
+        }
+      }
+    : true
 }
 
 const app: FastifyPluginAsync<AppOptions> = async (
