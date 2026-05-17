@@ -81,7 +81,10 @@ test('Epic 3: Governed data streaming engine', async (t) => {
     job: (id: string) => ({
       get: async () => [{
         id,
-        metadata: { statistics: { query: { totalRows: '100' } } },
+        metadata: { 
+          statistics: { query: { totalRows: '100' } },
+          labels: { user_identity: 'elena_example_com' }
+        },
         getQueryResultsStream: () => {
            const s = new Readable({
             objectMode: true,

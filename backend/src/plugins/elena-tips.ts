@@ -32,13 +32,13 @@ export default fp(async (fastify) => {
     if (reply.statusCode >= 400 && typeof payload === 'string') {
       const contentType = reply.getHeader('content-type')?.toString() || ''
       if (contentType.includes('application/json')) {
+        const statusCode = reply.statusCode
         try {
           const body = JSON.parse(payload)
           
           // Detect error identifiers
           const code = body.code || (body.error && typeof body.error === 'object' ? body.error.code : '') || ''
           const message = body.message || (body.error && typeof body.error === 'object' ? body.error.message : '') || ''
-          const statusCode = reply.statusCode
 
           console.log(`[ElenaTips] Processing error: ${statusCode} ${code} ${message}`)
 

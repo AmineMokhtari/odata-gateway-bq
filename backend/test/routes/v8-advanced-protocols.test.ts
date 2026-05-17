@@ -103,7 +103,8 @@ test('Epic 8: Advanced OData protocols engine', async (t) => {
           name: 'Details',
           referencedTable: 'ProductDetails',
           referencedColumn: 'prod_id',
-          column: 'id'
+          column: 'id',
+          type: 'TO_ONE'
         }]
       }]
     })

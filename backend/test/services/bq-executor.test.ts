@@ -29,6 +29,8 @@ test('BQ Executor Audit Labels', async (t) => {
       'SELECT * FROM `table`',
       'user@example.com',
       'req-123',
+      undefined,
+      undefined,
       {},
       'US'
     )
@@ -60,6 +62,8 @@ test('BQ Executor Audit Labels', async (t) => {
       'SELECT * FROM `table`',
       'dry-run@example.com',
       'audit-456',
+      undefined,
+      undefined,
       {},
       'EU'
     )

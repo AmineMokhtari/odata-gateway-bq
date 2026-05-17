@@ -18,10 +18,10 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
- * Middleware to handle Correlation ID tracing.
+ * Proxy handler to manage Correlation ID tracing.
  * Ensures every request has an x-correlation-id.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID()
 
   // 1. Inject into request headers so Server Components can read it
@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
 }
 
 /**
- * Configure which paths should trigger the middleware.
+ * Configure which paths should trigger the proxy handler.
  */
 export const config = {
   matcher: [

@@ -51,6 +51,10 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
     throw new Error('SESSION_SECRET must be at least 32 characters long')
   }
 
+  if (!anonymousMode && (!issuer || !audience)) {
+    throw new Error('OIDC_ISSUER and OIDC_AUDIENCE are mandatory for authentication. Security initialization failed.')
+  }
+
   // Register cookie and session plugins
   await fastify.register(fastifyCookie)
   await fastify.register(fastifySecureSession, {
@@ -91,8 +95,6 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
 
   if (anonymousMode) {
     fastify.log.warn('Authentication is running in ANONYMOUS_MODE. This is intended for development or offloaded authentication scenarios only.')
-  } else if (!issuer || !audience) {
-    throw new Error('OIDC_ISSUER and OIDC_AUDIENCE are mandatory for authentication. Security initialization failed.')
   }
 
   // Normalize issuer to have trailing slash for consistency

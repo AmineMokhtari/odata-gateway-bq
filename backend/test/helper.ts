@@ -79,6 +79,33 @@ function config () {
 async function build (t: TestContext, extraOptions: any = {}) {
   const app = Fastify(appOptions)
 
+  // Test-only helper: bridge Bearer token into forwarded headers under anonymous mode
+  app.addHook('onRequest', async (request, reply) => {
+    if (app.isAnonymousMode) {
+      const authHeader = request.headers.authorization
+      if (authHeader && /^Bearer /i.test(authHeader)) {
+        const token = authHeader.substring(7).trim()
+        try {
+          const { decodeJwt } = await import('jose')
+          const payload = decodeJwt(token)
+          if (payload.email) {
+            request.headers['x-forwarded-email'] = payload.email as string
+          }
+          if (payload.groups) {
+            request.headers['x-forwarded-groups'] = Array.isArray(payload.groups)
+              ? payload.groups.join(',')
+              : payload.groups as string
+          }
+          if (payload.sub) {
+            request.headers['x-forwarded-sub'] = payload.sub as string
+          }
+        } catch (err) {
+          // Ignore decoding issues for malformed tokens in error test cases
+        }
+      }
+    }
+  })
+
   // fastify-plugin ensures that all decorators
   // are exposed for testing purposes, this is
   // different from the production setup

@@ -197,7 +197,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       fastify.usageTracker.recordPulse(projectId, datasetId, request.user.email || request.user.sub, request.id as string)
     }
 
-    reply.type('application/xml').send(edm)
+    return reply.type('application/xml').send(edm)
   })
 
   // OData EntitySet (Data Fetch)

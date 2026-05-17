@@ -4,6 +4,8 @@ import Fastify from 'fastify'
 import Auth from '../../src/plugins/auth.js'
 import TokenCache from '../../src/plugins/00-metadata-cache.js'
 import { generateKeyPair, SignJWT, createLocalJWKSet, exportJWK } from 'jose'
+import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
 
 test('auth plugin', async (t) => {
   const { publicKey, privateKey } = await generateKeyPair('RS256')
@@ -20,8 +22,7 @@ test('auth plugin', async (t) => {
     .setExpirationTime('2h')
     .sign(privateKey)
 
-  // Create a local JWK set to avoid fetch in jwtVerify
-  const jwks = createLocalJWKSet({
+  const jwksJson = {
     keys: [
       {
         ...jwk,
@@ -30,13 +31,34 @@ test('auth plugin', async (t) => {
         kid: 'test-kid'
       }
     ]
-  }) as any
+  }
+
+  // Create a local JWK set to avoid fetch in jwtVerify
+  const jwks = createLocalJWKSet(jwksJson) as any
+
+  // Setup MSW to mock OIDC discovery
+  const server = setupServer(
+    http.get(`${issuer.replace(/\/$/, '')}/.well-known/openid-configuration`, () => {
+      return HttpResponse.json({
+        issuer,
+        jwks_uri: `${issuer}jwks.json`,
+        authorization_endpoint: `${issuer}auth`,
+        token_endpoint: `${issuer}token`
+      })
+    }),
+    http.get(`${issuer}jwks.json`, () => {
+      return HttpResponse.json(jwksJson)
+    })
+  )
+
+  server.listen({ onUnhandledRequest: 'bypass' })
+  t.after(() => server.close())
 
   const dummyFetch = async () => ({ ok: true, status: 200, json: async () => ({}) })
 
   await t.test('should skip auth for /health even with query params', async (t) => {
     const fastify = Fastify()
-    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any })
+    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any, anonymousMode: false })
     fastify.get('/health', async () => ({ status: 'ok' }))
     await fastify.ready()
 
@@ -48,7 +70,7 @@ test('auth plugin', async (t) => {
 
   await t.test('should protect root / by default', async (t) => {
     const fastify = Fastify()
-    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any })
+    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any, anonymousMode: false })
     fastify.get('/', async () => ({ status: 'ok' }))
     await fastify.ready()
 
@@ -60,7 +82,7 @@ test('auth plugin', async (t) => {
 
   await t.test('should reject request without token', async (t) => {
     const fastify = Fastify()
-    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any })
+    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any, anonymousMode: false })
     fastify.get('/protected', async () => ({ ok: true }))
     await fastify.ready()
 
@@ -76,7 +98,8 @@ test('auth plugin', async (t) => {
       issuer, 
       audience, 
       jwks,
-      fetch: dummyFetch as any
+      fetch: dummyFetch as any,
+      anonymousMode: false
     })
     fastify.get('/protected', async (request) => ({ user: request.user }))
     await fastify.ready()
@@ -107,7 +130,7 @@ test('auth plugin', async (t) => {
       .setExpirationTime('2h')
       .sign(privateKey)
 
-    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any })
+    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any, anonymousMode: false })
     fastify.get('/identity', async (request) => ({ user: request.user }))
     await fastify.ready()
 
@@ -127,7 +150,7 @@ test('auth plugin', async (t) => {
     const fastify = Fastify()
     // Override env vars with empty strings to trigger mandatory check
     await assert.rejects(async () => {
-      await fastify.register(Auth, { issuer: '', audience: '', fetch: dummyFetch as any })
+      await fastify.register(Auth, { issuer: '', audience: '', fetch: dummyFetch as any, anonymousMode: false })
       await fastify.ready()
     }, /mandatory/)
   })
@@ -149,7 +172,7 @@ test('auth plugin', async (t) => {
       return { ok: true, status: 200, json: async () => ({}) }
     }
 
-    await fastify.register(Auth, { issuer, audience, fetch: mockFetch as any })
+    await fastify.register(Auth, { issuer, audience, fetch: mockFetch as any, anonymousMode: false })
     await fastify.ready()
     assert.equal(calls, 2)
   })

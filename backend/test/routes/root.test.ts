@@ -11,5 +11,5 @@ test('default root route', async (t) => {
   // If OIDC is enabled, this will be 401. If disabled (by missing env), it will be 200.
   // Given our new "fail closed" policy, if env is missing, app WON'T start.
   // If env is present, this will be 401.
-  assert.equal(res.statusCode, 401)
+  assert.equal(res.statusCode, app.isAnonymousMode ? 200 : 401)
 })

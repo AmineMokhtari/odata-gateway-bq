@@ -9,7 +9,7 @@
     "test": "backend/test"
   },
   "scripts": {
-    "test": "npm run build:backend && tsc -p backend/test/tsconfig.json && cross-env OIDC_ISSUER=http://localhost/ OIDC_AUDIENCE=test-audience BQ_BILLING_PROJECT_ID=test-project GCP_WORKLOAD_POOL_ID=test-project GCP_WORKLOAD_PROVIDER_ID=test-provider FASTIFY_AUTOLOAD_TYPESCRIPT=1 node --test --test-concurrency 1 --import tsx backend/test/**/*.test.ts",
+    "test": "npm run build:backend && tsc -p backend/test/tsconfig.json && cross-env TENANTS_CONFIG_PATH=backend/config/tenants.yaml OIDC_ISSUER=http://localhost/ OIDC_AUDIENCE=test-audience BQ_BILLING_PROJECT_ID=test-project GCP_WORKLOAD_POOL_ID=test-project GCP_WORKLOAD_PROVIDER_ID=test-provider FASTIFY_AUTOLOAD_TYPESCRIPT=1 node --test --test-concurrency 1 --import tsx backend/test/**/*.test.ts",
     "start": "npm run build:backend && fastify start --options -a 0.0.0.0 -l info -T 30000 backend/dist/backend/src/app.js --port 3005",
     "build:backend": "cd backend && tsc",
     "watch:backend": "cd backend && tsc -w",
