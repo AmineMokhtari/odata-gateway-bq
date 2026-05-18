@@ -58,6 +58,38 @@ The easiest way to connect to a dataset is via the Catalog's One-Click Excel int
 
 ---
 
+## Row-Level Filtering & "Query Folding" (Highly Recommended)
+
+When working with large BigQuery datasets, **do not load the entire table first and then filter it**. Doing so scans more data, increases query execution times, and can consume your personal query budget.
+
+Instead, leverage **Query Folding**. Both Microsoft Excel and Power BI support this natively over OData feeds. This means any filter you apply visually inside your tool is automatically translated into an OData `$filter` parameter and sent back to the BigQuery engine to run as a native `WHERE` clause.
+
+### Step-by-Step: Filtering your Data Visually
+1. When connecting via Excel or Power BI, do not click **Load** immediately in the *Navigator* window. Instead, click **Transform Data**.
+2. This opens the **Power Query Editor**.
+3. Locate the column you want to filter (e.g., `Region`, `EventDate`, or `Status`).
+4. Click the **drop-down arrow** in that column's header.
+5. Apply your desired filter (e.g., select specific values, or use *Date Filters* to specify a date range).
+6. Click **Close & Apply** in the top-left corner.
+7. Only the filtered data will be scanned on BigQuery and loaded into your tool.
+
+```mermaid
+sequenceDiagram
+    participant BI as Excel / Power BI
+    participant GW as OData Gateway
+    participant BQ as Google BigQuery
+
+    Note over BI: User filters visually in Power Query:<br/>Region equals "West"
+    BI->>GW: HTTP GET .../Sales?$select=Id,Region&$filter=Region eq 'West'
+    Note over GW: Gateway parses OData query<br/>and translates it to SQL
+    GW->>BQ: Run SQL: SELECT Id, Region FROM Sales WHERE Region = 'West'
+    BQ-->>GW: Returns only the matching rows (scanned volume is minimized)
+    GW-->>BI: Returns JSON OData feed response
+    Note over BI: Renders the filtered<br/>rows in your sheet
+```
+
+---
+
 ## Tips for Success & Elena's Advice
 - **Use Filters:** If you are working with large datasets, use the OData filter options or the "Transform Data" view in Power BI to limit the data you pull.
 - **Stay Connected:** Your credentials are saved securely. You can refresh your data anytime by clicking **Refresh** in your tool.
