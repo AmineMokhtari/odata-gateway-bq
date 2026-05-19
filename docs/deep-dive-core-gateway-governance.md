@@ -73,7 +73,7 @@ if (selectedGroupBy.length > 0 || Object.keys(selectedAggs).length > 0) {
 
 ---
 
-### backend/src/routes/v1/index.ts
+### obq-gateway/src/routes/v1/index.ts
 
 **Purpose:** The primary API surface for OData data access and administrative controls.
 **Lines of Code:** 618
@@ -91,7 +91,7 @@ This file orchestrates the entire "Audit-Execute" pipeline. It handles metadata 
 - `../../services/bq-executor.js` - Execution and streaming.
 
 **Used By:**
-- `backend/src/app.ts` (Registered as a plugin)
+- `obq-gateway/src/app.ts` (Registered as a plugin)
 
 **Key Implementation Details:**
 ```typescript
@@ -115,7 +115,7 @@ if (skiptoken) {
 
 ---
 
-### backend/src/middleware/audit/dry-run-gate.ts
+### obq-gateway/src/middleware/audit/dry-run-gate.ts
 
 **Purpose:** Enforces governance rules by performing BigQuery dry-runs before query execution.
 **Lines of Code:** 54
@@ -152,7 +152,7 @@ This is where the "Elena" persona is defined. New governance rules added to the 
 
 ---
 
-### backend/src/plugins/usage-tracker.ts
+### obq-gateway/src/plugins/usage-tracker.ts
 
 **Purpose:** Intercepts Fastify request lifecycles to track query usage and user active pulses per tenant dataset.
 **Lines of Code:** 110
@@ -167,7 +167,7 @@ This is where the "Elena" persona is defined. New governance rules added to the 
 
 ---
 
-### backend/src/services/bq-storage.ts
+### obq-gateway/src/services/bq-storage.ts
 
 **Purpose:** Manages the low-level connection to the BigQuery Storage Write API and serializes logs into Protocol Buffer binary arrays.
 **Lines of Code:** 132
@@ -182,7 +182,7 @@ This is where the "Elena" persona is defined. New governance rules added to the 
 
 ---
 
-### backend/src/services/usage-audit.ts
+### obq-gateway/src/services/usage-audit.ts
 
 **Purpose:** Fetches monthly metrics and query histories for a specific user to display in the frontend personal hub.
 **Lines of Code:** 160
@@ -241,7 +241,7 @@ graph TD
   - Ensure any new OData parameter added is supported by `odata-v4-parser` in the backend.
   - Test streaming with at least 500+ rows to verify $skiptoken generation.
 - **Suggested Tests Before PR:** 
-  - `npm run test:backend` to verify paging and budget enforcement.
+  - `npm run test` to verify paging and budget enforcement.
   - Manual verification of OData URL in Excel "OData Feed" source.
 
 ## Architecture & Design Patterns

@@ -29,7 +29,7 @@ export default fp(async (fastify, opts) => {
   const configPath = process.env.TENANTS_CONFIG_PATH || 
     (existsSync(join(__dirname, '..', '..', 'config', 'tenants.yaml')) 
       ? join(__dirname, '..', '..', 'config', 'tenants.yaml')
-      : join(process.cwd(), 'backend', 'config', 'tenants.yaml'))
+      : join(process.cwd(), 'obq-gateway', 'config', 'tenants.yaml'))
   const configMap = new Map<string, TenantConfig>()
 
   const loadConfig = () => {

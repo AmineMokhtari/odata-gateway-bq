@@ -84,7 +84,7 @@ Every gateway event (including dataset queries, tenant active pulses, and schema
 The gateway strictly segregates **preventive enforcement** from **observability reporting** to ensure cost control without database lag:
 
 * **Preventive Enforcement (Per-Query dry-run):**
-  When a query is received, the gateway evaluates the query structure using a BigQuery **Dry Run** (via [dry-run-gate.ts](file:///home/amine_mokhtari/projects/odata-gateway-bq/backend/src/middleware/audit/dry-run-gate.ts)). This pre-flight check returns estimated bytes to scan. If the estimate exceeds the tenant's single-query budget limit (e.g., `scan_budget_gb` in `tenants.yaml`), the query is actively blocked before execution. **The cumulative monthly quota does not block the query; enforcement is strictly per-query.**
+  When a query is received, the gateway evaluates the query structure using a BigQuery **Dry Run** (via [dry-run-gate.ts](file:///home/amine_mokhtari/projects/odata-gateway-bq/obq-gateway/src/middleware/audit/dry-run-gate.ts)). This pre-flight check returns estimated bytes to scan. If the estimate exceeds the tenant's single-query budget limit (e.g., `scan_budget_gb` in `tenants.yaml`), the query is actively blocked before execution. **The cumulative monthly quota does not block the query; enforcement is strictly per-query.**
   
 * **Observability Reporting (Personal Usage Hub):**
   To power the dashboard metrics in the frontend, the gateway queries both custom and native logs:

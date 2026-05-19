@@ -48,7 +48,7 @@ npm run dev
 - **Frontend / Catalog UI**: `http://localhost:3000`
 
 > [!TIP]
-> The backend compiled code resides in `backend/dist/backend/src/app.js`. This nested structure is due to the inclusion of shared libraries in the build.
+> The compiled code resides in `obq-gateway/dist/obq-gateway/src/app.js`. This nested structure is due to the inclusion of shared libraries in the build.
 
 ### E. Testing & Verification
 - **Standard Testing**: Runs the full suite using mocks:

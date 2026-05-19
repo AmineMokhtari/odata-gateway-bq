@@ -67,7 +67,7 @@ Get the gateway running locally in three simple steps:
     *   **OData API:** `http://localhost:3001/v1/your-project/your-dataset/$metadata`
 
 > [!TIP]
-> The backend build generates artifacts in `backend/dist/backend/src/`. This path is automatically handled by `npm run dev`.
+> The compiled build generates artifacts in `obq-gateway/dist/obq-gateway/src/`. This path is automatically handled by `npm run dev`.
 
 ---
 

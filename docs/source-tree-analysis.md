@@ -6,7 +6,7 @@ This document provides an annotated overview of the **odata-gateway-bq** project
 
 ```text
 odata-gateway-bq/
-├── backend/                 # API Gateway Service (Fastify)
+├── obq-gateway/             # API Gateway Service (Fastify)
 │   ├── config/              # Tenant configuration (tenants.yaml)
 │   ├── src/
 │   │   ├── app.ts           # Service entry point

@@ -41,7 +41,7 @@ export async function getTenants(): Promise<TenantConfig[]> {
     
     // Fallback to local file reading if backend is unavailable
     try {
-      const envPath = process.env.TENANTS_CONFIG_PATH || 'backend/config/tenants.yaml';
+      const envPath = process.env.TENANTS_CONFIG_PATH || 'obq-gateway/config/tenants.yaml';
       const pathsToTry = [
         join(process.cwd(), envPath),
         join(process.cwd(), '..', envPath),
