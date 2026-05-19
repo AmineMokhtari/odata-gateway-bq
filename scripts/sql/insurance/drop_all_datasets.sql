@@ -1,0 +1,17 @@
+DROP SCHEMA IF EXISTS `health_insurance_policy_v1` CASCADE;
+DROP SCHEMA IF EXISTS `dynamic_cash_flow_v1` CASCADE;
+DROP SCHEMA IF EXISTS `scenario_simulation_v1` CASCADE;
+DROP SCHEMA IF EXISTS `regulatory_submission_v1` CASCADE;
+DROP SCHEMA IF EXISTS `renters_insurance_v1` CASCADE;
+DROP SCHEMA IF EXISTS `billing_reconciliation_prod_v1` CASCADE;
+DROP SCHEMA IF EXISTS `customer_360_v1` CASCADE;
+DROP SCHEMA IF EXISTS `esg_entity_rating_v1` CASCADE;
+DROP SCHEMA IF EXISTS `fpa_insurance_v1` CASCADE;
+DROP SCHEMA IF EXISTS `actuarial_risk_v1` CASCADE;
+DROP SCHEMA IF EXISTS `claims_triage_v1` CASCADE;
+DROP SCHEMA IF EXISTS `home_insurance_v1` CASCADE;
+DROP SCHEMA IF EXISTS `actuarial_loss_development_v1` CASCADE;
+DROP SCHEMA IF EXISTS `carbon_emissions_data_v1` CASCADE;
+DROP SCHEMA IF EXISTS `car_insurance_policies_v1` CASCADE;
+DROP SCHEMA IF EXISTS `customer_v1` CASCADE;
+DROP SCHEMA IF EXISTS `underwriting_risk_v1` CASCADE;

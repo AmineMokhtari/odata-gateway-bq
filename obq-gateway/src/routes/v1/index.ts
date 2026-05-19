@@ -94,7 +94,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     let metadata = fastify.metadataCache.get(cacheKey)
     if (!metadata) {
       const bq = fastify.getBQClient(projectId)
-      metadata = await getDatasetMetadata(bq, datasetId)
+      metadata = await getDatasetMetadata(bq, datasetId, projectId)
       fastify.metadataCache.set(cacheKey, metadata)
     }
 
@@ -145,7 +145,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       const bq = fastify.getBQClient(projectId)
       console.log(`[DEBUG] Fetching metadata for ${projectId}:${datasetId}...`)
       try {
-        metadata = await getDatasetMetadata(bq, datasetId)
+        metadata = await getDatasetMetadata(bq, datasetId, projectId)
         console.log(`[DEBUG] Successfully fetched metadata for ${projectId}:${datasetId}`)
         fastify.metadataCache.set(cacheKey, metadata)
       } catch (err: any) {
@@ -187,7 +187,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     let edm = fastify.metadataCache.get(cacheKey) as unknown as string
     if (!edm) {
       const bq = fastify.getBQClient(projectId)
-      const metadata = await getDatasetMetadata(bq, datasetId)
+      const metadata = await getDatasetMetadata(bq, datasetId, projectId)
       edm = generateEdm(metadata)
       fastify.metadataCache.set(cacheKey, edm as any)
     }
