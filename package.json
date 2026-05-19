@@ -13,11 +13,11 @@
     "start": "npm run build:backend && fastify start --options -a 0.0.0.0 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port 3005",
     "build:backend": "cd obq-gateway && tsc",
     "watch:backend": "cd obq-gateway && tsc -w",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"Gateway,Hub\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",
     "dev:clean": "npx kill-port 3005 3002 3000 && npm run dev",
     "dev:backend": "npm run build:backend && cross-env PORT=3005 fastify start --options -a 127.0.0.1 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port 3005",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:frontend:delayed": "npx wait-on tcp:127.0.0.1:3005 -t 120000 --interval 500 && cd frontend && cross-env GATEWAY_URL=http://127.0.0.1:3005 NEXT_PUBLIC_GATEWAY_URL=http://127.0.0.1:3005 npm run dev"
+    "dev:frontend": "cd obq-hub && npm run dev",
+    "dev:frontend:delayed": "npx wait-on tcp:127.0.0.1:3005 -t 120000 --interval 500 && cd obq-hub && cross-env GATEWAY_URL=http://127.0.0.1:3005 NEXT_PUBLIC_GATEWAY_URL=http://127.0.0.1:3005 npm run dev"
   },
   "keywords": [],
   "author": "Amine MOKHTARI",

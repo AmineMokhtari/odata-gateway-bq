@@ -18,7 +18,7 @@ odata-gateway-bq/
 │   │       ├── usage-audit.ts # Consumption tracking logic
 │   │       ├── bq-introspection.ts # FK relationship discovery
 │   │       └── odata-metadata.ts # $metadata XML generator
-├── frontend/                # Catalog UI (Next.js)
+├── obq-hub/                 # Catalog UI (Next.js)
 │   ├── src/
 │   │   ├── app/             # Application routes
 │   │   │   ├── catalog/

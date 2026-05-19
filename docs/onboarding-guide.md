@@ -27,11 +27,11 @@ We use **Application Default Credentials (ADC)** to avoid handling sensitive JSO
    git clone <repo-url>
    cd odata-gateway-bq
    npm install
-   cd frontend && npm install
+   cd obq-hub && npm install
    ```
 
 > [!NOTE]
-> If you encounter missing UI components in the frontend (e.g., checkbox, progress), ensure you have installed them via shadcn: `cd frontend && npx shadcn@latest add checkbox progress`.
+> If you encounter missing UI components in the frontend (e.g., checkbox, progress), ensure you have installed them via shadcn: `cd obq-hub && npx shadcn@latest add checkbox progress`.
 
 2. **Prepare Configuration Files**:
    ```bash
@@ -64,7 +64,7 @@ npm run dev
 ### F. Mocking with MSW (Optional)
 The frontend includes **Mock Service Worker (MSW)** for testing or offline development.
 1. **Enable Mocking**: Set `NEXT_PUBLIC_API_MOCKING=true` in your `.env` file.
-2. **Configuration**: Mocks are located in `frontend/src/mocks/`.
+2. **Configuration**: Mocks are located in `obq-hub/src/mocks/`.
 3. **Note**: By default, MSW is disabled to allow direct communication with your local backend.
 
 ### G. Code Structure Conventions

@@ -23,7 +23,7 @@ This deep-dive covers the primary interface and enforcement layer of the **odata
 
 ## Complete File Inventory
 
-### frontend/src/components/catalog/ODataUrlBuilder.tsx
+### obq-hub/src/components/catalog/ODataUrlBuilder.tsx
 
 **Purpose:** The central UI component for visually constructing OData URLs and managing the connection lifecycle.
 **Lines of Code:** 801
@@ -42,7 +42,7 @@ This is a high-complexity component that manages a large reactive state. Changes
 - `@/lib/error-mapping` - Technical error translation.
 
 **Used By:**
-- `frontend/src/app/catalog/[projectId]/[datasetId]/page.tsx`
+- `obq-hub/src/app/catalog/[projectId]/[datasetId]/page.tsx`
 
 **Key Implementation Details:**
 ```tsx
@@ -138,7 +138,7 @@ if (estimatedBytes > budgetBytes) {
 
 ---
 
-### frontend/src/lib/error-mapping.ts
+### obq-hub/src/lib/error-mapping.ts
 
 **Purpose:** Maps technical OData/BigQuery error codes to business-friendly, actionable advice.
 **Lines of Code:** 78
