@@ -30,7 +30,7 @@ export const config = {
   defaultLocation: process.env.BQ_DEFAULT_LOCATION || 'US',
   
   // Audit Logs (Story 8.5)
-  auditDataset: process.env.BQ_AUDIT_DATASET || 'audit_logs',
+  auditDataset: process.env.BQ_AUDIT_DATASET || 'obq_audit_logs',
   auditTable: process.env.BQ_AUDIT_TABLE || 'api_audit',
 
   // Identity & Access (Epic 1)

@@ -152,6 +152,86 @@ This is where the "Elena" persona is defined. New governance rules added to the 
 
 ---
 
+### backend/src/plugins/usage-tracker.ts
+
+**Purpose:** Intercepts Fastify request lifecycles to track query usage and user active pulses per tenant dataset.
+**Lines of Code:** 110
+**File Type:** TypeScript (Fastify Plugin)
+
+**What Future Contributors Must Know:**
+* Decorates the Fastify instance with a global `usageTracker` helper.
+* Tracks in-memory metrics for fast query/pulse checking but delegates persistent storage asynchronously to avoid execution blockages.
+
+**Exports:**
+* Global `usageTracker` decorator with `recordUsage`, `getUsage`, `recordPulse`, `getPulse`, and `clear`.
+
+---
+
+### backend/src/services/bq-storage.ts
+
+**Purpose:** Manages the low-level connection to the BigQuery Storage Write API and serializes logs into Protocol Buffer binary arrays.
+**Lines of Code:** 132
+**File Type:** TypeScript (Service)
+
+**What Future Contributors Must Know:**
+* Employs a lazy-loaded `BigQueryWriteClient` to ensure Fastify starts up instantly without blocking on credential resolution.
+* Expects payloads conforming to the `AuditEvent` protobuf schema and writes them using the default stream (`_default`).
+
+**Exports:**
+* `BigQueryStorageService` - The core persistent logging service.
+
+---
+
+### backend/src/services/usage-audit.ts
+
+**Purpose:** Fetches monthly metrics and query histories for a specific user to display in the frontend personal hub.
+**Lines of Code:** 160
+**File Type:** TypeScript (Service)
+
+**What Future Contributors Must Know:**
+* Executes high-performance parallel queries on BigQuery to compute user consumption metrics.
+* Reads from `INFORMATION_SCHEMA.JOBS_BY_PROJECT` for total monthly billed bytes, and the custom `api_audit` table for global logs and recent history.
+
+**Exports:**
+* `getUserUsage(bq, email, location)` - Fetches localized project-level monthly consumption and the last 10 query activities.
+* `getGlobalUserUsage(bq, email)` - Fetches cross-project global monthly bytes and the last 50 queries.
+
+---
+
+## Auditing & Observability Deep Dive
+
+To ensure robust cost governance and compliance while keeping database access fast, the gateway splits telemetry into a **high-throughput write pipeline** and a **segregated read/enforcement pipeline**:
+
+```mermaid
+graph TD
+    User([User Request]) --> Route[v1/index.ts Route Handler]
+    Route --> DryRun[dry-run-gate.ts Pre-Flight]
+    DryRun -- Estimated Bytes --> BudgetCheck{Exceeds Tenant Budget?}
+    
+    BudgetCheck -- Yes --> Reject[Block execution / Return BudgetExceeded]
+    BudgetCheck -- No --> Execute[Execute BigQuery Job]
+    
+    Execute -- Post-Query Stats --> UsageTracker[usage-tracker.ts Plugin]
+    UsageTracker -- Asynchronous Write --> StorageService[bq-storage.ts Write API]
+    StorageService -- Protobuf Binary Streams --> BQTable[(BigQuery: obq_audit_logs.api_audit)]
+    
+    Portal[Personal Usage Hub] --> UsageAudit[usage-audit.ts Reader]
+    UsageAudit -- SELECT SUM/History --> BQTable
+    UsageAudit -- SELECT label.user_identity --> BQJobs[(INFORMATION_SCHEMA.JOBS_BY_PROJECT)]
+```
+
+### Key Mechanisms:
+1. **Preventive Cost Control (Gatekeeper):**
+   Enforced purely via the BigQuery Dry Run engine on the SQL translation of the incoming request. Because it uses dry runs, it estimates query sizes *before* scanning any database rows, preventing accidental multi-terabyte queries.
+2. **Persistent Logs (Write-Path):**
+   The Write Path relies on `BigQueryStorageService` which streams structured protobuf data directly into `obq_audit_logs.api_audit` via gRPC. Using gRPC + Protobuf ensures that logging overhead is minimal and does not impact query latency.
+3. **Observability Reports (Read-Path):**
+   When the user opens their personal hub, the `usage-audit.ts` service aggregates their usage by combining:
+   * **Project-Level Usage:** Queried from native `INFORMATION_SCHEMA.JOBS_BY_PROJECT` (leveraging the `user_identity` label automatically injected into every job).
+   * **Global Cross-Project Usage & Action History:** Queried directly from your custom `api_audit` table.
+
+---
+
 ## Contributor Checklist
 
 - **Risks & Gotchas:** 

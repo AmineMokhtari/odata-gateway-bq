@@ -9,6 +9,8 @@ These variables control the core behavior and security of the application.
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `BQ_BILLING_PROJECT_ID` | **Yes** | - | All BigQuery jobs will be submitted to this project (Billing Project). |
+| `BQ_AUDIT_DATASET` | No | `obq_audit_logs` | The BigQuery dataset name where persistent audit logs are stored. |
+| `BQ_AUDIT_TABLE` | No | `api_audit` | The BigQuery table name where persistent audit logs are stored. |
 | `OIDC_ISSUER` | **Yes*** | - | The OIDC discovery URL (e.g., `https://login.microsoftonline.com/[ID]/v2.0/`). |
 | `OIDC_AUDIENCE` | **Yes*** | - | The Client ID/Audience registered in your Identity Provider (e.g., Entra ID). |
 | `ANONYMOUS_MODE` | No | `false` | If `true`, authentication is disabled. Use for local development or behind Cloud IAP. |

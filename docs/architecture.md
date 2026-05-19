@@ -63,3 +63,33 @@ The system implements a non-intrusive guidance layer that intercepts technical B
 - **Job Lifecycle Management:** To prevent financial leakage, the gateway monitors every active connection. If a client disconnects prematurely (e.g., closing Excel during a refresh), the system catches the `ERR_STREAM_PREMATURE_CLOSE` error and automatically sends a cancellation signal to the corresponding BigQuery job.
 - **Deterministic Error Codes:** System failures are translated into standard OData error codes (e.g., `BudgetExceeded`, `Unauthorized`) to ensure compatible error handling in Excel and Power BI.
 
+## Persistent Auditing & Observability
+
+To maintain a secure, auditable, and cost-transparent pipeline, the gateway implements a dual-layer observability system:
+
+### 1. High-Performance Real-Time Logging (Write-Path)
+Every gateway event (including dataset queries, tenant active pulses, and schema refreshes) is recorded in real-time.
+* **Storage Write API:** To avoid blocking query execution or response times, the gateway uses the **BigQuery Storage Write API** (default stream) via Protocol Buffers (`proto3`). This performs high-throughput binary serialization rather than JSON-based batching.
+* **Target Table:** Events are persisted in `api_audit` (located in the configured `obq_audit_logs` dataset).
+* **Protobuf Schema:** Streamed payloads strictly follow the `AuditEvent` schema:
+  * `timestamp` (ISO 8601 string)
+  * `projectId` & `datasetId` (Target resource identification)
+  * `userEmail` (User identity mapped from OIDC)
+  * `correlationId` (Correlation ID matching the Fastify request tracer)
+  * `action` (`'QUERY' | 'METADATA_REFRESH' | 'PULSE'`)
+  * `bytesProcessed` (Estimated scanned bytes)
+  * `status` (`'SUCCESS' | 'FAILURE'`)
+
+### 2. Preventive Budget Gating vs. Historical Usage Reporting
+The gateway strictly segregates **preventive enforcement** from **observability reporting** to ensure cost control without database lag:
+
+* **Preventive Enforcement (Per-Query dry-run):**
+  When a query is received, the gateway evaluates the query structure using a BigQuery **Dry Run** (via [dry-run-gate.ts](file:///home/amine_mokhtari/projects/odata-gateway-bq/backend/src/middleware/audit/dry-run-gate.ts)). This pre-flight check returns estimated bytes to scan. If the estimate exceeds the tenant's single-query budget limit (e.g., `scan_budget_gb` in `tenants.yaml`), the query is actively blocked before execution. **The cumulative monthly quota does not block the query; enforcement is strictly per-query.**
+  
+* **Observability Reporting (Personal Usage Hub):**
+  To power the dashboard metrics in the frontend, the gateway queries both custom and native logs:
+  * **Monthly Volume Consumed (Local Project):** Calculated dynamically via BigQuery's native `INFORMATION_SCHEMA.JOBS_BY_PROJECT` by searching for jobs with the label `user_identity` matching the user's email.
+  * **Monthly Volume Consumed (Global cross-project):** Calculated by summing `bytesProcessed` in the custom `api_audit` table.
+  * **Activity History:** Fetches the last 10 (or 50) recent jobs directly from the custom `api_audit` table, showing user actions and correlation IDs.
+
+
