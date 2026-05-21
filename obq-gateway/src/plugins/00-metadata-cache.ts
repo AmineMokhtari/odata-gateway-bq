@@ -31,6 +31,174 @@ export default fp<MetadataCachePluginOptions>(async (fastify, opts) => {
     ttl: opts.ttl || 1000 * 60 * 60 * 24,
   })
 
+  // Pre-seed mock data for E2E testing (my-project:my_dataset)
+  cache.set('my-project:my_dataset', {
+    projectId: 'my-project',
+    datasetId: 'my_dataset',
+    location: 'US',
+    schemaVersion: 'e2e-mock-version',
+    tables: [
+      {
+        name: 'Customers',
+        description: 'Customer Master Data',
+        columns: [
+          { name: 'id', type: 'Edm.Int64', isNullable: false, description: 'Customer Unique ID' },
+          { name: 'name', type: 'Edm.String', isNullable: true, description: 'Customer Name' }
+        ],
+        relationships: [
+          {
+            name: 'Orders',
+            column: 'id',
+            referencedProject: 'my-project',
+            referencedDataset: 'my_dataset',
+            referencedTable: 'Orders',
+            referencedColumn: 'customer_id',
+            type: 'TO_MANY'
+          }
+        ]
+      },
+      {
+        name: 'Orders',
+        description: 'Customer Orders Data',
+        columns: [
+          { name: 'order_id', type: 'Edm.Int64', isNullable: false, description: 'Order Unique ID' },
+          { name: 'customer_id', type: 'Edm.Int64', isNullable: true, description: 'Associated Customer ID' },
+          { name: 'amount', type: 'Edm.Decimal', isNullable: true, description: 'Order Total Amount' }
+        ],
+        relationships: [
+          {
+            name: 'Customers',
+            column: 'customer_id',
+            referencedProject: 'my-project',
+            referencedDataset: 'my_dataset',
+            referencedTable: 'Customers',
+            referencedColumn: 'id',
+            type: 'TO_ONE'
+          }
+        ]
+      }
+    ]
+  })
+
+  // Pre-seed mock data for drift_dataset (Schema Mismatch E2E)
+  cache.set('my-project:drift_dataset', {
+    projectId: 'my-project',
+    datasetId: 'drift_dataset',
+    location: 'US',
+    schemaVersion: 'drift-version-0',
+    tables: [
+      {
+        name: 'Customers',
+        description: 'Customer Master Data',
+        columns: [
+          { name: 'id', type: 'Edm.Int64', isNullable: false, description: 'Customer Unique ID' },
+          { name: 'name', type: 'Edm.String', isNullable: true, description: 'Customer Name' }
+        ],
+        relationships: [
+          {
+            name: 'Orders',
+            column: 'id',
+            referencedProject: 'my-project',
+            referencedDataset: 'drift_dataset',
+            referencedTable: 'Orders',
+            referencedColumn: 'customer_id',
+            type: 'TO_MANY'
+          }
+        ]
+      },
+      {
+        name: 'Orders',
+        description: 'Customer Orders Data',
+        columns: [
+          { name: 'order_id', type: 'Edm.Int64', isNullable: false, description: 'Order Unique ID' },
+          { name: 'customer_id', type: 'Edm.Int64', isNullable: true, description: 'Associated Customer ID' },
+          { name: 'amount', type: 'Edm.Decimal', isNullable: true, description: 'Order Total Amount' }
+        ],
+        relationships: [
+          {
+            name: 'Customers',
+            column: 'customer_id',
+            referencedProject: 'my-project',
+            referencedDataset: 'drift_dataset',
+            referencedTable: 'Customers',
+            referencedColumn: 'id',
+            type: 'TO_ONE'
+          }
+        ]
+      }
+    ]
+  } as any)
+
+  // Pre-seed mock data for forbidden_dataset (Access Control 403 E2E)
+  cache.set('my-project:forbidden_dataset', {
+    projectId: 'my-project',
+    datasetId: 'forbidden_dataset',
+    location: 'US',
+    schemaVersion: 'forbidden-version',
+    tables: [
+      {
+        name: 'Customers',
+        description: 'Customer Master Data',
+        columns: [
+          { name: 'id', type: 'Edm.Int64', isNullable: false, description: 'Customer Unique ID' },
+          { name: 'name', type: 'Edm.String', isNullable: true, description: 'Customer Name' }
+        ],
+        relationships: [
+          {
+            name: 'Billing',
+            column: 'id',
+            referencedProject: 'my-project',
+            referencedDataset: 'forbidden_dataset',
+            referencedTable: 'Billing',
+            referencedColumn: 'customer_id',
+            type: 'TO_MANY'
+          }
+        ]
+      },
+      {
+        name: 'Billing',
+        description: 'Sensitive Billing Records',
+        columns: [
+          { name: 'billing_id', type: 'Edm.Int64', isNullable: false, description: 'Billing ID' },
+          { name: 'customer_id', type: 'Edm.Int64', isNullable: true, description: 'Customer ID' },
+          { name: 'card_number', type: 'Edm.String', isNullable: true, description: 'Encrypted Credit Card' }
+        ],
+        relationships: []
+      }
+    ]
+  })
+
+  // Pre-seed mock data for huge_dataset (Performance Fallback E2E)
+  const hugeTables: any[] = []
+  for (let i = 1; i <= 55; i++) {
+    hugeTables.push({
+      name: `Table${i}`,
+      description: `Mock Table ${i} for performance fallback testing`,
+      columns: [
+        { name: 'id', type: 'Edm.Int64', isNullable: false, description: 'ID' },
+        { name: 'name', type: 'Edm.String', isNullable: true, description: 'Name' }
+      ],
+      relationships: i === 1 ? [
+        {
+          name: 'Table2',
+          column: 'id',
+          referencedProject: 'my-project',
+          referencedDataset: 'huge_dataset',
+          referencedTable: 'Table2',
+          referencedColumn: 'id',
+          type: 'TO_MANY'
+        }
+      ] : []
+    })
+  }
+  cache.set('my-project:huge_dataset', {
+    projectId: 'my-project',
+    datasetId: 'huge_dataset',
+    location: 'US',
+    schemaVersion: 'huge-version',
+    tables: hugeTables
+  })
+
   /**
    * Decorate fastify with metadata cache helpers.
    * Sharding is achieved by using 'projectId:datasetId' as the key.

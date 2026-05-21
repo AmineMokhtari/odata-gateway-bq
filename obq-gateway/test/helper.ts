@@ -49,6 +49,12 @@ function config () {
         return [[]]
       },
       createQueryJob: async (opts?: any) => {
+        if (opts?.query?.includes('Billing')) {
+          const err: any = new Error('Access Denied: User lacks bigquery.tables.getData permission on Billing table.')
+          err.code = 403
+          err.status = 403
+          throw err
+        }
         if (opts?.dryRun) {
           return [{ metadata: { statistics: { totalBytesProcessed: '1024' } } }]
         }

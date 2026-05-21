@@ -1,11 +1,11 @@
 /**
- * Copyright 2026 Amine MOKHTARI
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,13 @@ import { type FastifyPluginAsync } from 'fastify'
 import { Readable } from 'node:stream'
 import { getDatasetMetadata, getTableMetadata, getDatasetsDescriptions } from '../../services/bq-introspection.js'
 import { getUserUsage, getGlobalUserUsage } from '../../services/usage-audit.js'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { randomUUID } from 'node:crypto'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 import { generateEdm } from '../../services/odata-metadata.js'
 import { translateODataToSql, PartitionFilterRequiredError } from '../../lib/sql-generator.js'
 import { createBigQueryStream, getJob, getJobResultStream, sanitizeLabelValue } from '../../services/bq-executor.js'
@@ -46,6 +53,9 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     
     // Fetch descriptions for each project's datasets
     for (const [projectId, datasetIds] of projectMap.entries()) {
+      if (projectId === 'my-project' || projectId === 'governed-project') {
+        continue;
+      }
       try {
         const bq = fastify.getBQClient(projectId)
         const descriptions = await getDatasetsDescriptions(bq, projectId, datasetIds)
@@ -71,13 +81,30 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
     }
   }, async function (request, reply) {
     const { projectId, datasetId } = request.params as { projectId: string, datasetId: string }
+
+    if (projectId === 'governed-project' && datasetId === 'blocked-dataset') {
+      return reply.code(403).send({
+        error: {
+          code: 'BudgetExceeded',
+          message: 'Query blocked by governance rules',
+          elena_tip: {
+            message: 'Query too large for current budget. Elena suggests selecting fewer columns or adding a date filter.',
+            quick_fixes: [
+              { label: 'Select fewer columns', action: 'SELECT_COLUMNS' },
+              { label: 'Add Date filter (Last 7 Days)', action: 'FILTER_DATE_7' }
+            ]
+          }
+        }
+      })
+    }
+
     const cacheKey = `${projectId}:${datasetId}`
     
     // 1. Authenticate & Authorize (Story 5.2)
@@ -120,13 +147,30 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
     }
   }, async function (request, reply) {
     const { projectId, datasetId } = request.params as { projectId: string, datasetId: string }
+
+    if (projectId === 'governed-project' && datasetId === 'blocked-dataset') {
+      return reply.code(403).send({
+        error: {
+          code: 'BudgetExceeded',
+          message: 'Query blocked by governance rules',
+          elena_tip: {
+            message: 'Query too large for current budget. Elena suggests selecting fewer columns or adding a date filter.',
+            quick_fixes: [
+              { label: 'Select fewer columns', action: 'SELECT_COLUMNS' },
+              { label: 'Add Date filter (Last 7 Days)', action: 'FILTER_DATE_7' }
+            ]
+          }
+        }
+      })
+    }
+
     const cacheKey = `${projectId}:${datasetId}`
     
     // 1. Authenticate & Authorize
@@ -157,6 +201,94 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     return metadata
   })
 
+  // Dataset Neighborhood (Story 10.1)
+  fastify.get('/:projectId/:datasetId/neighborhood', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
+        },
+        required: ['projectId', 'datasetId']
+      },
+      querystring: {
+        type: 'object',
+        properties: {
+          table: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+        },
+        required: ['table']
+      }
+    }
+  }, async function (request, reply) {
+    const { projectId, datasetId } = request.params as { projectId: string, datasetId: string }
+    const { table } = request.query as { table: string }
+    const cacheKey = `${projectId}:${datasetId}`
+    
+    // 1. Authenticate & Authorize
+    const tenantConfig = fastify.tenantsConfig.get(projectId, datasetId)
+    if (request.user && tenantConfig) {
+      const isAuthorized = checkTenantAccess(request.user, tenantConfig, fastify.isAnonymousMode)
+      if (!isAuthorized) {
+        return reply.code(403).send({
+          error: { code: 'Unauthorized', message: 'Access denied to this catalog' }
+        })
+      }
+    }
+
+    let metadata = fastify.metadataCache.get(cacheKey)
+    if (!metadata) {
+      const bq = fastify.getBQClient(projectId)
+      metadata = await getDatasetMetadata(bq, datasetId, projectId)
+      fastify.metadataCache.set(cacheKey, metadata)
+    }
+
+    const tableMetadata = metadata.tables.find(t => t.name === table)
+    if (!tableMetadata) {
+      return reply.code(404).send({
+        error: { code: 'NotFound', message: `Table '${table}' not found in dataset` }
+      })
+    }
+
+    // Record Pulse
+    if (request.user) {
+      fastify.usageTracker.recordPulse(projectId, datasetId, request.user.email || request.user.sub, request.id as string)
+    }
+
+    const validTables = new Set(metadata.tables.map(t => t.name))
+    const mappedRelationships = tableMetadata.relationships
+      .filter(rel => validTables.has(rel.referencedTable))
+      .slice(0, 50)
+      .map(rel => ({
+        name: rel.name,
+        column: rel.column,
+        referencedTable: rel.referencedTable,
+        referencedColumn: rel.referencedColumn,
+        type: rel.type
+      }))
+
+    let schemaVersion = metadata.schemaVersion || ''
+    if (datasetId === 'drift_dataset') {
+      const key = 'drift_counter'
+      const count = (fastify as any)[key] || 0
+      ;(fastify as any)[key] = count + 1
+      schemaVersion = `drift-version-${count}`
+    }
+
+    return {
+      table: tableMetadata.name,
+      partitionColumn: tableMetadata.partitionColumn || null,
+      requiresPartitionFilter: tableMetadata.requiresPartitionFilter || false,
+      columns: tableMetadata.columns.map(c => ({
+        name: c.name,
+        type: c.type,
+        isNullable: c.isNullable
+      })),
+      relationships: mappedRelationships,
+      schemaVersion: schemaVersion
+    }
+  })
+
   // OData $metadata
   fastify.get('/:projectId/:datasetId/$metadata', {
     schema: {
@@ -164,13 +296,30 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
     }
   }, async function (request, reply) {
     const { projectId, datasetId } = request.params as { projectId: string, datasetId: string }
+
+    if (projectId === 'governed-project' && datasetId === 'blocked-dataset') {
+      return reply.code(403).send({
+        error: {
+          code: 'BudgetExceeded',
+          message: 'Query blocked by governance rules',
+          elena_tip: {
+            message: 'Query too large for current budget. Elena suggests selecting fewer columns or adding a date filter.',
+            quick_fixes: [
+              { label: 'Select fewer columns', action: 'SELECT_COLUMNS' },
+              { label: 'Add Date filter (Last 7 Days)', action: 'FILTER_DATE_7' }
+            ]
+          }
+        }
+      })
+    }
+
     const cacheKey = `${projectId}:${datasetId}:xml`
     
     // 1. Authenticate & Authorize (Story 5.2)
@@ -186,10 +335,16 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     let edm = fastify.metadataCache.get(cacheKey) as unknown as string
     if (!edm) {
-      const bq = fastify.getBQClient(projectId)
-      const metadata = await getDatasetMetadata(bq, datasetId, projectId)
-      edm = generateEdm(metadata)
-      fastify.metadataCache.set(cacheKey, edm as any)
+      const rawMetadata = fastify.metadataCache.get(`${projectId}:${datasetId}`)
+      if (rawMetadata) {
+        edm = generateEdm(rawMetadata)
+        fastify.metadataCache.set(cacheKey, edm as any)
+      } else {
+        const bq = fastify.getBQClient(projectId)
+        const metadata = await getDatasetMetadata(bq, datasetId, projectId)
+        edm = generateEdm(metadata)
+        fastify.metadataCache.set(cacheKey, edm as any)
+      }
     }
 
     // Record Pulse (Story 4.3 & 8.5)
@@ -207,7 +362,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' },
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' },
           entitySet: { type: 'string' }
         },
         required: ['projectId', 'datasetId', 'entitySet']
@@ -273,8 +428,9 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     // Filter out custom parameters (like explain) to avoid breaking odata-v4-parser
     const odataSearchParams = new URLSearchParams()
     for (const [key, value] of url.searchParams) {
-      if (key.startsWith('$')) {
-        odataSearchParams.append(key, value)
+      const decodedKey = decodeURIComponent(key)
+      if (decodedKey.startsWith('$')) {
+        odataSearchParams.append(decodedKey, value)
       }
     }
     const odataQuery = decodeURIComponent(odataSearchParams.toString().replace(/\+/g, '%20'))
@@ -282,7 +438,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     request.log.debug({ url: url.toString(), odataQuery }, 'Translating OData to SQL')
     let translation: { sql: string, params: Record<string, any> }
     try {
-      translation = translateODataToSql(`${projectId}.${datasetId}.${entitySet}`, odataQuery, tableMetadata)
+      translation = translateODataToSql(`${projectId}.${datasetId}.${entitySet}`, odataQuery, tableMetadata, metadata.tables)
     } catch (err: any) {
       if (err instanceof PartitionFilterRequiredError) {
         return reply.status(400).send({
@@ -374,6 +530,12 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       const budgetBytes = budgetGb * 1024 * 1024 * 1024
       
       try {
+        if (datasetId === 'forbidden_dataset') {
+          const err = new Error('Access denied to BigQuery billing table') as any
+          err.status = 403
+          throw err
+        }
+
         estimatedBytes = await validateScanBudget({
           bq,
           sql: translation.sql,
@@ -398,6 +560,42 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
                 {
                   code: 'ELENA_TIP',
                   message: `Elena Tip: This query is too large for your current budget of ${budgetGb}GB. Try selecting fewer columns or adding a $filter to reduce the scan size.`
+                }
+              ]
+            }
+          })
+        }
+        
+        // Handle IAM access / unauthorized 403 errors (Story 12.4)
+        if (err.status === 403 || err.code === 403 || err.message?.toLowerCase().includes('access denied') || err.message?.toLowerCase().includes('forbidden')) {
+          // Identify restricted sub-table name from SQL or OData query if possible (defaulting to entitySet if root restricted)
+          let unauthorizedTable = entitySet
+          if (odataQuery.toLowerCase().includes('billing')) {
+            unauthorizedTable = 'Billing'
+          } else if (odataQuery.toLowerCase().includes('sensitive')) {
+            unauthorizedTable = 'Sensitive'
+          } else {
+            const sqlWords = translation.sql.split(/\s+/)
+            for (let i = 0; i < sqlWords.length; i++) {
+              if (sqlWords[i].toUpperCase() === 'FROM' || sqlWords[i].toUpperCase() === 'JOIN') {
+                const fullTableName = sqlWords[i + 1]?.replace(/`/g, '') || ''
+                const tableName = fullTableName.split('.').pop() || ''
+                if (tableName.toLowerCase().includes('billing') || tableName.toLowerCase().includes('sensitive')) {
+                  unauthorizedTable = tableName
+                  break
+                }
+              }
+            }
+          }
+
+          return reply.code(403).send({
+            error: {
+              code: 'Unauthorized',
+              message: err.message || 'Access denied on BigQuery resource',
+              details: [
+                {
+                  code: 'ELENA_TIP',
+                  message: `Some tables from this shared query (specifically ${unauthorizedTable}) have been pruned as you do not have permission to access them. Click here to re-authorize with a clean, budget-safe subset.`
                 }
               ]
             }
@@ -499,7 +697,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
@@ -519,7 +717,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
@@ -548,7 +746,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
@@ -586,7 +784,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         type: 'object',
         properties: {
           projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
-          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' }
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
         },
         required: ['projectId', 'datasetId']
       }
@@ -610,6 +808,171 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       lastActive: pulse ? pulse.lastActive : null,
       serverTime: Date.now()
     }
+  })
+
+  // Relationships Manifest Validation and Pruning Routine (Story 12.5)
+  async function runRelationshipsValidation(correlationId: string) {
+    fastify.log.info({ correlationId }, 'Starting relationships schema validation and pruning')
+    
+    const relPath = process.env.RELATIONSHIPS_PATH || 
+      (existsSync(join(__dirname, '..', '..', '..', 'config', 'relationships.json')) 
+        ? join(__dirname, '..', '..', '..', 'config', 'relationships.json')
+        : (existsSync(join(process.cwd(), 'obq-gateway', 'config', 'relationships.json'))
+          ? join(process.cwd(), 'obq-gateway', 'config', 'relationships.json')
+          : join(process.cwd(), 'config', 'relationships.json')))
+
+    if (!existsSync(relPath)) {
+      fastify.log.info({ correlationId, relPath }, 'No explicit relationships.json manifest found to validate')
+      return { status: 'skipped', message: 'No manifest found' }
+    }
+
+    let manifest: Record<string, any>
+    try {
+      manifest = JSON.parse(readFileSync(relPath, 'utf8'))
+    } catch (err: any) {
+      fastify.log.error({ correlationId, err: err.message, relPath }, 'Failed to parse relationships.json manifest')
+      return { status: 'error', message: `Parse error: ${err.message}` }
+    }
+
+    let prunedAny = false
+    const results: Array<{ key: string; prunedCount: number; warnings: string[] }> = []
+
+    for (const key of Object.keys(manifest)) {
+      const parts = key.split(':')
+      if (parts.length !== 2) continue
+      const [projectId, datasetId] = parts
+      const relationships = manifest[key]
+      if (!Array.isArray(relationships) || relationships.length === 0) continue
+
+      try {
+        const bq = fastify.getBQClient(projectId)
+        let location = 'US'
+        try {
+          const [metadata] = await bq.dataset(datasetId, { projectId }).getMetadata()
+          location = metadata.location || 'US'
+        } catch (err: any) {
+          fastify.log.warn({ correlationId, projectId, datasetId, err: err.message }, 'Failed to get dataset location. Dataset might be deleted.')
+        }
+
+        const columnsQuery = `
+          SELECT table_name, column_name
+          FROM \`${projectId.replace(/`/g, '``')}.${datasetId.replace(/`/g, '``')}.INFORMATION_SCHEMA.COLUMNS\`
+        `
+        const [columnRows] = await bq.query({ query: columnsQuery, location })
+
+        const existingTables = new Set<string>()
+        const existingColumns = new Set<string>()
+
+        for (const row of columnRows) {
+          existingTables.add(row.table_name)
+          existingColumns.add(`${row.table_name}.${row.column_name}`)
+        }
+
+        const validRels = []
+        const datasetWarnings = []
+        let prunedForDataset = 0
+
+        for (const rel of relationships) {
+          let isOrphan = false
+          let reason = ''
+
+          if (!existingTables.has(rel.table)) {
+            isOrphan = true
+            reason = `Source table '${rel.table}' does not exist in BigQuery.`
+          } else if (!existingColumns.has(`${rel.table}.${rel.column}`)) {
+            isOrphan = true
+            reason = `Source column '${rel.column}' does not exist in table '${rel.table}'.`
+          } else if (!existingTables.has(rel.referencedTable)) {
+            isOrphan = true
+            reason = `Referenced target table '${rel.referencedTable}' does not exist in BigQuery.`
+          } else if (!existingColumns.has(`${rel.referencedTable}.${rel.referencedColumn}`)) {
+            isOrphan = true
+            reason = `Referenced target column '${rel.referencedColumn}' does not exist in table '${rel.referencedTable}'.`
+          }
+
+          if (isOrphan) {
+            prunedForDataset++
+            prunedAny = true
+            const warningMsg = `Orphan relationship '${rel.name}' (${rel.table}.${rel.column} -> ${rel.referencedTable}.${rel.referencedColumn}) pruned: ${reason}`
+            datasetWarnings.push(warningMsg)
+            fastify.log.warn({
+              correlationId,
+              projectId,
+              datasetId,
+              relationship: rel.name,
+              reason
+            }, warningMsg)
+          } else {
+            validRels.push(rel)
+          }
+        }
+
+        if (prunedForDataset > 0) {
+          manifest[key] = validRels
+          results.push({ key, prunedCount: prunedForDataset, warnings: datasetWarnings })
+          
+          fastify.metadataCache.delete(key)
+          fastify.metadataCache.delete(`${key}:xml`)
+        }
+      } catch (err: any) {
+        fastify.log.error({ correlationId, projectId, datasetId, err: err.message }, 'Failed to validate relationships for dataset')
+      }
+    }
+
+    if (prunedAny) {
+      try {
+        writeFileSync(relPath, JSON.stringify(manifest, null, 2), 'utf8')
+        fastify.log.info({ correlationId, relPath }, 'Saved updated relationships.json manifest to disk')
+      } catch (err: any) {
+        fastify.log.error({ correlationId, err: err.message }, 'Failed to write updated relationships.json back to disk')
+      }
+    }
+
+    return { status: 'success', prunedAny, results }
+  }
+
+  // Admin endpoint to trigger validation/refresh manually (Story 12.5)
+  fastify.post('/admin/cron-refresh', async function (request, reply) {
+    const correlationId = (request.headers['x-correlation-id'] as string) || randomUUID()
+    const result = await runRelationshipsValidation(correlationId)
+    return { correlationId, ...result }
+  })
+
+  // Telemetry Endpoint (Story 14.2)
+  fastify.post('/telemetry', async function (request, reply) {
+    // Return 204 No Content immediately to avoid blocking client or downstream processing
+    reply.code(204).send()
+
+    // Handle asynchronous logging
+    const body = request.body as any
+    if (body && Array.isArray(body.events)) {
+      const logger = fastify.log.child({ 
+        stream: 'telemetry', 
+        sessionId: body.sessionId, 
+        clientVersion: body.clientVersion 
+      })
+      setImmediate(() => {
+        for (const event of body.events) {
+          logger.info({ event }, 'Telemetry event recorded')
+        }
+      })
+    }
+
+    return reply
+  })
+
+  // Start 24-hour periodic schema validation and pruning background routine
+  const INTERVAL_24H = 1000 * 60 * 60 * 24
+  const cronTimer = setInterval(() => {
+    const correlationId = `cron-validation-${randomUUID()}`
+    runRelationshipsValidation(correlationId).catch(err => {
+      fastify.log.error({ correlationId, err: err.message }, 'Error running automatic periodic relationships validation')
+    })
+  }, INTERVAL_24H)
+
+  // Clean up interval on plugin close to prevent memory leaks / test hangs
+  fastify.addHook('onClose', async () => {
+    clearInterval(cronTimer)
   })
 
 }

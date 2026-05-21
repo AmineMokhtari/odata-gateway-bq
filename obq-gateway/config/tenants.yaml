@@ -15,6 +15,21 @@ tenants:
         - "Marketing"
         - "Analyst"
 
+  - project_id: "my-project"
+    dataset_id: "drift_dataset"
+    scan_budget_gb: 50
+    name: "Drift Test Dataset"
+
+  - project_id: "my-project"
+    dataset_id: "forbidden_dataset"
+    scan_budget_gb: 50
+    name: "Forbidden Test Dataset"
+
+  - project_id: "my-project"
+    dataset_id: "huge_dataset"
+    scan_budget_gb: 50
+    name: "Huge Test Dataset"
+
   - project_id: "finance-prod"
     dataset_id: "audits"
     scan_budget_gb: 50

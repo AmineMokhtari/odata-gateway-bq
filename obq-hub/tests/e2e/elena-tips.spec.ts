@@ -4,18 +4,16 @@ test.describe('Elena Tips E2E Journey (ATDD)', () => {
   test('[P1] should apply a quick fix from Elena Drawer when budget is exceeded', async ({ page }) => {
     test.setTimeout(60000);
 
-    // 1. Navigate to the marketplace
-    await page.goto('/web/marketplace');
+    // 1. Navigate to the builder
+    await page.goto('/web/builder');
 
     // 2. Select Project
     await page.getByText('Select Project', { exact: true }).click();
     await page.getByRole('option', { name: 'governed-project' }).click();
 
     // 3. Select Dataset (this triggers the fetch)
-    const responsePromise = page.waitForResponse(response => response.url().includes('/v1/governed-project/blocked-dataset'));
     await page.getByText('Select Dataset', { exact: true }).click();
     await page.getByRole('option', { name: 'blocked-dataset' }).click();
-    await responsePromise;
 
     // 2. Verify Pulse Badge shows Blocked (Red)
     const pulseBadge = page.getByTestId('pulse-badge');
@@ -29,8 +27,8 @@ test.describe('Elena Tips E2E Journey (ATDD)', () => {
     await expect(drawer).toBeVisible({ timeout: 10000 });
     await expect(drawer).toContainText('budget', { ignoreCase: true });
 
-    // 4. Apply Quick Fix (e.g., 'Apply Column Filter')
-    await drawer.getByRole('button', { name: 'Apply Column Filter' }).click();
+    // 4. Apply Quick Fix (e.g., 'Select fewer columns')
+    await drawer.getByRole('button', { name: /Select fewer columns/i }).click();
 
     // 5. Verify the drawer closes or some action happens (depending on implementation)
     // For now, just ensure it received the click

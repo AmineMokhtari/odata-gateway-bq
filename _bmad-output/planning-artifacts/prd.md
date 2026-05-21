@@ -22,6 +22,8 @@ editHistory:
     changes: 'Simplified architecture by removing Impersonation Mode. Transitioned to exclusive Trusted Subsystem model.'
   - date: '2026-05-16'
     changes: 'Architectural Hardening: Migrated all UI metadata to Server Actions (Server-to-Server). Implemented 1:N relationship discovery and Identity-Job security binding.'
+  - date: '2026-05-19'
+    changes: 'Added interactive ERD visualization for dataset exploration to Vision, User Journeys, and Functional Requirements.'
 ---
 
 # Product Requirements Document - odata-gateway-bq
@@ -89,8 +91,14 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 
 - **AI Ecosystem:** Specialized protocol shims for Microsoft Copilot agents.
 - **Catalog UI:** A web-based "Data Catalog" for searching and discovering authorized endpoints.
+- **Visual Query Builder:** An interactive Entity Relationship Diagram (ERD) that not only visualizes dataset schemas and relationships, but acts as a visual query builder. Users can select nodes and edges on the ERD to automatically generate complex OData `$expand` URLs and one-click Excel/PowerBI connection files.
 
 ## User Journeys
+
+### Sarah: The Visual Explorer
+**Situation:** Sarah is exploring a new insurance dataset and needs to understand how the `Policies` table relates to `Claims` and `Customers`.
+**Goal:** Quickly grasp the schema structure and foreign key relationships without writing test queries.
+**Outcome:** Sarah opens the dataset in the Catalog UI and views the interactive ERD. She visually traces the 1:N relationship from `Customers` to `Policies` and easily identifies the exact foreign keys needed for her analysis.
 
 ### Elena: The Frictionless Discovery
 **Situation:** Elena needs a "Region vs. Sales" report by 10 AM. Traditionally, this requires a manual SQL export from a Data Engineer.
@@ -104,6 +112,7 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 
 ### Journey Requirements Summary
 
+- **Visual Exploration:** Interactive ERD for navigating dataset schemas and relationships.
 - **Discovery:** $metadata response < 2s; support for Excel/Power BI connector quirks.
 - **Budget/Ops:** Pre-execution Dry Run middleware; configurable per-URL scan limits.
 - **Security:** OIDC identity verification; internal rule-based authorization; master-account execution.
@@ -177,6 +186,8 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 - **FR22:** The System adapts to client-specific personas (Excel/Power BI) for protocol compatibility.
 - **FR24:** The System implements a **Trusted Subsystem** mode workflow: 1. Verify Identity (OIDC), 2. Validate against App rules, 3. Fetch via service-level master account.
 - **FR26:** The System shall provide deterministic OData error codes for operational failures, including `BudgetExceeded`, `QuotaThrottled`, and `Unauthorized`.
+- **FR27:** The System shall render an interactive Entity Relationship Diagram (ERD) on the dataset detail page by parsing the explicit `relationships.json` manifest to visualize 1:N foreign key constraints. **The visualization must strictly adhere to the user's authorization context; tables and relationships the user is not authorized to query must be dynamically suppressed from the ERD.**
+- **FR28:** The System's 24h periodic schema refresh must validate the explicit `relationships.json` manifest against the actual BigQuery schemas. Any relationships referencing missing tables or columns must be automatically pruned from the ERD and flagged in the logs.
 
 ## Non-Functional Requirements
 
@@ -184,9 +195,12 @@ This solution is unique in its support for a **Trusted Subsystem** security mode
 - **Discovery Latency:** OData `$metadata` responses < 2s for 95% of requests.
 - **Rule Validation Latency:** Internal access rule checks for Trusted Subsystem mode must complete in **< 200ms**.
 - **Resource Footprint:** **The System** must maintain a memory footprint < 256MB, ensured by mandatory 100% result streaming.
+- **ERD Rendering & Scalable Fallback:** The Catalog UI shall render full interactive ERDs for datasets under 50 tables and 100 relationships in under 3 seconds. For datasets exceeding either limit, the system shall not render the full graph; instead, it must default to a **"Neighborhood View,"** requiring the user to select a root table to visualize only its 1st-degree foreign key relationships.
+- **Metadata Decoupling:** Data required for the interactive ERD must be fetched asynchronously via a dedicated endpoint or Server Action. It must **not** be bundled into the core OData V4 `$metadata` payload to preserve the < 2s discovery SLA for Excel/PowerBI.
 
 ### Security
 - **Stateless Audit Integrity:** 100% of queries decorated with native Job Labels (user identity + correlation ID).
+- **Metadata Auditability:** Because schema discovery and ERD navigation rely on cached data rather than BigQuery jobs, the gateway must emit standardized application-level audit logs for all `$metadata` and ERD manifest requests, recording the user identity and requested schema.
 - **Transport Security:** Mandatory enforcement of TLS 1.3.
 
 ### Reliability

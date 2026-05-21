@@ -1,0 +1,12 @@
+{
+  "my-project:my_dataset": [
+    {
+      "name": "FK_Customers_Policies",
+      "table": "Customers",
+      "column": "id",
+      "referencedTable": "Policies",
+      "referencedColumn": "customer_id",
+      "type": "TO_MANY"
+    }
+  ]
+}

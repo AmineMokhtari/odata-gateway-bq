@@ -59,3 +59,33 @@ xmlns:odc="urn:schemas-microsoft-com:office:odc">
   document.body.removeChild(link);
   window.URL.revokeObjectURL(downloadUrl);
 }
+
+/**
+ * Generates a Power BI Data Source (.pbids) file for an OData feed.
+ */
+export function downloadODataPBIDS(url: string, tableName: string = 'BigQuery_Data') {
+  const pbidsObj = {
+    version: '0.1',
+    connections: [
+      {
+        details: {
+          protocol: 'odata',
+          address: url
+        },
+        options: {},
+        meta: {}
+      }
+    ]
+  };
+
+  const pbidsContent = JSON.stringify(pbidsObj, null, 2);
+  const blob = new Blob([pbidsContent], { type: 'application/json' });
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = `${tableName}.pbids`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
+}

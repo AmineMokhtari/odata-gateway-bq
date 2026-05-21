@@ -1,11 +1,11 @@
 /**
- * Copyright 2026 Amine MOKHTARI
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,13 @@
  */
 
 import { BigQuery } from '@google-cloud/bigquery'
+import * as crypto from 'crypto'
+import { readFileSync, existsSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export interface ColumnMetadata {
   name: string
@@ -47,6 +54,32 @@ export interface DatasetMetadata {
   datasetId: string
   location: string
   tables: TableMetadata[]
+  schemaVersion?: string
+}
+
+export function computeSchemaHash(tables: TableMetadata[]): string {
+  const hash = crypto.createHash('sha256')
+  
+  // Sort tables by name to be deterministic
+  const sortedTables = [...tables].sort((a, b) => a.name.localeCompare(b.name))
+  
+  for (const table of sortedTables) {
+    hash.update(`table:${table.name}:${table.description || ''}:${table.requiresPartitionFilter || false}:${table.partitionColumn || ''}`)
+    
+    // Columns
+    const sortedCols = [...table.columns].sort((a, b) => a.name.localeCompare(b.name))
+    for (const col of sortedCols) {
+      hash.update(`col:${col.name}:${col.type}:${col.isNullable}:${col.description || ''}`)
+    }
+    
+    // Relationships
+    const sortedRels = [...table.relationships].sort((a, b) => a.name.localeCompare(b.name))
+    for (const rel of sortedRels) {
+      hash.update(`rel:${rel.name}:${rel.column}:${rel.referencedTable}:${rel.referencedColumn}:${rel.type}`)
+    }
+  }
+  
+  return hash.digest('hex')
 }
 
 /**
@@ -209,11 +242,52 @@ export async function getDatasetMetadata(
     }
   }
 
+  // Load manual relationships from relationships.json manifest and merge them
+  try {
+    const relPath = process.env.RELATIONSHIPS_PATH || 
+      (existsSync(join(__dirname, '..', '..', 'config', 'relationships.json')) 
+        ? join(__dirname, '..', '..', 'config', 'relationships.json')
+        : (existsSync(join(process.cwd(), 'obq-gateway', 'config', 'relationships.json'))
+          ? join(process.cwd(), 'obq-gateway', 'config', 'relationships.json')
+          : join(process.cwd(), 'config', 'relationships.json')))
+    
+    if (existsSync(relPath)) {
+      const manifest = JSON.parse(readFileSync(relPath, 'utf8'))
+      const manifestKey = `${projectId}:${datasetId}`
+      const manualRels = manifest[manifestKey] || []
+      
+      for (const rel of manualRels) {
+        const table = tablesMap.get(rel.table)
+        if (table) {
+          // Prevent duplicates
+          const exists = table.relationships.some((r: any) => r.name === rel.name)
+          if (!exists) {
+            table.relationships.push({
+              name: rel.name,
+              column: rel.column,
+              referencedProject: rel.referencedProject || projectId,
+              referencedDataset: rel.referencedDataset || datasetId,
+              referencedTable: rel.referencedTable,
+              referencedColumn: rel.referencedColumn,
+              type: rel.type
+            })
+          }
+        }
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[Introspection] Soft warning: failed to parse/merge manual relationships.json: ${err.message}`)
+  }
+
+  const tablesList = Array.from(tablesMap.values())
+  const schemaVersion = computeSchemaHash(tablesList)
+
   return {
     projectId,
     datasetId,
     location,
-    tables: Array.from(tablesMap.values())
+    tables: tablesList,
+    schemaVersion
   }
 }
 

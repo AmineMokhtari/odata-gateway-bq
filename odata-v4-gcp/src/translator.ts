@@ -21,18 +21,31 @@ import * as AST from './ast.js';
 export class Translator extends Visitor {
   private params: Record<string, any> = {};
   private paramCounter = 0;
+  private tableStack: string[] = [];
 
-  constructor(dialect: Dialect) {
+  constructor(
+    dialect: Dialect,
+    private getRelationship?: ((parentTable: string, navProp: string) => { referencedTable: string, column: string, referencedColumn: string } | null)
+  ) {
     super(dialect);
   }
 
-  public translate(node: AST.ASTNode, context?: { params: Record<string, any>, counter: number }): { sql: string, params: Record<string, any>, counter: number, options: Record<string, any> } {
+  public translate(
+    node: AST.ASTNode,
+    context?: { params?: Record<string, any>, counter?: number, currentTable?: string }
+  ): { sql: string, params: Record<string, any>, counter: number, options: Record<string, any> } {
     if (context) {
-      this.params = context.params;
-      this.paramCounter = context.counter;
+      this.params = context.params || {};
+      this.paramCounter = context.counter || 0;
+      if (context.currentTable) {
+        this.tableStack = [context.currentTable];
+      } else {
+        this.tableStack = [];
+      }
     } else {
       this.params = {};
       this.paramCounter = 0;
+      this.tableStack = [];
     }
     
     // For a QueryNode, we return a structured object
@@ -113,7 +126,23 @@ export class Translator extends Visitor {
 
   protected visitExpandItem(node: AST.ExpandItem): string {
     const navProp = node.navigationProperty.name;
-    const nestedTable = this.dialect.escapeIdentifier(navProp);
+    const parentTable = this.tableStack[this.tableStack.length - 1] || '';
+    
+    let referencedTable = this.dialect.escapeIdentifier(navProp);
+    let joinCondition = '';
+    
+    if (this.getRelationship && parentTable) {
+      const rel = this.getRelationship(parentTable, navProp);
+      if (rel) {
+        referencedTable = rel.referencedTable;
+        
+        const parentTableRef = parentTable.startsWith('`') ? parentTable : `\`${parentTable}\``;
+        const childColEscaped = rel.referencedColumn.startsWith('`') ? rel.referencedColumn : `\`${rel.referencedColumn}\``;
+        const parentColEscaped = rel.column.startsWith('`') ? rel.column : `\`${rel.column}\``;
+        
+        joinCondition = `${childColEscaped} = ${parentTableRef}.${parentColEscaped}`;
+      }
+    }
     
     let innerSelect = 'SELECT *';
     let innerWhere = '';
@@ -121,20 +150,40 @@ export class Translator extends Visitor {
     let innerLimit = '';
     
     if (node.query) {
-      // Recurse using current context to accumulate params
-      const result = this.translate(node.query, { params: this.params, counter: this.paramCounter });
+      const savedStack = [...this.tableStack];
+      const result = this.translate(node.query, {
+        params: this.params,
+        counter: this.paramCounter,
+        currentTable: navProp
+      });
       this.paramCounter = result.counter; // Update counter
+      this.tableStack = savedStack; // Restore stack
       
       innerSelect = result.options.select || 'SELECT *';
+      
+      // Append child expands to innerSelect
+      if (result.options.expand && result.options.expand.length > 0) {
+        innerSelect += (innerSelect === 'SELECT *' ? '' : ', ') + result.options.expand.join(', ');
+      }
+      
       innerWhere = result.options.where || '';
       innerOrderby = result.options.orderby || '';
       innerLimit = result.options.limit ? ` LIMIT ${result.options.limit}` : '';
     }
-
-    // Pattern: BigQuery Sub-query
-    // Note: This logic assumes the caller will handle the relationship join columns.
-    // For the translator, we provide the subquery structure.
-    return `ARRAY(${innerSelect} FROM ${nestedTable} ${innerWhere}${innerOrderby}${innerLimit}) AS \`${navProp}\``;
+    
+    // Inject joinCondition into innerWhere
+    if (joinCondition) {
+      if (innerWhere) {
+        innerWhere = innerWhere.replace(/WHERE\s+/i, `WHERE (${joinCondition}) AND `);
+      } else {
+        innerWhere = `WHERE ${joinCondition}`;
+      }
+    }
+    
+    // Render SELECT AS STRUCT
+    const selectAsStruct = innerSelect.replace(/^SELECT\s+/i, 'SELECT AS STRUCT ');
+    
+    return `ARRAY(${selectAsStruct} FROM ${referencedTable} ${innerWhere}${innerOrderby}${innerLimit}) AS \`${navProp}\``;
   }
 
   protected visitSearch(node: AST.SearchNode): string {

@@ -169,7 +169,13 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
 
   fastify.addHook('onRequest', async (request, reply) => {
     const routePattern = request.routeOptions.url
-    if (routePattern === '/health' || routePattern?.startsWith('/health/') || routePattern?.startsWith('/auth/')) {
+    if (
+      routePattern === '/health' || 
+      routePattern?.startsWith('/health/') || 
+      routePattern?.startsWith('/auth/') ||
+      routePattern === '/v1/telemetry' ||
+      routePattern?.startsWith('/v1/telemetry')
+    ) {
       return
     }
 

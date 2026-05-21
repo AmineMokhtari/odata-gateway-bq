@@ -90,4 +90,77 @@ test('SQL Generator', async (t) => {
     assert.ok(sql.includes('`CreatedAt` >= @p0'))
     assert.equal(params.p0, '2023-01-01')
   })
+
+  await t.test('should translate single-level $expand with select into ARRAY(SELECT AS STRUCT)', () => {
+    const metadata = {
+      name: 'Sales',
+      columns: [
+        { name: 'Id', type: 'INT64', isNullable: false },
+        { name: 'Amount', type: 'NUMERIC', isNullable: true }
+      ],
+      relationships: [
+        {
+          name: 'Payments',
+          column: 'Id',
+          referencedTable: 'Payments',
+          referencedColumn: 'SaleId',
+          type: 'TO_MANY'
+        }
+      ]
+    }
+    const { sql } = translateODataToSql(table, '$select=Id&$expand=Payments($select=Id,Amount)', metadata as any)
+    assert.equal(
+      sql,
+      'SELECT `Id`, ARRAY(SELECT AS STRUCT `Id`, `Amount` FROM `my_dataset.Payments` WHERE `SaleId` = `my_dataset.Sales`.`Id`) AS `Payments` FROM `my_dataset.Sales` t'
+    )
+  })
+
+  await t.test('should translate multi-level nested $expand (Sales -> Payments -> Audits) recursively', () => {
+    const allTables = [
+      {
+        name: 'Sales',
+        columns: [{ name: 'Id', type: 'INT64', isNullable: false }],
+        relationships: [
+          {
+            name: 'Payments',
+            column: 'Id',
+            referencedTable: 'Payments',
+            referencedColumn: 'SaleId',
+            type: 'TO_MANY'
+          }
+        ]
+      },
+      {
+        name: 'Payments',
+        columns: [{ name: 'Id', type: 'INT64', isNullable: false }],
+        relationships: [
+          {
+            name: 'Audits',
+            column: 'Id',
+            referencedTable: 'Audits',
+            referencedColumn: 'PaymentId',
+            type: 'TO_MANY'
+          }
+        ]
+      },
+      {
+        name: 'Audits',
+        columns: [{ name: 'Id', type: 'INT64', isNullable: false }],
+        relationships: []
+      }
+    ]
+    const rootMetadata = allTables[0]
+    
+    const { sql } = translateODataToSql(
+      table,
+      '$select=Id&$expand=Payments($select=Id;$expand=Audits($select=Id))',
+      rootMetadata as any,
+      allTables as any[]
+    )
+    
+    assert.equal(
+      sql,
+      'SELECT `Id`, ARRAY(SELECT AS STRUCT `Id`, ARRAY(SELECT AS STRUCT `Id` FROM `Audits` WHERE `PaymentId` = `Payments`.`Id`) AS `Audits` FROM `my_dataset.Payments` WHERE `SaleId` = `my_dataset.Sales`.`Id`) AS `Payments` FROM `my_dataset.Sales` t'
+    )
+  })
 })

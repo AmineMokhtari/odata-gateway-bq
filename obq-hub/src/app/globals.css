@@ -143,3 +143,14 @@
 .animate-progress-indeterminate {
   animation: progress-indeterminate 2s infinite linear;
 }
+
+/* Story 13.3 & 13.4: High-visibility focus indicators — use semantic CSS variables for theme-correctness */
+.react-flow__node:focus-visible,
+.react-flow__node:focus,
+.react-flow__controls-button:focus-visible,
+.react-flow__controls-button:focus {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent) !important;
+  border-radius: 8px !important;
+}

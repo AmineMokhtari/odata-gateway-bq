@@ -92,7 +92,7 @@ export function validatePartitionFilter(tableMetadata: TableMetadata, query: str
 /**
  * Translates OData V4 query options to BigQuery SQL using the custom ov4g engine.
  */
-export function translateODataToSql(table: string, query: string, tableMetadata?: TableMetadata): TranslationResult {
+export function translateODataToSql(table: string, query: string, tableMetadata?: TableMetadata, allTables?: TableMetadata[]): TranslationResult {
   // 1. Detect and separate $apply and $expand (manual for now)
   const applyMatch = query.match(/\$apply=(.*?)(&|$)/)
   const applyData = applyMatch ? parseApply(decodeURIComponent(applyMatch[1])) : null
@@ -106,6 +106,36 @@ export function translateODataToSql(table: string, query: string, tableMetadata?
     formalQuery = '?' + formalQuery
   }
 
+  // Define recursive relationship resolver callback for Translator
+  const getRelationship = (parentTable: string, navProp: string) => {
+    const parentTableName = parentTable.split('.').pop()?.replace(/`/g, '') || parentTable
+    const parentMeta = allTables?.find(t => t.name === parentTableName) || 
+                       (tableMetadata?.name === parentTableName ? tableMetadata : null)
+    
+    if (!parentMeta) return null
+    
+    const rel = parentMeta.relationships.find(r => r.name === navProp)
+    if (!rel) return null
+    
+    // Construct fully qualified, backtick-escaped referenced table path
+    let referencedTable = ''
+    if (rel.referencedProject && rel.referencedDataset) {
+      referencedTable = `\`${rel.referencedProject}.${rel.referencedDataset}.${rel.referencedTable}\``
+    } else {
+      const tableParts = parentTable.split('.')
+      const datasetPrefix = tableParts.length > 1 ? tableParts.slice(0, -1).join('.') : ''
+      referencedTable = datasetPrefix 
+        ? `\`${datasetPrefix.replace(/`/g, '')}.${rel.referencedTable}\``
+        : `\`${rel.referencedTable}\``
+    }
+    
+    return {
+      referencedTable,
+      column: rel.column,
+      referencedColumn: rel.referencedColumn
+    }
+  }
+
   // 2. Parse and Translate via ov4g
   let options: Record<string, any> = { select: 'SELECT *', where: '', orderby: '', limit: '', offset: '' }
   let params: Record<string, any> = {}
@@ -116,8 +146,8 @@ export function translateODataToSql(table: string, query: string, tableMetadata?
       const parser = new Parser(lexer.tokenize())
       const ast = parser.parse()
       const dialect = new BigQueryDialect()
-      const translator = new Translator(dialect)
-      const result = translator.translate(ast)
+      const translator = new Translator(dialect, getRelationship)
+      const result = translator.translate(ast, { currentTable: table })
       options = result.options
       params = result.params
     } catch (err: any) {
@@ -156,47 +186,9 @@ export function translateODataToSql(table: string, query: string, tableMetadata?
     select = `SELECT ${selectParts.join(', ')}`
   }
 
-  // Apply $expand (using ov4g structure + relationship metadata)
-  if (options.expand && options.expand.length > 0 && tableMetadata) {
-    const expandParts = options.expand.map((expandSql: string) => {
-      const navPropMatch = expandSql.match(/AS `(.*?)`$/)
-      const navProp = navPropMatch ? navPropMatch[1] : ''
-      const rel = tableMetadata.relationships.find(r => r.name === navProp)
-      
-      if (!rel) return expandSql
-
-      // Construct table reference
-      let referencedTable = ''
-      if (rel.referencedProject && rel.referencedDataset) {
-        referencedTable = `\`${rel.referencedProject}.${rel.referencedDataset}.${rel.referencedTable}\``
-      } else {
-        const tableParts = table.split('.')
-        const datasetPrefix = tableParts.length > 1 ? tableParts.slice(0, -1).join('.') : ''
-        referencedTable = datasetPrefix 
-          ? `\`${datasetPrefix}.${rel.referencedTable}\``
-          : `\`${rel.referencedTable}\``
-      }
-
-      // Inject Relationship JOIN condition into the subquery
-      const joinCondition = `\`${rel.referencedColumn}\` = \`${table}\`.\`${rel.column}\``
-      
-      // replace the placeholder FROM in expandSql with the real one + JOIN condition
-      // ov4g output: ARRAY(SELECT ... FROM `navProp` [WHERE ...]) AS `navProp`
-      let processed = expandSql.replace(`FROM \`${navProp}\``, `FROM ${referencedTable}`)
-      
-      if (processed.includes(' WHERE ')) {
-        processed = processed.replace(' WHERE ', ` WHERE (${joinCondition}) AND `)
-      } else {
-        // Find where to insert WHERE (after FROM)
-        processed = processed.replace(referencedTable, `${referencedTable} WHERE ${joinCondition}`)
-      }
-      
-      return processed
-    })
-
-    if (expandParts.length > 0) {
-      select += (select === 'SELECT *' ? '' : ', ') + expandParts.join(', ')
-    }
+  // Apply $expand (already recursively compiled by ov4g Translator)
+  if (options.expand && options.expand.length > 0) {
+    select += (select === 'SELECT *' ? '' : ', ') + options.expand.join(', ')
   }
 
   // Final validation and JSON casting

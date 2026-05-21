@@ -1,5 +1,5 @@
 # generated: 2026-05-13
-# last_updated: 2026-05-13
+# last_updated: 2026-05-21
 # project: odata-gateway-bq
 # project_key: NOKEY
 # tracking_system: file-system
@@ -28,7 +28,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-05-13
-last_updated: 2026-05-13
+last_updated: 2026-05-21
 project: odata-gateway-bq
 project_key: NOKEY
 tracking_system: file-system
@@ -111,3 +111,43 @@ development_status:
   9-2-1-n-expansion-support: done
   9-3-identity-job-binding: done
   epic-9-retrospective: done
+
+  # Epic 10: Interactive Schema Explorer (ERD)
+  epic-10: done
+  10-1-backend-graph-introspection-neighborhood-api: done
+  10-2-interactive-canvas-scaffolding-with-react-flow: done
+  10-3-asynchronous-layout-engine-with-web-worker: done
+  10-4-lazy-node-expansion-pinning: done
+  epic-10-retrospective: done
+
+  # Epic 11: Visual OData Query Generation ($expand)
+  epic-11: done
+  11-1-zustand-graph-store-scaffolding: done
+  11-2-visual-selection-of-nodes-and-edges: done
+  11-3-logical-query-state-serialization-url-bookmarkable: done
+  11-4-odata-url-construction-connection-file-download: done
+  epic-11-retrospective: optional
+
+  # Epic 12: High-Performance Cost & Security Guardrails
+  epic-12: done
+  12-1-performance-threshold-neighborhood-fallback: done
+  12-2-bigquery-native-array-sql-generation-expand: done
+  12-3-schema-drift-hash-mismatch-recovery: done
+  12-4-dynamic-permission-suppression-shared-link-pruning: done
+  12-5-periodic-schema-validation-orphan-relationship-pruning: done
+  epic-12-retrospective: optional
+
+  # Epic 13: Accessible & Inclusive Interaction
+  epic-13: done
+  13-1-spatial-canvas-accessibility-hiding: done
+  13-2-accessible-query-summary-sidebar-as-alternative-builder: done
+  13-3-keyboard-canvas-navigation-and-high-visibility-focus: done
+  13-4-semantic-wcag-high-contrast-theming: done
+  epic-13-retrospective: optional
+
+  # Epic 14: Diagnostics, Observability & Hardening
+  epic-14: in-progress
+  14-1-pii-scrubbed-react-error-boundary: review
+  14-2-asynchronous-batched-telemetry-beacon: review
+  14-3-playwright-e2e-fixtures-deterministic-ui-mocking: done
+  epic-14-retrospective: optional

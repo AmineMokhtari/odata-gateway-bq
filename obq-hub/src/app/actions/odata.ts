@@ -52,15 +52,15 @@ export async function getServiceRoot(projectId: string, datasetId: string) {
       cache: 'no-store',
     });
 
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.error?.message || `Gateway returned ${response.status}`);
+      return { error: data.error || { message: `Gateway returned ${response.status}` } };
     }
 
-    return await response.json();
+    return data;
   } catch (err: any) {
     console.error(`[odata] Failed to fetch service root for ${projectId}/${datasetId}:`, err.message);
-    throw err;
+    return { error: err.data?.error || { message: err.message || 'Failed to connect to gateway' } };
   }
 }
 
@@ -70,8 +70,7 @@ export async function getServiceRoot(projectId: string, datasetId: string) {
 export async function getMetadata(projectId: string, datasetId: string, entitySet: string): Promise<MetadataResult> {
   try {
     const response = await gatewayClient.get(`/v1/${projectId}/${datasetId}/$metadata`, {
-      cache: 'force-cache', // Metadata is stable, cache it
-      next: { revalidate: 3600 },
+      cache: 'no-store',
     });
 
     if (!response.ok) throw new Error(`Failed to fetch metadata: ${response.status}`);
@@ -186,5 +185,45 @@ export async function explainQuery(projectId: string, datasetId: string, entityS
   } catch (err: any) {
     console.error(`[odata] Explain failed for ${entitySet}:`, err.message);
     return null;
+  }
+}
+
+/**
+ * Executes a pre-execution dry-run audit for visual builder queries
+ */
+export async function dryRunQueryAction(projectId: string, datasetId: string, entitySet: string, query: string) {
+  try {
+    const response = await gatewayClient.get(`/v1/${projectId}/${datasetId}/${entitySet}?${query}&explain=true`, {
+      cache: 'no-store',
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return {
+        success: false,
+        error: {
+          status: response.status,
+          code: data.error?.code || 'ExplainFailed',
+          message: data.error?.message || 'Explain failed',
+          details: data.error?.details || []
+        }
+      };
+    }
+
+    return {
+      success: true,
+      data
+    };
+  } catch (err: any) {
+    console.error(`[odata] Dry-run failed for ${entitySet}:`, err.message);
+    return {
+      success: false,
+      error: {
+        status: err.status || 500,
+        code: err.data?.error?.code || 'NetworkError',
+        message: err.message || 'Network error during dry-run',
+        details: err.data?.error?.details || []
+      }
+    };
   }
 }

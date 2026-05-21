@@ -37,3 +37,45 @@ export async function getDatasetSchema(projectId: string, datasetId: string) {
     return null;
   }
 }
+
+export async function fetchNeighborhoodAction(projectId: string, datasetId: string, table: string) {
+  try {
+    const response = await gatewayClient.get(`/v1/${projectId}/${datasetId}/neighborhood?table=${encodeURIComponent(table)}`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      const message = body?.error?.message || body?.message || `Backend returned ${response.status}`;
+      console.error(`[schema] Failed to fetch neighborhood for ${projectId}/${datasetId}/${table}: ${message}`);
+      return null;
+    }
+
+    return await response.json();
+  } catch (err: any) {
+    console.error(`[schema] Failed to fetch neighborhood for ${projectId}/${datasetId}/${table}:`, err.message);
+    return null;
+  }
+}
+
+export async function getDatasetMetricsAction(projectId: string, datasetId: string) {
+  try {
+    const schema = await getDatasetSchema(projectId, datasetId);
+    if (!schema || !schema.tables) {
+      return null;
+    }
+
+    const tableCount = schema.tables.length;
+    let relationshipCount = 0;
+    schema.tables.forEach((t: any) => {
+      relationshipCount += t.relationships?.length || 0;
+    });
+
+    return { tableCount, relationshipCount, schemaVersion: schema.schemaVersion || '' };
+  } catch (err: any) {
+    console.error(`[schema] Failed to fetch metrics for ${projectId}/${datasetId}:`, err.message);
+    return null;
+  }
+}
+
+

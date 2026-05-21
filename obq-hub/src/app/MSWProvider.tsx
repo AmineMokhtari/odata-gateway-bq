@@ -11,7 +11,10 @@ export function MSWProvider({ children }: { children: React.ReactNode }) {
         const { worker } = await import('../mocks/browser')
         await worker.start({
           serviceWorker: {
-            url: '/web/mockServiceWorker.js'
+            url: '/web/mockServiceWorker.js',
+            options: {
+              scope: '/web/'
+            }
           },
           onUnhandledRequest: 'bypass',
         })

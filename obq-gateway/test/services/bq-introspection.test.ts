@@ -34,6 +34,8 @@ test('BQ Metadata Introspection', async (t) => {
     assert.equal(metadata.datasetId, 'test_dataset')
     assert.equal(metadata.location, 'EU')
     assert.equal(metadata.tables.length, 2)
+    assert.ok(metadata.schemaVersion)
+    assert.equal(metadata.schemaVersion.length, 64) // sha256 hex
     
     const usersTable = metadata.tables.find(t => t.name === 'Users')
     assert.ok(usersTable)
@@ -54,5 +56,7 @@ test('BQ Metadata Introspection', async (t) => {
     
     const metadata = await getDatasetMetadata(emptyBq, 'empty_dataset')
     assert.equal(metadata.tables.length, 0)
+    assert.ok(metadata.schemaVersion)
+    assert.equal(metadata.schemaVersion.length, 64)
   })
 })
