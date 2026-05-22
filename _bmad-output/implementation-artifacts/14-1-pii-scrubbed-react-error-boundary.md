@@ -8,7 +8,7 @@ So that we can diagnose visual crashes in production without leaking highly sens
 
 ## Status
 
-review
+done
 
 ## Acceptance Criteria
 
