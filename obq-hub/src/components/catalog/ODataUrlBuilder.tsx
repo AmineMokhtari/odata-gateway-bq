@@ -27,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Copy, Check, Database, Globe, Link as LinkIcon, Table, Sigma, ListTree, Activity, ChevronLeft, Loader2 } from 'lucide-react';
+import { Copy, Check, Database, Globe, Link as LinkIcon, Table, Sigma, ListTree, Activity, ChevronLeft, ChevronRight, Loader2, Search, Info } from 'lucide-react';
 import { useEntityMetadata } from '@/hooks/useEntityMetadata';
 import { getServiceRoot } from '@/app/actions/odata';
 import { getDatasetUsage } from '@/app/actions/usage';
@@ -144,6 +144,9 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   const [exportingPBI, setExportingPBI] = useState(false);
   const [activeTab, setActiveTab] = useState<'canvas' | 'fields' | 'aggregations'>('canvas');
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('');
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [tableSearchQuery, setTableSearchQuery] = useState('');
   const selected_paths = useVisualQueryStore(state => state.selected_paths);
   const loadDatasetMetrics = useVisualQueryStore(state => state.loadDatasetMetrics);
   const isFallbackMode = useVisualQueryStore(state => state.isFallbackMode);
@@ -164,8 +167,9 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
         const rootPath = added.find(p => !p.includes('->') && !p.includes('.'));
 
         if (expansionPath) {
-          const [, target] = expansionPath.split('->');
-          setLiveAnnouncement(`OData Query updated: added ${target} expansion`);
+          const [source, target] = expansionPath.split('->');
+          const expandedTable = source === selectedTable ? target : source;
+          setLiveAnnouncement(`OData Query updated: added ${expandedTable} expansion`);
         } else if (columnPath) {
           const [table, col] = columnPath.split('.');
           setLiveAnnouncement(`OData Query updated: selected column ${col} on ${table} table`);
@@ -178,8 +182,9 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
         const rootPath = removed.find(p => !p.includes('->') && !p.includes('.'));
 
         if (expansionPath) {
-          const [, target] = expansionPath.split('->');
-          setLiveAnnouncement(`OData Query updated: removed ${target} expansion`);
+          const [source, target] = expansionPath.split('->');
+          const expandedTable = source === selectedTable ? target : source;
+          setLiveAnnouncement(`OData Query updated: removed ${expandedTable} expansion`);
         } else if (columnPath) {
           const [table, col] = columnPath.split('.');
           setLiveAnnouncement(`OData Query updated: unselected column ${col} on ${table} table`);
@@ -189,7 +194,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
       }
       prevSelectedPathsRef.current = selected_paths;
     }
-  }, [selected_paths]);
+  }, [selected_paths, selectedTable]);
   // Public OData URL for BI tools
   const publicGatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
   const normalizedPublicBase = publicGatewayBase.endsWith('/') ? publicGatewayBase.slice(0, -1) : publicGatewayBase;
@@ -433,791 +438,676 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
   };
 
   return (
-    <Card className="w-full border-border shadow-sm bg-card rounded-md overflow-hidden relative">
+    <div className="w-full h-full flex flex-col overflow-hidden bg-background relative">
       <a 
-        href="#query-summary-sidebar" 
+        href="#generated-odata-url" 
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2.5 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:border focus:border-border focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-primary transition-all text-xs font-bold uppercase tracking-wider"
       >
-        Skip to Query Summary Sidebar
+        Skip to Generated URL
       </a>
 
       {/* Accessible Live Region Announcements */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {liveAnnouncement}
       </div>
-      <CardHeader className="bg-muted/30 border-b border-border pb-6">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-2 text-primary">
-            <Globe className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-widest">Connection Builder</span>
-          </div>
-          {onBack && (
-            <Button variant="ghost" size="sm" onClick={onBack} className="h-8 px-2 text-xs gap-1">
-              <ChevronLeft className="w-4 h-4" />
-              Back to Catalog
-            </Button>
-          )}
-        </div>
-        <CardTitle className="text-2xl font-sans font-bold text-foreground">
-          Generate Your OData Feed
-        </CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Select your data target to create a native connection string for your BI tools.
-        </CardDescription>
-        {(loadingTables || loadingMetadata || loadingUsage) && (
-          <div className="mt-4 space-y-2 animate-in fade-in">
-            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-primary">
-              <span>Synchronizing BigQuery Metadata</span>
-              <span className="animate-pulse">Loading...</span>
-            </div>
-            <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-              <div className="h-full bg-primary animate-progress-indeterminate w-1/3" />
-            </div>
-          </div>
-        )}
-      </CardHeader>
-      
-      <CardContent className="p-8 space-y-8">
-        {/* Connection Pulse Status (Story 4.3) */}
-        <div className="flex justify-center py-4 border-b border-secondary">
-          <SuccessPulseBadge state={localConnectionState} lastActive={lastActive} />
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Project Selection */}
-          <div className="space-y-2">
-            <label htmlFor="gcp-project-select" className="text-sm font-bold text-foreground uppercase tracking-tight flex items-center gap-2">
-              <Database className="w-4 h-4 text-primary" />
-              GCP Project
-            </label>
-            <Select 
-              value={selectedProject}
-              onValueChange={(val: string | null) => { 
-                if (val) { 
-                  setSelectedProject(val); 
-                  setSelectedDataset(''); 
-                  if (typeof window !== 'undefined') {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('q');
-                    window.history.replaceState(null, '', url.toString());
-                  }
-                  setSelectedTable('');
-                  setSelectedExpands([]);
-                  setSelectedExpandColumns({});
-                  setSelectedColumns([]);
-                  useVisualQueryStore.getState().clearCanvas();
-                } 
-              }}
-            >
-              <SelectTrigger id="gcp-project-select" className="h-12 border-border focus:ring-primary rounded">
-                <SelectValue placeholder="Select Project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map(project => (
-                  <SelectItem key={project} value={project}>{project}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Dataset Selection */}
-          <div className="space-y-2">
-            <label htmlFor="bq-dataset-select" className="text-sm font-bold text-foreground uppercase tracking-tight flex items-center gap-2">
-              <Database className="w-4 h-4 text-primary" />
-              BigQuery Dataset
-            </label>
-            <Select 
-              disabled={!selectedProject} 
-              onValueChange={(val: string | null) => { 
-                if (val) {
-                  setSelectedDataset(val); 
-                  if (typeof window !== 'undefined') {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('q');
-                    window.history.replaceState(null, '', url.toString());
-                  }
-                  setSelectedTable('');
-                  setSelectedExpands([]);
-                  setSelectedExpandColumns({});
-                  setSelectedColumns([]);
-                  useVisualQueryStore.getState().clearCanvas();
-                }
-              }}
-              value={selectedDataset}
-            >
-              <SelectTrigger id="bq-dataset-select" className="h-12 border-border focus:ring-primary rounded">
-                <SelectValue placeholder={selectedProject ? "Select Dataset" : "First select project"} />
-              </SelectTrigger>
-              <SelectContent>
-                {datasets.map(dataset => (
-                  <SelectItem key={dataset} value={dataset}>{dataset}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Table Selection */}
-        <div className="space-y-2">
-          <label htmlFor="primary-table-select" className="text-sm font-bold text-foreground uppercase tracking-tight flex items-center gap-2">
-            <Table className="w-4 h-4 text-primary" />
-            Primary Table
-          </label>
-          <Select 
-            disabled={!selectedDataset} 
-            onValueChange={(val: string | null) => { 
-              if (val) { 
-                setSelectedTable(val); 
-                setSelectedExpands([]); 
-                setSelectedGroupBy([]);
-                setSelectedAggs({});
-                // Clear canvas and seed Zustand selection state
-                useVisualQueryStore.getState().clearCanvas();
-                useVisualQueryStore.getState().toggleNodeSelection(val);
-                useVisualQueryStore.getState().setActiveTable(val);
-              } 
-            }}
-            value={selectedTable}
-          >
-            <SelectTrigger id="primary-table-select" className="h-12 border-border focus:ring-primary rounded">
-              <div className="flex items-center gap-2">
-                {loadingTables && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
-                <SelectValue placeholder={
-                  loadingTables 
-                    ? "Discovering tables..." 
-                    : (selectedDataset ? "Select Table" : "First select dataset")
-                } />
+      <div className="flex-1 flex flex-row h-full w-full overflow-hidden">
+        {/* Left Sidebar Panel (300px, collapsible) */}
+        <div 
+          className={`h-full border-r border-border bg-card flex flex-col relative transition-all duration-300 ${
+            leftCollapsed ? 'w-0 overflow-hidden border-r-0' : 'w-[300px] shrink-0'
+          }`}
+        >
+          <div className="flex flex-col h-full p-4 space-y-4">
+            {/* Header / Connection pulse */}
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-1.5 text-primary">
+                <Globe className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Metadata Feed</span>
               </div>
-            </SelectTrigger>
-            <SelectContent>
-              {fetchError && !loadingTables && (
-                <div className="p-4 text-xs text-destructive bg-destructive/10 rounded border border-destructive/20 text-center">
-                  <p className="font-bold mb-1">Connection Error</p>
-                  <p>{fetchError}</p>
-                </div>
+              {onBack && (
+                <Button variant="ghost" size="sm" onClick={onBack} className="h-6 px-1.5 text-[10px] gap-0.5 cursor-pointer">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Back
+                </Button>
               )}
-              {availableTables.length === 0 && !loadingTables && !fetchError && (
-                <div className="p-4 text-xs text-muted-foreground text-center">
-                  No tables found in this dataset.
-                </div>
-              )}
-              {!loadingTables && !fetchError && availableTables.map(table => (
-                <SelectItem key={table} value={table}>{table}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedTable && tableDescription && (
-            <p className="text-xs text-muted-foreground bg-secondary p-2 rounded border-l-2 border-primary/50 animate-in fade-in slide-in-from-left-1">
-              {tableDescription}
-            </p>
-          )}
-        </div>
-
-        {/* Tab Interface for Visual Query Builder */}
-        {(selectedTable || isFallbackMode) && (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3 space-y-6">
-            {isEnabled ? (
-              <>
-                {/* Tab Switcher */}
-                <div className="flex border-b border-border gap-2">
-                  <button
-                    onClick={() => setActiveTab('canvas')}
-                    className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-                      activeTab === 'canvas'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Interactive Canvas (ERD)
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('fields')}
-                    className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-                      activeTab === 'fields'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Fields Selector
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('aggregations')}
-                    className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-                      activeTab === 'aggregations'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Summarization
-                  </button>
-                </div>
-
-                {/* Tab Contents */}
-                {activeTab === 'canvas' && (
-                  <div className="space-y-6 animate-in fade-in duration-300">
-                    <div className="flex justify-between items-center px-1">
-                      <div className="space-y-0.5">
-                        <h3 className="text-sm font-bold uppercase tracking-tight flex items-center gap-1.5 text-primary">
-                          <Activity className="w-4 h-4" />
-                          Schema Exploration Canvas
-                        </h3>
-                        <p className="text-[10px] text-muted-foreground">
-                          Inspect your dataset ERD schema relationships in real time.
-                        </p>
-                      </div>
-                      {selectedTable && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="h-8 px-3 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10 cursor-pointer"
-                          onClick={() => {
-                            useVisualQueryStore.getState().clearCanvas();
-                            if (selectedTable) {
-                              useVisualQueryStore.getState().toggleNodeSelection(selectedTable);
-                              useVisualQueryStore.getState().setActiveTable(selectedTable);
-                              useVisualQueryStore.getState().loadNeighborhood(selectedProject, selectedDataset, selectedTable);
-                            }
-                            toast.success("Canvas reset successfully");
-                          }}
-                        >
-                          Reset Canvas
-                        </Button>
-                      )}
-                    </div>
-
-                    {isFallbackMode && !selectedTable ? (
-                      <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border rounded-xl bg-card text-center space-y-6 max-w-2xl mx-auto shadow-sm">
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                          <Database className="w-8 h-8" />
-                        </div>
-                        <div className="space-y-2">
-                          <h4 className="text-lg font-bold text-foreground">Massive Dataset Detected 🚀</h4>
-                          <p className="text-sm text-muted-foreground max-w-md">
-                            This dataset has <strong className="text-primary">{datasetMetrics?.tableCount} tables</strong> and <strong className="text-primary">{datasetMetrics?.relationshipCount} relationships</strong>. To guarantee sub-second render speeds, we've loaded this dataset in <strong>Neighborhood Fallback View</strong>.
-                          </p>
-                        </div>
-                        <div className="w-full max-w-sm space-y-2">
-                          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider block text-left">
-                            Select Root Table to Start Exploration
-                          </label>
-                          <Select 
-                            value={selectedTable} 
-                            onValueChange={(val) => {
-                              setSelectedTable(val || '');
-                              useVisualQueryStore.getState().setActiveTable(val);
-                              useVisualQueryStore.getState().toggleNodeSelection(val || '');
-                            }}
-                          >
-                            <SelectTrigger className="w-full h-11 bg-background border border-border shadow-sm rounded-lg hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all font-medium text-foreground">
-                              <SelectValue placeholder="Search or select a table..." />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[300px]">
-                              {availableTables.map(t => (
-                                <SelectItem key={t} value={t} className="font-medium">
-                                  {t}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    ) : (
-                      <ErdErrorBoundary>
-                        <ErdCanvas 
-                          projectId={selectedProject} 
-                          datasetId={selectedDataset} 
-                          rootTable={selectedTable} 
-                        />
-                      </ErdErrorBoundary>
-                    )}
-                  </div>
-                )}
-
-                {activeTab === 'fields' && (
-                  <div className="space-y-6 animate-in fade-in duration-300">
-                    {/* Columns Selector */}
-                    <div className="space-y-4 p-6 bg-muted/20 border border-border rounded">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-foreground">
-                          <ListTree className="w-4 h-4 text-primary" />
-                          <h3 className="text-sm font-bold uppercase tracking-tight">Select Columns</h3>
-                        </div>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Visual $select</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {loadingMetadata ? (
-                          <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground animate-pulse">
-                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                            Introspecting table schema...
-                          </div>
-                        ) : (
-                          properties.map(prop => (
-                            <Button
-                              key={prop.name}
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedColumns(prev => 
-                                  prev.includes(prop.name) ? prev.filter(c => c !== prop.name) : [...prev, prop.name]
-                                );
-                              }}
-                              className={`h-auto min-h-8 py-1.5 px-4 rounded text-[10px] font-bold transition-all flex flex-col items-start gap-0.5 ${
-                                selectedColumns.includes(prop.name)
-                                ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10'
-                                : 'bg-card text-muted-foreground border border-border hover:border-primary/50 hover:bg-accent'
-                              }`}
-                            >
-                              <span>{prop.name}</span>
-                              {prop.description && (
-                                <span className={`text-[8px] font-medium leading-tight text-left max-w-[120px] line-clamp-1 ${
-                                  selectedColumns.includes(prop.name) ? 'text-primary-foreground/80' : 'text-muted-foreground/80'
-                                }`}>
-                                  {prop.description}
-                                </span>
-                              )}
-                            </Button>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Visual Join Builder */}
-                    <div className="space-y-4 p-6 bg-accent/20 border border-accent rounded">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-primary">
-                          <LinkIcon className="w-4 h-4" />
-                          <h3 className="text-sm font-bold uppercase tracking-tight">Related Data (Joins)</h3>
-                        </div>
-                        <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Visual $expand</span>
-                      </div>
-                      
-                      {navProps.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {navProps.map(prop => (
-                            <div key={prop.name} className={`flex flex-col space-y-2 bg-card p-4 rounded border transition-all cursor-pointer group ${
-                              selectedExpands.includes(prop.name) ? 'border-primary/50 ring-1 ring-primary/10' : 'border-border hover:border-primary/30'
-                            }`}
-                                 onClick={() => toggleExpand(prop.name)}>
-                              <div className="flex items-center space-x-3">
-                                <Checkbox 
-                                  id={`expand-${prop.name}`} 
-                                  checked={selectedExpands.includes(prop.name)}
-                                  onCheckedChange={() => toggleExpand(prop.name)}
-                                  className="border-border data-[state=checked]:bg-primary"
-                                />
-                                <div className="space-y-0.5">
-                                  <label 
-                                    htmlFor={`expand-${prop.name}`}
-                                    className="text-xs font-bold text-foreground leading-none cursor-pointer"
-                                  >
-                                    {prop.name}
-                                  </label>
-                                  <p className="text-[10px] text-muted-foreground font-medium">Automatic Join</p>
-                                </div>
-                              </div>
-
-                              {selectedExpands.includes(prop.name) && (
-                                <ExpandColumnSelector 
-                                  projectId={selectedProject}
-                                  datasetId={selectedDataset}
-                                  entitySet={prop.type.split('.').pop() || prop.name}
-                                  selectedColumns={selectedExpandColumns[prop.name] || []}
-                                  onChange={(cols) => {
-                                    setSelectedExpandColumns(prev => ({
-                                      ...prev,
-                                      [prop.name]: cols
-                                    }));
-                                  }}
-                                />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-4 bg-card/50 rounded border border-dashed border-primary/20 text-center space-y-2">
-                          <div className="flex justify-center">
-                            <div className="bg-primary/10 p-2 rounded-full">
-                              <LinkIcon className="w-5 h-5 text-primary opacity-50" />
-                            </div>
-                          </div>
-                          <p className="text-xs font-bold text-foreground">No automatic joins discovered</p>
-                          <p className="text-[10px] text-muted-foreground max-w-xs mx-auto">
-                            Elena suggests defining <span className="font-bold">Foreign Keys</span> in BigQuery to enable automatic relationship discovery.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'aggregations' && (
-                  <div className="space-y-4 p-6 bg-muted/20 border border-border rounded animate-in fade-in duration-300">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-foreground">
-                        <Sigma className="w-4 h-4 text-success" />
-                        <h3 className="text-sm font-bold uppercase tracking-tight">Summarize Data</h3>
-                      </div>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Visual $apply</span>
-                    </div>
-                    
-                    <div className="space-y-6">
-                      {/* Grouping Section */}
-                      <div className="space-y-3">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                          <ListTree className="w-3 h-3" /> Group By (Categorical)
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {properties.filter(p => !p.isNumeric).map(prop => (
-                            <Button
-                              key={prop.name}
-                              variant="outline"
-                              size="sm"
-                              onClick={() => toggleGroupBy(prop.name)}
-                              className={`h-8 rounded-full text-[10px] font-bold transition-all ${
-                                selectedGroupBy.includes(prop.name)
-                                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                                : 'bg-card text-muted-foreground border border-border hover:border-primary/50'
-                              }`}
-                            >
-                              {prop.name}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Aggregation Section */}
-                      <div className="space-y-3">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                          <Sigma className="w-3 h-3" /> Calculations (Numerical)
-                        </p>
-                        <div className="space-y-2">
-                          {properties.filter(p => p.isNumeric).map(prop => (
-                            <div key={prop.name} className="flex items-center justify-between bg-card p-3 rounded border border-border">
-                              <span className="text-xs font-bold text-foreground">{prop.name}</span>
-                              <div className="flex gap-1">
-                                {['sum', 'average', 'count'].map((func) => (
-                                  <Button
-                                    key={func}
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setAggregation(prop.name, func as any)}
-                                    className={`h-7 px-3 rounded text-[9px] font-bold uppercase transition-all ${
-                                      selectedAggs[prop.name] === func
-                                      ? 'bg-success/10 text-success hover:bg-success/20'
-                                      : 'text-muted-foreground hover:bg-muted'
-                                    }`}
-                                  >
-                                    {func}
-                                  </Button>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                {/* Fallback original simple column layout when isEnabled is false */}
-                <div className="space-y-4 p-6 bg-muted/20 border border-border rounded">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-foreground">
-                      <ListTree className="w-4 h-4 text-primary" />
-                      <h3 className="text-sm font-bold uppercase tracking-tight">Select Columns</h3>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {loadingMetadata ? (
-                      <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground animate-pulse">
-                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                        Introspecting table schema...
-                      </div>
-                    ) : (
-                      properties.map(prop => (
-                        <Button
-                          key={prop.name}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedColumns(prev => 
-                              prev.includes(prop.name) ? prev.filter(c => c !== prop.name) : [...prev, prop.name]
-                            );
-                          }}
-                          className={`h-auto min-h-8 py-1.5 px-4 rounded text-[10px] font-bold transition-all flex flex-col items-start gap-0.5 ${
-                            selectedColumns.includes(prop.name)
-                            ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10'
-                            : 'bg-card text-muted-foreground border border-border hover:border-primary/50 hover:bg-accent'
-                          }`}
-                        >
-                          <span>{prop.name}</span>
-                        </Button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
             </div>
 
-            {/* Right Column: Query Summary Sidebar (Story 13.2) */}
-            <div 
-              id="query-summary-sidebar"
-              tabIndex={-1}
-              className="lg:col-span-2 space-y-6 bg-muted/10 p-6 rounded-xl border border-border/80 shadow-sm flex flex-col justify-between focus:outline-none focus:ring-1 focus:ring-primary/30"
-              aria-label="Query Summary and Alternative Builder"
-            >
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <ListTree className="w-5 h-5 text-primary" />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Query Summary</h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded border border-border uppercase">
-                    Alternative Builder
-                  </span>
+            <div className="flex justify-center border-b border-secondary pb-3">
+              <SuccessPulseBadge state={localConnectionState} lastActive={lastActive} />
+            </div>
+
+            {/* Project Selection */}
+            <div className="space-y-1.5">
+              <label htmlFor="gcp-project-select" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Database className="w-3.5 h-3.5 text-primary" />
+                GCP Project
+              </label>
+              <Select 
+                value={selectedProject}
+                onValueChange={(val: string | null) => { 
+                  if (val) { 
+                    setSelectedProject(val); 
+                    setSelectedDataset(''); 
+                    if (typeof window !== 'undefined') {
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete('q');
+                      window.history.replaceState(null, '', url.toString());
+                    }
+                    setSelectedTable('');
+                    setSelectedExpands([]);
+                    setSelectedExpandColumns({});
+                    setSelectedColumns([]);
+                    useVisualQueryStore.getState().clearCanvas();
+                  } 
+                }}
+              >
+                <SelectTrigger id="gcp-project-select" className="h-9 border-border text-xs font-semibold focus:ring-primary rounded">
+                  <SelectValue placeholder="Select Project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map(project => (
+                    <SelectItem key={project} value={project} className="text-xs font-medium">{project}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Dataset Selection */}
+            <div className="space-y-1.5">
+              <label htmlFor="bq-dataset-select" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Database className="w-3.5 h-3.5 text-primary" />
+                BigQuery Dataset
+              </label>
+              <Select 
+                disabled={!selectedProject} 
+                onValueChange={(val: string | null) => { 
+                  if (val) {
+                    setSelectedDataset(val); 
+                    if (typeof window !== 'undefined') {
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete('q');
+                      window.history.replaceState(null, '', url.toString());
+                    }
+                    setSelectedTable('');
+                    setSelectedExpands([]);
+                    setSelectedExpandColumns({});
+                    setSelectedColumns([]);
+                    useVisualQueryStore.getState().clearCanvas();
+                  }
+                }}
+                value={selectedDataset}
+              >
+                <SelectTrigger id="bq-dataset-select" className="h-9 border-border text-xs font-semibold focus:ring-primary rounded">
+                  <SelectValue placeholder={selectedProject ? "Select Dataset" : "First select project"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {datasets.map(dataset => (
+                    <SelectItem key={dataset} value={dataset} className="text-xs font-medium">{dataset}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Table catalog Search & List */}
+            {selectedDataset && (
+              <div className="flex-1 flex flex-col min-h-0 space-y-2 pt-2 border-t border-border">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                  <Table className="w-3.5 h-3.5 text-primary" />
+                  Table Catalog ({availableTables.length})
+                </label>
+                
+                {/* Catalog Search input */}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search tables..."
+                    value={tableSearchQuery}
+                    onChange={(e) => setTableSearchQuery(e.target.value)}
+                    className="h-8 pl-8 text-xs bg-muted/20 border-border"
+                  />
                 </div>
 
-                {/* Primary Table & Columns */}
-                <div className="space-y-3">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Primary Table</p>
-                  <div className="p-3 bg-background border border-border rounded-lg flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground">{selectedTable}</span>
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase">Root</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Columns Selected</p>
-                    {(() => {
-                      const cols = selected_paths.length > 0 
-                        ? selected_paths.filter(p => p.startsWith(`${selectedTable}.`)).map(p => p.split('.')[1])
-                        : selectedColumns;
+                {/* Table List Container */}
+                <div className="flex-1 overflow-y-auto pr-1 space-y-1 min-h-0 scrollbar-thin">
+                  {loadingTables ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-xs gap-2 animate-pulse">
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      <span>Discovering tables...</span>
+                    </div>
+                  ) : fetchError ? (
+                    <div className="p-3 text-[10px] text-destructive bg-destructive/10 rounded border border-destructive/20">
+                      <p className="font-bold">Error loading catalog</p>
+                      <p className="mt-1">{fetchError}</p>
+                    </div>
+                  ) : availableTables.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-muted-foreground">
+                      No tables available.
+                    </div>
+                  ) : (
+                    (() => {
+                      const filtered = availableTables
+                        .filter(t => t.toLowerCase().includes(tableSearchQuery.toLowerCase()))
+                        .sort((a, b) => a.localeCompare(b));
                       
-                      if (cols.length === 0) {
-                        return <p className="text-xs text-muted-foreground italic bg-background p-3 rounded-lg border border-dashed border-border">All columns projected ($select is empty)</p>;
+                      if (filtered.length === 0) {
+                        return (
+                          <div className="text-center py-4 text-[10px] text-muted-foreground italic">
+                            No matching tables
+                          </div>
+                        );
                       }
 
-                      return (
-                        <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto p-1">
-                          {cols.map(c => (
-                            <button
-                              key={c}
-                              onClick={() => {
-                                if (selected_paths.length > 0) {
-                                  useVisualQueryStore.getState().toggleColumnSelection(selectedTable, c);
-                                } else {
-                                  setSelectedColumns(prev => prev.filter(col => col !== c));
-                                }
-                              }}
-                              className="group flex items-center gap-1 text-[10px] font-bold bg-primary/10 text-primary hover:bg-red-50 hover:text-red-600 px-2 py-1 rounded border border-primary/20 transition-all cursor-pointer"
-                              title={`Remove ${c} column`}
-                            >
-                              <span>{c}</span>
-                              <span className="text-[8px] opacity-60 group-hover:opacity-100">✕</span>
-                            </button>
-                          ))}
-                        </div>
-                      );
-                    })()}
-
-                    {/* Add Column Dropdown (Story 13.2) */}
-                    {(() => {
-                      const currentCols = selected_paths.length > 0 
-                        ? selected_paths.filter(p => p.startsWith(`${selectedTable}.`)).map(p => p.split('.')[1])
-                        : selectedColumns;
-                      const unselectedCols = properties.filter(prop => !currentCols.includes(prop.name));
-                      if (unselectedCols.length === 0) return null;
-                      return (
-                        <div className="space-y-1.5 pt-1.5 border-t border-border/50">
-                          <label htmlFor="add-column-select" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                            Add Column
-                          </label>
-                          <select
-                            id="add-column-select"
-                            value=""
-                            className="w-full h-8 rounded border border-input bg-background px-2 py-0.5 text-xs font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val) {
-                                if (selected_paths.length > 0) {
-                                  useVisualQueryStore.getState().toggleColumnSelection(selectedTable, val);
-                                } else {
-                                  setSelectedColumns(prev => [...prev, val]);
-                                }
-                                toast.success(`Projected column ${val}`);
-                              }
+                      return filtered.map(table => {
+                        const isSelected = selectedTable === table;
+                        return (
+                          <button
+                            key={table}
+                            onClick={() => {
+                              setSelectedTable(table); 
+                              setSelectedExpands([]); 
+                              setSelectedGroupBy([]);
+                              setSelectedAggs({});
+                              useVisualQueryStore.getState().clearCanvas();
+                              useVisualQueryStore.getState().toggleNodeSelection(table);
+                              useVisualQueryStore.getState().setActiveTable(table);
                             }}
+                            className={`w-full flex items-center justify-between text-left px-3 py-2 rounded text-xs transition-all duration-150 group cursor-pointer ${
+                              isSelected
+                                ? 'bg-primary/10 text-primary border-l-4 border-primary font-semibold shadow-sm'
+                                : 'hover:bg-muted/50 text-foreground font-medium border-l-4 border-transparent'
+                            }`}
                           >
-                            <option value="">-- Choose column to project --</option>
-                            {unselectedCols.map(prop => (
-                              <option key={prop.name} value={prop.name}>
-                                {prop.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })()}
+                            <span className="truncate pr-2">{table}</span>
+                            {isSelected && (
+                              <span className="text-[8px] font-bold uppercase bg-primary/20 text-primary px-1.5 py-0.5 rounded leading-none">
+                                Active
+                              </span>
+                            )}
+                          </button>
+                        );
+                      });
+                    })()
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Absolute floating Left Sidebar Panel toggle chevron */}
+          <button
+            onClick={() => setLeftCollapsed(!leftCollapsed)}
+            className="absolute right-[-14px] top-1/2 -translate-y-1/2 z-50 bg-background border border-border rounded-full p-0.5 shadow-md hover:bg-muted cursor-pointer transition-transform text-foreground hover:text-primary"
+            aria-label={leftCollapsed ? "Expand left sidebar" : "Collapse left sidebar"}
+          >
+            {leftCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
+        {/* Center Panel (Maximized schema canvas) */}
+        <div className="flex-1 h-full relative overflow-hidden bg-muted/5 flex flex-col">
+          {/* Header */}
+          <div className="h-12 border-b border-border bg-card/60 backdrop-blur px-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Workspace</span>
+              {selectedTable && (
+                <>
+                  <span className="text-muted-foreground/30">|</span>
+                  <div className="flex items-center gap-1 text-primary">
+                    <Table className="w-4 h-4" />
+                    <span className="text-xs font-bold">{selectedTable}</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {selectedTable && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 px-2.5 text-[10px] border-red-500/30 text-red-500 hover:bg-red-500/10 cursor-pointer font-bold uppercase"
+                onClick={() => {
+                  useVisualQueryStore.getState().clearCanvas();
+                  if (selectedTable) {
+                    useVisualQueryStore.getState().toggleNodeSelection(selectedTable);
+                    useVisualQueryStore.getState().setActiveTable(selectedTable);
+                    useVisualQueryStore.getState().loadNeighborhood(selectedProject, selectedDataset, selectedTable);
+                  }
+                  toast.success("Canvas reset successfully");
+                }}
+              >
+                Reset Canvas
+              </Button>
+            )}
+          </div>
+
+          {/* Loader Overlay for main catalog elements */}
+          {(loadingTables || loadingMetadata || loadingUsage) && (
+            <div className="absolute top-0 inset-x-0 h-0.5 bg-primary/10 overflow-hidden z-30">
+              <div className="h-full bg-primary animate-progress-indeterminate w-1/3" />
+            </div>
+          )}
+
+          <div className="flex-1 w-full h-full relative min-h-0">
+            {isFallbackMode && !selectedTable ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-background/80 z-20">
+                <div className="max-w-md space-y-6">
+                  <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Database className="w-7 h-7" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-base font-bold text-foreground">Massive Dataset Detected 🚀</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      This dataset has <strong className="text-primary">{datasetMetrics?.tableCount} tables</strong> and <strong className="text-primary">{datasetMetrics?.relationshipCount} relationships</strong>. To guarantee sub-second render speeds, we've loaded this dataset in <strong>Neighborhood Fallback View</strong>.
+                    </p>
+                  </div>
+                  <div className="w-full space-y-2 text-left bg-card p-4 rounded-lg border border-border shadow-sm">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider block">
+                      Select Root Table to Start Exploration
+                    </label>
+                    <Select 
+                      value={selectedTable} 
+                      onValueChange={(val) => {
+                        setSelectedTable(val || '');
+                        useVisualQueryStore.getState().setActiveTable(val);
+                        useVisualQueryStore.getState().toggleNodeSelection(val || '');
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-9 bg-background border border-border shadow-sm rounded hover:border-primary/50 text-xs font-semibold">
+                        <SelectValue placeholder="Search or select a table..." />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[250px]">
+                        {availableTables.map(t => (
+                          <SelectItem key={t} value={t} className="text-xs font-medium">
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
+              </div>
+            ) : !selectedTable ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-card">
+                <div className="max-w-sm space-y-4">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+                    <ListTree className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-foreground">No Catalog Table Active</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedDataset
+                        ? "Select a table from the catalog list on the left to start building your query visually."
+                        : "Please select a GCP Project and BigQuery Dataset in the Left Sidebar to inspect available schemas."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full h-full relative">
+                <ErdErrorBoundary>
+                  <ErdCanvas 
+                    projectId={selectedProject} 
+                    datasetId={selectedDataset} 
+                    rootTable={selectedTable} 
+                  />
+                </ErdErrorBoundary>
+              </div>
+            )}
+          </div>
 
-                {/* Joins ($expand) */}
+          {/* Generated OData URL bottom takes width of interactive workspace */}
+          {selectedTable && (
+            <div className="p-4 border-t border-border bg-card/90 backdrop-blur-sm flex items-center gap-4 shrink-0 z-20 animate-fade-in">
+              <div className="shrink-0">
+                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-0.5">
+                  Generated OData URL
+                </label>
+                <span className="text-[10px] text-muted-foreground font-medium">Ready for reporting</span>
+              </div>
+              
+              <div className="flex-1 flex gap-1.5 items-center">
+                <Input 
+                  readOnly 
+                  id="generated-odata-url"
+                  aria-label="Generated OData Service URL preview"
+                  value={generatedUrl} 
+                  placeholder="Compile state to generate URL..."
+                  className="h-9 bg-background border-border font-mono text-[10px] text-primary focus-visible:ring-primary rounded pr-1 flex-1 shadow-inner"
+                />
+                
+                <Button 
+                  size="sm"
+                  disabled={!generatedUrl || exporting}
+                  onClick={handleExcelExport}
+                  className="h-9 px-3 rounded bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all cursor-pointer font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5"
+                  title="Connect to Excel"
+                >
+                  {exporting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <path d="M8 13h2" /><path d="M8 17h2" /><path d="M10 9H8" />
+                    </svg>
+                  )}
+                  <span>Excel</span>
+                </Button>
+
+                <Button 
+                  size="sm"
+                  disabled={!generatedUrl || exportingPBI}
+                  onClick={handlePowerBIExport}
+                  className="h-9 px-3 rounded bg-amber-500 hover:bg-amber-600 shadow-sm transition-all cursor-pointer font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5"
+                  title="Connect to Power BI"
+                >
+                  {exportingPBI ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <line x1="9" y1="17" x2="9" y2="8" />
+                      <line x1="15" y1="17" x2="15" y2="12" />
+                    </svg>
+                  )}
+                  <span>Power BI</span>
+                </Button>
+
+                <Button 
+                  size="sm"
+                  disabled={!generatedUrl}
+                  onClick={handleCopy}
+                  className={`h-9 px-3 rounded transition-all duration-300 cursor-pointer font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${
+                    copied 
+                    ? 'bg-success hover:bg-success/90 text-success-foreground' 
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                  }`}
+                  title="Copy URL"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy URL</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Sidebar Panel (340px, collapsible) */}
+        <div 
+          className={`h-full border-l border-border bg-card flex flex-col relative transition-all duration-300 ${
+            rightCollapsed ? 'w-0 overflow-hidden border-l-0' : 'w-[340px] shrink-0'
+          }`}
+        >
+          {selectedTable ? (
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scrollbar-thin">
+                {/* Query Summary & Mapping Tree */}
                 <div className="space-y-4">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Expanded Relationships</p>
-                  
-                  {(() => {
-                    const expanded = selected_paths.length > 0
-                      ? selected_paths.filter(p => p.includes('->') && p.split('->')[0] === selectedTable).map(p => p.split('->')[1])
-                      : selectedExpands;
+                  <div className="flex items-center justify-between pb-2 border-b border-border">
+                    <div className="flex items-center gap-1.5 text-foreground">
+                      <ListTree className="w-4.5 h-4.5 text-primary" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Projection & Joins</span>
+                    </div>
+                  </div>
 
-                    return (
-                      <div className="space-y-2.5">
-                        {expanded.length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic bg-background p-3 rounded-lg border border-dashed border-border">No relationships expanded yet.</p>
-                        ) : (
-                          <div className="space-y-2 max-h-[200px] overflow-y-auto p-1">
-                            {expanded.map(expTable => {
-                              const expCols = selected_paths.length > 0
-                                ? selected_paths.filter(p => p.startsWith(`${expTable}.`)).map(p => p.split('.')[1])
-                                : (selectedExpandColumns[expTable] || []);
+                  {/* Primary Table & Columns */}
+                  <div className="space-y-2.5">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Primary Table</p>
+                    <div className="p-2 bg-muted/40 border border-border rounded flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground">{selectedTable}</span>
+                      <span className="text-[8px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase">Root</span>
+                    </div>
 
-                              return (
-                                <div key={expTable} className="p-3 bg-background border border-border rounded-lg space-y-2 animate-in slide-in-from-top-1">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-foreground">{expTable}</span>
-                                    <button
-                                      onClick={() => {
-                                        if (selected_paths.length > 0) {
-                                          const edges = useVisualQueryStore.getState().edges;
-                                          const edge = edges.find(e => (e.source === selectedTable && e.target === expTable) || (e.source === expTable && e.target === selectedTable));
-                                          if (edge) {
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Columns Selected ($select)</p>
+                      {(() => {
+                        const cols = selected_paths.length > 0 
+                          ? selected_paths.filter(p => p.startsWith(`${selectedTable}.`)).map(p => p.split('.')[1])
+                          : selectedColumns;
+                        
+                        if (cols.length === 0) {
+                          return (
+                            <p className="text-[10px] text-muted-foreground italic bg-muted/20 p-2.5 rounded border border-dashed border-border leading-relaxed">
+                              All columns projected ($select is empty)
+                            </p>
+                          );
+                        }
+
+                        return (
+                          <div className="flex flex-wrap gap-1 max-h-[100px] overflow-y-auto p-0.5 scrollbar-thin">
+                            {cols.map(c => (
+                              <button
+                                key={c}
+                                onClick={() => {
+                                  if (selected_paths.length > 0) {
+                                    useVisualQueryStore.getState().toggleColumnSelection(selectedTable, c);
+                                  } else {
+                                    setSelectedColumns(prev => prev.filter(col => col !== c));
+                                  }
+                                }}
+                                className="group flex items-center gap-1 text-[9px] font-bold bg-primary/10 text-primary hover:bg-red-50 hover:text-red-600 px-1.5 py-0.5 rounded border border-primary/20 transition-all cursor-pointer"
+                                title={`Remove ${c} column`}
+                              >
+                                <span>{c}</span>
+                                <span className="text-[7px] opacity-60 group-hover:opacity-100">✕</span>
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Add Column Dropdown */}
+                      {(() => {
+                        const currentCols = selected_paths.length > 0 
+                          ? selected_paths.filter(p => p.startsWith(`${selectedTable}.`)).map(p => p.split('.')[1])
+                          : selectedColumns;
+                        const unselectedCols = properties.filter(prop => !currentCols.includes(prop.name));
+                        if (unselectedCols.length === 0) return null;
+                        return (
+                          <div className="space-y-1 pt-1">
+                            <select
+                              id="add-column-select"
+                              value=""
+                              className="w-full h-8 rounded border border-border bg-background px-2 py-0.5 text-[10px] font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val) {
+                                  if (selected_paths.length > 0) {
+                                    useVisualQueryStore.getState().toggleColumnSelection(selectedTable, val);
+                                  } else {
+                                    setSelectedColumns(prev => [...prev, val]);
+                                  }
+                                  toast.success(`Projected column ${val}`);
+                                }
+                              }}
+                            >
+                              <option value="">+ Add Column</option>
+                              {unselectedCols.map(prop => (
+                                <option key={prop.name} value={prop.name}>
+                                  {prop.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Joins ($expand) */}
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Expanded Relationships ($expand)</p>
+                    
+                    {(() => {
+                      const expanded = selected_paths.length > 0
+                        ? selected_paths.filter(p => p.includes('->')).map(p => {
+                            const [source, target] = p.split('->');
+                            if (source === selectedTable) return target;
+                            if (target === selectedTable) return source;
+                            return null;
+                          }).filter(Boolean) as string[]
+                        : selectedExpands;
+
+                      return (
+                        <div className="space-y-2">
+                          {expanded.length === 0 ? (
+                            <p className="text-[10px] text-muted-foreground italic bg-muted/20 p-2.5 rounded border border-dashed border-border leading-relaxed">
+                              No relationships expanded yet. Double-click relationship edges or nodes on canvas to expand dynamically.
+                            </p>
+                          ) : (
+                            <div className="space-y-2 max-h-[160px] overflow-y-auto p-0.5 scrollbar-thin">
+                              {expanded.map(expTable => {
+                                const expCols = selected_paths.length > 0
+                                  ? selected_paths.filter(p => p.startsWith(`${expTable}.`)).map(p => p.split('.')[1])
+                                  : (selectedExpandColumns[expTable] || []);
+
+                                return (
+                                  <div key={expTable} className="p-2.5 bg-muted/30 border border-border rounded space-y-1.5 animate-in slide-in-from-top-1">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-[10px] font-bold text-foreground truncate pr-2">{expTable}</span>
+                                      <button
+                                        onClick={() => {
+                                          if (selected_paths.length > 0) {
                                             useVisualQueryStore.getState().toggleNodeSelection(expTable);
                                           } else {
-                                            useVisualQueryStore.getState().toggleNodeSelection(expTable);
+                                            setSelectedExpands(prev => prev.filter(t => t !== expTable));
                                           }
-                                        } else {
-                                          setSelectedExpands(prev => prev.filter(t => t !== expTable));
-                                        }
-                                      }}
-                                      className="text-[10px] font-bold text-destructive hover:underline cursor-pointer"
-                                      title={`Remove ${expTable} join`}
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
+                                        }}
+                                        className="text-[9px] font-bold text-destructive hover:underline cursor-pointer"
+                                        title={`Remove ${expTable} join`}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
 
-                                  <div className="flex flex-wrap gap-1">
-                                    {expCols.length === 0 ? (
-                                      <span className="text-[9px] text-muted-foreground italic">All fields selected</span>
-                                    ) : (
-                                      expCols.map(col => (
-                                        <button
-                                          key={col}
-                                          onClick={() => {
-                                            if (selected_paths.length > 0) {
-                                              useVisualQueryStore.getState().toggleColumnSelection(expTable, col);
-                                            } else {
-                                              setSelectedExpandColumns(prev => ({
-                                                ...prev,
-                                                [expTable]: (prev[expTable] || []).filter(c => c !== col)
-                                              }));
-                                            }
-                                          }}
-                                          className="group flex items-center gap-1 text-[9px] font-bold bg-muted text-muted-foreground hover:bg-red-50 hover:text-red-600 px-1.5 py-0.5 rounded border border-border cursor-pointer transition-all"
-                                          title={`Remove ${col} column`}
-                                        >
-                                          <span>{col}</span>
-                                          <span className="text-[7px] opacity-60 group-hover:opacity-100">✕</span>
-                                        </button>
-                                      ))
-                                    )}
-                                  </div>
-
-                                  {/* Add Column Dropdown for Expanded Table (Story 13.2) */}
-                                  {(() => {
-                                    const expNode = nodes.find(n => n.id === expTable);
-                                    const expNodeCols = (expNode?.data as any)?.columns || [];
-                                    if (expNodeCols.length === 0) return null;
-
-                                    const unselectedExpCols = expNodeCols.filter(
-                                      (c: any) => !expCols.includes(c.name)
-                                    );
-                                    if (unselectedExpCols.length === 0) return null;
-
-                                    return (
-                                      <div className="space-y-1 pt-1.5 border-t border-border/50">
-                                        <label
-                                          htmlFor={`add-column-select-${expTable}`}
-                                          className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block"
-                                        >
-                                          Add Column
-                                        </label>
-                                        <select
-                                          id={`add-column-select-${expTable}`}
-                                          value=""
-                                          className="w-full h-8 rounded border border-input bg-background px-2 py-0.5 text-[10px] font-medium shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
-                                          onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (val) {
+                                    <div className="flex flex-wrap gap-0.5">
+                                      {expCols.length === 0 ? (
+                                        <span className="text-[8px] text-muted-foreground italic">All fields selected</span>
+                                      ) : (
+                                        expCols.map(col => (
+                                          <button
+                                            key={col}
+                                            onClick={() => {
                                               if (selected_paths.length > 0) {
-                                                useVisualQueryStore.getState().toggleColumnSelection(expTable, val);
+                                                useVisualQueryStore.getState().toggleColumnSelection(expTable, col);
                                               } else {
                                                 setSelectedExpandColumns(prev => ({
                                                   ...prev,
-                                                  [expTable]: [...(prev[expTable] || []), val]
+                                                  [expTable]: (prev[expTable] || []).filter(c => c !== col)
                                                 }));
                                               }
-                                              toast.success(`Projected column ${val} on ${expTable}`);
-                                            }
-                                          }}
-                                        >
-                                          <option value="">-- Choose column --</option>
-                                          {unselectedExpCols.map((c: any) => (
-                                            <option key={c.name} value={c.name}>
-                                              {c.name}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                                            }}
+                                            className="group flex items-center gap-0.5 text-[8px] font-bold bg-card text-muted-foreground hover:bg-red-50 hover:text-red-600 px-1.5 py-0.5 rounded border border-border cursor-pointer transition-all"
+                                            title={`Remove ${col} column`}
+                                          >
+                                            <span>{col}</span>
+                                            <span className="text-[6px] opacity-60 group-hover:opacity-100">✕</span>
+                                          </button>
+                                        ))
+                                      )}
+                                    </div>
 
-                        {/* Standard Dropdown to add expands (parity builder) */}
-                        {navProps.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-border">
-                            <label htmlFor="add-join-select" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                              Add Related Table (Join)
-                            </label>
-                            <div className="flex gap-2">
+                                    {/* Add Column Dropdown for Expanded Table */}
+                                    {(() => {
+                                      const expNode = nodes.find(n => n.id === expTable);
+                                      const expNodeCols = (expNode?.data as any)?.columns || [];
+                                      if (expNodeCols.length === 0) return null;
+
+                                      const unselectedExpCols = expNodeCols.filter(
+                                        (c: any) => !expCols.includes(c.name)
+                                      );
+                                      if (unselectedExpCols.length === 0) return null;
+
+                                      return (
+                                        <div className="space-y-0.5 pt-1">
+                                          <select
+                                            id={`add-column-select-${expTable}`}
+                                            value=""
+                                            className="w-full h-7 rounded border border-border bg-background px-1.5 py-0.5 text-[9px] font-medium shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                                            onChange={(e) => {
+                                              const val = e.target.value;
+                                              if (val) {
+                                                if (selected_paths.length > 0) {
+                                                  useVisualQueryStore.getState().toggleColumnSelection(expTable, val);
+                                                } else {
+                                                  setSelectedExpandColumns(prev => ({
+                                                    ...prev,
+                                                    [expTable]: [...(prev[expTable] || []), val]
+                                                  }));
+                                                }
+                                                toast.success(`Projected column ${val} on ${expTable}`);
+                                              }
+                                            }}
+                                          >
+                                            <option value="">+ Add Column</option>
+                                            {unselectedExpCols.map((c: any) => (
+                                              <option key={c.name} value={c.name}>
+                                                {c.name}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Standard Dropdown to add expands */}
+                          {navProps.length > 0 && (
+                            <div className="space-y-1 pt-1.5 border-t border-border">
                               <select
                                 id="add-join-select"
-                                className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-xs font-medium shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                className="w-full h-8 rounded border border-border bg-background px-2 py-0.5 text-[10px] font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
                                 onChange={(e) => {
                                   const targetVal = e.target.value;
                                   if (targetVal) {
                                     if (selected_paths.length > 0) {
-                                      const edges = useVisualQueryStore.getState().edges;
+                                      const store = useVisualQueryStore.getState();
+                                      const edges = store.edges;
                                       const edge = edges.find(ed => (ed.source === selectedTable && ed.target === targetVal) || (ed.source === targetVal && ed.target === selectedTable));
                                       
-                                      if (!selected_paths.includes(targetVal)) {
-                                        useVisualQueryStore.getState().toggleNodeSelection(targetVal);
+                                      // Ensure root table is in selected_paths
+                                      let currentPaths = store.selected_paths;
+                                      if (!currentPaths.includes(selectedTable)) {
+                                        store.toggleNodeSelection(selectedTable);
+                                        currentPaths = useVisualQueryStore.getState().selected_paths;
                                       }
+                                      
+                                      // Ensure target table is in selected_paths
+                                      if (!currentPaths.includes(targetVal)) {
+                                        store.toggleNodeSelection(targetVal);
+                                        currentPaths = useVisualQueryStore.getState().selected_paths;
+                                      }
+                                      
                                       if (edge) {
                                         const joinKey = `${edge.source}->${edge.target}`;
-                                        if (!selected_paths.includes(joinKey)) {
+                                        if (!currentPaths.includes(joinKey)) {
                                           useVisualQueryStore.getState().toggleEdgeSelection(edge.id);
                                         }
                                       } else {
-                                        useVisualQueryStore.getState().toggleNodeSelection(targetVal);
+                                        // No edge in store — directly add the join path
+                                        const joinKey = `${selectedTable}->${targetVal}`;
+                                        const reverseJoinKey = `${targetVal}->${selectedTable}`;
+                                        const latestPaths = useVisualQueryStore.getState().selected_paths;
+                                        if (!latestPaths.includes(joinKey) && !latestPaths.includes(reverseJoinKey)) {
+                                          useVisualQueryStore.setState({ 
+                                            selected_paths: [...latestPaths, joinKey] 
+                                          });
+                                        }
                                       }
                                     } else {
                                       setSelectedExpands(prev => prev.includes(targetVal) ? prev : [...prev, targetVal]);
@@ -1227,219 +1117,121 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
                                   }
                                 }}
                               >
-                                <option value="">-- Choose table to join --</option>
+                                <option value="">+ Add Join</option>
                                 {navProps
                                   .filter(prop => !expanded.includes(prop.name))
                                   .map(prop => (
                                     <option key={prop.name} value={prop.name}>
-                                      {prop.name} (Automatic Join)
+                                      {prop.name}
                                     </option>
                                   ))}
                               </select>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Aggregations ($apply) */}
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                      <Sigma className="w-3.5 h-3.5 text-success" /> Summarization ($apply)
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {/* Group By Selector */}
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Group By (Categorical)</p>
+                      <div className="flex flex-wrap gap-1 max-h-[80px] overflow-y-auto p-0.5 scrollbar-thin">
+                        {properties.filter(p => !p.isNumeric).map(prop => (
+                          <button
+                            key={prop.name}
+                            onClick={() => toggleGroupBy(prop.name)}
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all border cursor-pointer ${
+                              selectedGroupBy.includes(prop.name)
+                              ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                              : 'bg-card text-muted-foreground border-border hover:border-primary/50'
+                            }`}
+                          >
+                            {prop.name}
+                          </button>
+                        ))}
                       </div>
-                    );
-                  })()}
+                    </div>
+
+                    {/* Calculations Selector */}
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Calculations (Numerical)</p>
+                      <div className="space-y-1 max-h-[140px] overflow-y-auto p-0.5 scrollbar-thin">
+                        {properties.filter(p => p.isNumeric).map(prop => (
+                          <div key={prop.name} className="flex items-center justify-between bg-muted/30 px-2 py-1.5 rounded border border-border text-[10px]">
+                            <span className="font-bold text-foreground truncate pr-1">{prop.name}</span>
+                            <div className="flex gap-0.5">
+                              {['sum', 'average', 'count'].map((func) => (
+                                <button
+                                  key={func}
+                                  onClick={() => setAggregation(prop.name, func as any)}
+                                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase transition-all cursor-pointer ${
+                                    selectedAggs[prop.name] === func
+                                    ? 'bg-success/20 text-success border border-success/30 font-extrabold'
+                                    : 'text-muted-foreground hover:bg-muted border border-transparent'
+                                  }`}
+                                >
+                                  {func}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* URL Preview & Actions */}
-              <div className="space-y-3 pt-4 border-t border-border">
-                <div className="flex justify-between items-end">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                    Generated OData Service URL
-                  </label>
+              {/* Inline budget dashboard indicators */}
+              {selectedDataset && usageData && (
+                <div className="p-4 border-t border-border bg-card shrink-0">
+                  <div className="flex items-center justify-between text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <span>Query Budget Status</span>
+                    <span>{(usageData.totalBytesBilled / usageData.budgetBytes * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted border border-border rounded overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ${
+                        (usageData.totalBytesBilled / usageData.budgetBytes) > 0.9 
+                          ? 'bg-red-500' 
+                          : (usageData.totalBytesBilled / usageData.budgetBytes) > 0.7 
+                            ? 'bg-yellow-500' 
+                            : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min(100, (usageData.totalBytesBilled / usageData.budgetBytes * 100))}%` }}
+                    />
+                  </div>
                 </div>
-                
-                <div className="flex gap-1.5">
-                  <Input 
-                    readOnly 
-                    id="generated-odata-url"
-                    aria-label="Generated OData Service URL preview"
-                    value={generatedUrl} 
-                    placeholder="Compile state to generate URL..."
-                    className="h-10 bg-muted/30 border-border font-mono text-xs text-primary focus-visible:ring-primary rounded"
-                  />
-                  
-                  <Button 
-                    size="icon"
-                    disabled={!generatedUrl || exporting}
-                    onClick={handleExcelExport}
-                    className="h-10 w-10 shrink-0 rounded bg-emerald-500 hover:bg-emerald-600 shadow-sm transition-all"
-                    title="Connect to Excel"
-                  >
-                    {exporting ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-white">
-                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <path d="M8 13h2" /><path d="M8 17h2" /><path d="M10 9H8" />
-                      </svg>
-                    )}
-                  </Button>
-
-                  <Button 
-                    size="icon"
-                    disabled={!generatedUrl || exportingPBI}
-                    onClick={handlePowerBIExport}
-                    className="h-10 w-10 shrink-0 rounded bg-amber-500 hover:bg-amber-600 shadow-sm transition-all"
-                    title="Connect to Power BI"
-                  >
-                    {exportingPBI ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-white">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                        <line x1="9" y1="17" x2="9" y2="8" />
-                        <line x1="15" y1="17" x2="15" y2="12" />
-                      </svg>
-                    )}
-                  </Button>
-
-                  <Button 
-                    size="icon"
-                    disabled={!generatedUrl}
-                    onClick={handleCopy}
-                    className={`h-10 w-10 shrink-0 rounded transition-all duration-300 ${
-                      copied 
-                      ? 'bg-success hover:bg-success/90 shadow-sm' 
-                      : 'bg-primary hover:bg-primary/90 shadow-sm'
-                    }`}
-                    title="Copy URL"
-                  >
-                    {copied ? <Check className="w-4 h-4 text-success-foreground" /> : <Copy className="w-4 h-4 text-primary-foreground" />}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* URL Preview & Copy */}
-        {!selectedTable && (
-          <div className="space-y-3 pt-4">
-            <div className="flex justify-between items-end">
-              <label className="text-sm font-bold text-foreground uppercase tracking-tight">
-                OData Service Root
-              </label>
-              {generatedUrl && (
-                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100 uppercase">
-                  Ready to Connect
-                </span>
               )}
             </div>
-            
-            <div className="flex gap-2">
-              <div className="relative flex-1 group">
-                <Input 
-                  readOnly 
-                  value={generatedUrl} 
-                  placeholder="https://gateway.example.com/v1/project/dataset"
-                  className="h-14 bg-muted/30 border-border font-mono text-sm text-primary focus-visible:ring-primary pr-4 rounded-md"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Read Only</span>
-                </div>
-              </div>
-              
-              <Button 
-                size="icon"
-                disabled={!generatedUrl || exporting}
-                onClick={handleExcelExport}
-                className={`h-14 w-14 rounded-md transition-all duration-300 ${
-                  exporting 
-                  ? 'bg-emerald-600 hover:bg-emerald-600 shadow-sm' 
-                  : 'bg-emerald-500 hover:bg-emerald-600 shadow-sm'
-                }`}
-                title="Connect to Excel"
-              >
-                {exporting ? (
-                  <Loader2 className="w-6 h-6 animate-spin text-white" />
-                ) : (
-                  <svg 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="w-6 h-6 text-white"
-                  >
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <path d="M8 13h2" />
-                    <path d="M8 17h2" />
-                    <path d="M10 9H8" />
-                  </svg>
-                )}
-              </Button>
-
-              <Button 
-                size="icon"
-                disabled={!generatedUrl || exportingPBI}
-                onClick={handlePowerBIExport}
-                className={`h-14 w-14 rounded-md transition-all duration-300 ${
-                  exportingPBI 
-                  ? 'bg-amber-600 hover:bg-amber-600 shadow-sm animate-in fade-in' 
-                  : 'bg-amber-500 hover:bg-amber-600 shadow-sm animate-in fade-in'
-                }`}
-                title="Connect to Power BI"
-              >
-                {exportingPBI ? (
-                  <Loader2 className="w-6 h-6 animate-spin text-white" />
-                ) : (
-                  <svg 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="w-6 h-6 text-white"
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <line x1="9" y1="17" x2="9" y2="8" />
-                    <line x1="15" y1="17" x2="15" y2="12" />
-                  </svg>
-                )}
-              </Button>
-
-              <Button 
-                size="icon"
-                disabled={!generatedUrl}
-                onClick={handleCopy}
-                className={`h-14 w-14 rounded-md transition-all duration-300 ${
-                  copied 
-                  ? 'bg-success hover:bg-success/90 shadow-sm' 
-                  : 'bg-primary hover:bg-primary/90 shadow-sm'
-                }`}
-                title="Copy URL"
-              >
-                {copied ? <Check className="w-6 h-6 text-success-foreground" /> : <Copy className="w-6 h-6 text-primary-foreground" />}
-              </Button>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground text-xs gap-3">
+              <Info className="w-8 h-8 opacity-45" />
+              <span>Select a catalog table to inspect visual properties, configure aggregations, and export query files.</span>
             </div>
-            
-            <p className="text-xs text-muted-foreground italic">
-              * This URL follows the OData V4 standard. Use it as an &quot;OData Feed&quot; data source in Excel or Power BI.
-            </p>
-          </div>
-        )}
-      </CardContent>
+          )}
 
-      {/* Usage Dashboard (Story 6.4) */}
-      {selectedDataset && usageData && (
-        <div className="px-8 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <UsageDashboard 
-            totalBytesBilled={usageData.totalBytesBilled}
-            budgetBytes={usageData.budgetBytes}
-            lastJobs={usageData.lastJobs}
-            loading={loadingUsage}
-          />
+          {/* Absolute floating Right Sidebar Panel toggle chevron */}
+          <button
+            onClick={() => setRightCollapsed(!rightCollapsed)}
+            className="absolute left-[-14px] top-1/2 -translate-y-1/2 z-50 bg-background border border-border rounded-full p-0.5 shadow-md hover:bg-muted cursor-pointer transition-transform text-foreground hover:text-primary"
+            aria-label={rightCollapsed ? "Expand right sidebar" : "Collapse right sidebar"}
+          >
+            {rightCollapsed ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Mobile Sticky Bar (Story 4.5) */}
       <MobileActionBar 
@@ -1447,6 +1239,6 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
         projectName={selectedProject} 
         datasetName={selectedDataset} 
       />
-    </Card>
+    </div>
   );
 };

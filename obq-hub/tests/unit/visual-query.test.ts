@@ -335,6 +335,28 @@ test('compileODataUrl: recursive query builder handles selection trees', () => {
   )
 })
 
+test('compileODataUrl: recursive query builder handles reverse directional edges', () => {
+  const { compileODataUrl } = require('../../src/lib/odata-compiler.js')
+  
+  const serviceRoot = 'https://gateway.example.com/v1/proj/dataset'
+  const rootTable = 'Customers'
+  const selectedPaths = [
+    'Customers',
+    'Customers.id',
+    'Customers.name',
+    'Policies',
+    'Policies.policy_number',
+    'Policies->Customers'
+  ]
+  
+  const url = compileODataUrl(serviceRoot, rootTable, selectedPaths)
+  assert.strictEqual(
+    url,
+    'https://gateway.example.com/v1/proj/dataset/Customers?$select=id,name&$expand=Policies($select=policy_number)'
+  )
+})
+
+
 test('getDatasetMetricsAction and loadDatasetMetrics threshold logic', async () => {
   const originalFetch = globalThis.fetch
 
@@ -529,5 +551,45 @@ test('useVisualQueryStore: pruneUnauthorizedPaths correctly prunes and cleans pa
   assert.strictEqual(nextState.edges[0].target, 'Policies')
 })
 
+test('compileODataUrl: handles join added directly without edge in store (Add Join dropdown scenario)', () => {
+  const { compileODataUrl } = require('../../src/lib/odata-compiler.js')
+  
+  const serviceRoot = 'https://gateway.example.com/v1/proj/dataset'
+  const rootTable = 'Customers'
+  // Simulates "+ Add Join" adding Policies with no columns selected
+  const selectedPaths = [
+    'Customers',
+    'Policies',
+    'Customers->Policies'
+  ]
+  
+  const url = compileODataUrl(serviceRoot, rootTable, selectedPaths)
+  assert.strictEqual(
+    url,
+    'https://gateway.example.com/v1/proj/dataset/Customers?$expand=Policies'
+  )
+})
+
+test('compileODataUrl: handles join with columns on both root and expanded table', () => {
+  const { compileODataUrl } = require('../../src/lib/odata-compiler.js')
+  
+  const serviceRoot = 'https://gateway.example.com/v1/proj/dataset'
+  const rootTable = 'Customers'
+  const selectedPaths = [
+    'Customers',
+    'Customers.id',
+    'Customers.name',
+    'Policies',
+    'Policies.policy_number',
+    'Policies.status',
+    'Customers->Policies'
+  ]
+  
+  const url = compileODataUrl(serviceRoot, rootTable, selectedPaths)
+  assert.strictEqual(
+    url,
+    'https://gateway.example.com/v1/proj/dataset/Customers?$select=id,name&$expand=Policies($select=policy_number,status)'
+  )
+})
 
 

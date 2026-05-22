@@ -233,3 +233,33 @@ We prioritize a high-density interface that adapts across devices while maintain
 - **Units**: Use `rem` for typography and standard `8px` increments for spacing.
 - **Semantic HTML**: Mandatory use of `<main>`, `<nav>`, `<aside>`, and `<section>` to ensure structural clarity for assistive technologies.
 
+## Visual Query Builder Widescreen Dashboard Revision
+
+### Layout Architecture (Three-Pane Split Workspace)
+- **Viewport**: Restricted heights `h-[calc(100vh-4.5rem)]` and full-width `w-full` display, eliminating all `max-w-5xl` constraints.
+- **Left Panel (Width: 300px)**: Collapsible. Contains GCP Project selector, BigQuery Dataset selector, and a high-density, scrollable "Available Tables" catalog list.
+- **Center Workspace**: Flex-1 viewport. Houses the `ReactFlow` canvas schema. Height maximized to `100%` of container height.
+- **Right Panel (Width: 340px)**: Collapsible. Contains:
+  - **Query Performance Card**: pre-execution BigQuery dry-run Pulse Badge showing estimated byte scans and budget warning limits.
+  - **Compiled URL Card**: Large OData URL output text area with one-click "Copy" primary action button.
+  - **BI Connectors Card**: Direct download buttons for Power BI (`.pbids`) and Excel (`.odc`).
+
+### Unified Canvas Interaction Model
+- **Direct Selection**: Column selections are managed directly inside the custom `TableNode` visual checkboxes on the canvas. Toggling a column checkbox immediately updates the compiled query.
+- **Visual Relationships**: Selecting an edge (relationship link) automatically flags it as a `$expand` join, color-coding the link with Google Blue (`#1a73e8`) and animating the path to show active flow.
+- **Dynamic Resizing**: Left and Right panels feature subtle collapse buttons (`ChevronLeft` / `ChevronRight`). Collapsing sidebars triggers `reactFlowInstance.fitView()` for smooth automatic canvas re-centering.
+
+### User-Centric Interface Enhancements & Visual Cues
+- **Sarah's Navigation Guard (Lost Prevention)**:
+  - Integrate a floating **"Return to Root"** button directly on the canvas toolbar. Clicking it immediately animates and re-centers the zoom level onto the primary Root table node, preventing users from getting lost in massive schemas.
+- **David's Hierarchy Cues (OData Structure Visuals)**:
+  - **Visual Distinction for Root Table Node**: Headers and borders are dynamically highlighted in **Google Blue** (`#1a73e8`) and carry a persistent `Root` pill indicator.
+  - **Visual Distinction for Expanded Table Nodes**: Outer borders start as a standard neutral grey and animate to secondary blue when one or more of their columns are selected.
+  - **Color-Coded Column Projections**:
+    - **Primary Selects ($select)**: Columns selected on the root node display with a light blue background (`bg-primary/10 text-primary`) showing they are part of the primary query table.
+    - **Expanded Selects ($expand)**: Columns selected on expanded relation nodes display with a light emerald background (`bg-success/10 text-success`), visually distinguishing join projections.
+- **Performance Node Densities**:
+  - The custom node column checkboxes are capped at a scrollable height of `180px` and include a search filter inside the node to keep node height readable.
+
+
+

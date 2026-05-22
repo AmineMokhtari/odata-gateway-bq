@@ -47,16 +47,23 @@ export function compileODataUrl(
   });
 
   // Recursive expands builder
-  function buildExpands(currentNode: QueryNode) {
+  function buildExpands(currentNode: QueryNode, visited: Set<string>) {
     const parentTable = currentNode.tableName;
     
     selectedPaths.forEach(path => {
       if (path.includes('->')) {
         const [source, target] = path.split('->');
+        let nextTable: string | null = null;
         if (source === parentTable) {
-          if (selectedPaths.includes(target)) {
+          nextTable = target;
+        } else if (target === parentTable) {
+          nextTable = source;
+        }
+
+        if (nextTable && selectedPaths.includes(nextTable) && !visited.has(nextTable)) {
+          if (!currentNode.expands[nextTable]) {
             const childNode: QueryNode = {
-              tableName: target,
+              tableName: nextTable,
               select: [],
               expands: {}
             };
@@ -64,21 +71,23 @@ export function compileODataUrl(
             selectedPaths.forEach(p => {
               if (p.includes('.') && !p.includes('->')) {
                 const [table, col] = p.split('.');
-                if (table === target) {
+                if (table === nextTable) {
                   childNode.select.push(col);
                 }
               }
             });
 
-            buildExpands(childNode);
-            currentNode.expands[target] = childNode;
+            const nextVisited = new Set(visited);
+            nextVisited.add(nextTable);
+            buildExpands(childNode, nextVisited);
+            currentNode.expands[nextTable] = childNode;
           }
         }
       }
     });
   }
 
-  buildExpands(rootNode);
+  buildExpands(rootNode, new Set([rootTable]));
 
   // Stringifier compiler
   function compileNode(node: QueryNode, isTopLevel = false): string {

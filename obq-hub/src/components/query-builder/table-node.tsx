@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Handle, Position } from '@xyflow/react'
-import { Key, Filter, Database, Lock, Unlock, Share2 } from 'lucide-react'
+import { Key, Filter, Database, Lock, Unlock, Share2, Search } from 'lucide-react'
 import { useVisualQueryStore } from '@/store/visual-query'
 
 interface Column {
@@ -37,6 +37,16 @@ export const TableNode: React.FC<TableNodeComponentProps> = ({ id, data, selecte
   const selectedPaths = useVisualQueryStore(state => state.selected_paths)
   const toggleColumnSelection = useVisualQueryStore(state => state.toggleColumnSelection)
   const isSelected = selectedPaths.includes(id)
+
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Determine if this expanded node has one or more columns selected
+  const hasSelectedColumns = columns.some(col => selectedPaths.includes(`${id}.${col.name}`))
+
+  // Filter columns based on user search
+  const filteredColumns = columns.filter(col =>
+    col.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
   
   return (
     <div 
@@ -50,14 +60,18 @@ export const TableNode: React.FC<TableNodeComponentProps> = ({ id, data, selecte
         }
       }}
       className={`min-w-[220px] rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-200 focus:outline-none ${
-        isSelected
+        isRoot
           ? 'border-primary ring-2 ring-primary/30 shadow-md shadow-primary/5'
-          : isPinned
-            ? 'border-warning/70 ring-1 ring-warning/20 shadow-md shadow-warning/5'
-            : 'border-border hover:border-muted-foreground/30'
+          : hasSelectedColumns
+            ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md shadow-blue-500/5'
+            : isSelected
+              ? 'border-primary ring-1 ring-primary/20 shadow-md'
+              : isPinned
+                ? 'border-warning/70 ring-1 ring-warning/20 shadow-md shadow-warning/5'
+                : 'border-border hover:border-muted-foreground/30'
       } ${
         isRoot 
-          ? 'bg-primary/5 border-primary/30' 
+          ? 'bg-primary/5' 
           : 'bg-background'
       }`}
       aria-label={`Table node ${data.label}`}
@@ -134,44 +148,87 @@ export const TableNode: React.FC<TableNodeComponentProps> = ({ id, data, selecte
         </div>
       </div>
 
+      {/* Inline Search Input inside node */}
+      {columns.length > 0 && (
+        <div className="px-2 pt-2 flex items-center gap-1 border-b border-border/40 pb-1.5">
+          <Search className="w-3 h-3 text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            placeholder="Search fields..."
+            value={searchQuery}
+            onChange={(e) => {
+              e.stopPropagation()
+              setSearchQuery(e.target.value)
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-transparent border-0 p-0 text-[10px] focus:outline-none focus:ring-0 placeholder:text-muted-foreground/60 text-foreground"
+          />
+        </div>
+      )}
+
       {/* Columns Listing */}
       <div className="p-2 space-y-1 text-xs">
         {columns.length > 0 ? (
-          columns.map((col, index) => {
-            const isPartitionCol = data.partitionColumn === col.name
-            const isColSelected = selectedPaths.includes(`${id}.${col.name}`)
-            
-            return (
-              <div 
-                key={index} 
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleColumnSelection(id, col.name)
-                }}
-                className={`flex items-center justify-between px-1.5 py-1 rounded cursor-pointer transition-all duration-150 ${
-                  isColSelected
-                    ? 'bg-primary/10 font-medium text-primary border-l-2 border-primary pl-1'
-                    : isPartitionCol 
-                      ? 'bg-warning/10 font-medium' 
-                      : 'hover:bg-muted/40'
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  {isPartitionCol ? (
-                    <Key className="w-3.5 h-3.5 text-warning" aria-label="Partitioning Column" />
-                  ) : (
-                    <div className={`w-1.5 h-1.5 rounded-full ${isColSelected ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
-                  )}
-                  <span className={isColSelected ? 'text-primary' : isPartitionCol ? 'text-warning-foreground' : 'text-foreground'}>
-                    {col.name}
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono">
-                  {col.type}
-                </span>
+          <div className="max-h-[180px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+            {filteredColumns.length > 0 ? (
+              filteredColumns.map((col, index) => {
+                const isPartitionCol = data.partitionColumn === col.name
+                const isColSelected = selectedPaths.includes(`${id}.${col.name}`)
+                
+                return (
+                  <div 
+                    key={index} 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleColumnSelection(id, col.name)
+                    }}
+                    className={`flex items-center justify-between px-1.5 py-1 rounded cursor-pointer transition-all duration-150 ${
+                      isColSelected
+                        ? isRoot
+                          ? 'bg-primary/10 font-semibold border-l-2 border-primary pl-1'
+                          : 'bg-success/10 font-semibold border-l-2 border-success pl-1'
+                        : isPartitionCol 
+                          ? 'bg-warning/10 font-medium' 
+                          : 'hover:bg-muted/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      {isPartitionCol ? (
+                        <Key className="w-3.5 h-3.5 text-warning" aria-label="Partitioning Column" />
+                      ) : (
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          isColSelected 
+                            ? isRoot 
+                              ? 'bg-primary' 
+                              : 'bg-success' 
+                            : 'bg-muted-foreground/40'
+                        }`} />
+                      )}
+                      <span className={
+                        isColSelected 
+                          ? isRoot 
+                            ? 'text-primary' 
+                            : 'text-success font-semibold' 
+                          : isPartitionCol 
+                            ? 'text-warning-foreground' 
+                            : 'text-foreground'
+                      }>
+                        {col.name}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {col.type}
+                    </span>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="text-[10px] text-muted-foreground italic text-center py-2">
+                No matching columns
               </div>
-            )
-          })
+            )}
+          </div>
         ) : (
           <button
             onClick={(e) => {

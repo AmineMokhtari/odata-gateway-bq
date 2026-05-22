@@ -1,12 +1,12 @@
-'use client'
-
 import React, { useEffect, useState } from 'react'
 import { 
   ReactFlow, 
   Background, 
   Controls, 
   MiniMap,
-  BackgroundVariant
+  BackgroundVariant,
+  ReactFlowProvider,
+  useReactFlow
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -14,6 +14,7 @@ import { useVisualQueryStore } from '@/store/visual-query'
 import { TableNode } from './table-node'
 import { compileODataUrl } from '@/lib/odata-compiler'
 import { useProjectStore } from '@/store/project-store'
+import { Focus } from 'lucide-react'
 
 // Register our custom table node type
 const nodeTypes = {
@@ -26,7 +27,28 @@ interface ErdCanvasProps {
   rootTable: string
 }
 
-export const ErdCanvas: React.FC<ErdCanvasProps> = ({ projectId, datasetId, rootTable }) => {
+const ReturnToRootButton: React.FC<{ rootTable: string }> = ({ rootTable }) => {
+  const { fitView } = useReactFlow()
+  
+  return (
+    <button
+      onClick={() => {
+        if (rootTable) {
+          fitView({ nodes: [{ id: rootTable }], duration: 800, padding: 0.5 })
+        } else {
+          fitView({ duration: 800 })
+        }
+      }}
+      className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 px-3 py-2 bg-card text-foreground border border-border shadow-lg rounded-lg text-xs font-bold hover:bg-muted transition-all active:scale-95 cursor-pointer"
+      title="Return to Root Table"
+    >
+      <Focus className="w-3.5 h-3.5 text-primary animate-pulse" />
+      <span>Center Root</span>
+    </button>
+  )
+}
+
+const InnerErdCanvas: React.FC<ErdCanvasProps> = ({ projectId, datasetId, rootTable }) => {
   const { 
     nodes, 
     edges, 
@@ -177,7 +199,7 @@ export const ErdCanvas: React.FC<ErdCanvasProps> = ({ projectId, datasetId, root
   return (
     <div 
       aria-hidden="true"
-      className="relative w-full h-[600px] border border-border rounded-xl overflow-hidden bg-muted/20 shadow-inner"
+      className="relative w-full h-full border border-border rounded-xl overflow-hidden bg-muted/20 shadow-inner min-h-[500px]"
     >
       {isLoading && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-50 flex items-center justify-center">
@@ -225,6 +247,15 @@ export const ErdCanvas: React.FC<ErdCanvasProps> = ({ projectId, datasetId, root
           maskColor="rgba(0, 0, 0, 0.1)"
         />
       </ReactFlow>
+      <ReturnToRootButton rootTable={rootTable} />
     </div>
+  )
+}
+
+export const ErdCanvas: React.FC<ErdCanvasProps> = (props) => {
+  return (
+    <ReactFlowProvider>
+      <InnerErdCanvas {...props} />
+    </ReactFlowProvider>
   )
 }

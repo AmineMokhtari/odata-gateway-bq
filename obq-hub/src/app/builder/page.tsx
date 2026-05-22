@@ -22,14 +22,12 @@ export default async function BuilderPage() {
   const isQueryBuilderEnabled = process.env.ENABLE_QUERY_BUILDER === 'true';
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-1 container mx-auto px-6 py-12 lg:py-16">
-        <div className="max-w-5xl mx-auto">
-          <ODataUrlBuilder 
-            tenants={tenants} 
-            isEnabled={isQueryBuilderEnabled} 
-          />
-        </div>
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-background overflow-hidden">
+      <main className="flex-1 w-full h-full">
+        <ODataUrlBuilder 
+          tenants={tenants} 
+          isEnabled={isQueryBuilderEnabled} 
+        />
       </main>
     </div>
   );
