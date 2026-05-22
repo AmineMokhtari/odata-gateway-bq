@@ -1,7 +1,7 @@
 ---
 storyId: '6.1-pivot'
 storyKey: '6-1-pivot-cloud-native-elena-tips'
-status: 'review'
+status: 'done'
 date: '2026-05-09'
 ---
 
