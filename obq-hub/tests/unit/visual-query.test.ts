@@ -230,8 +230,8 @@ test('useVisualQueryStore: expandNodeNeighborhood action', async () => {
 
   const ordersNode = updatedNodes.find(n => n.id === 'Orders')
   assert.ok(ordersNode)
-  assert.strictEqual(ordersNode.data.isExpanded, true)
-  assert.strictEqual(ordersNode.data.columns.length, 1)
+  assert.strictEqual((ordersNode.data as any).isExpanded, true)
+  assert.strictEqual((ordersNode.data as any).columns.length, 1)
 
   const shippersNode = updatedNodes.find(n => n.id === 'Shippers')
   assert.ok(shippersNode)
@@ -369,7 +369,7 @@ test('getDatasetMetricsAction and loadDatasetMetrics threshold logic', async () 
 
   // 2. Mock fetch for schema above threshold (50 tables)
   globalThis.fetch = (async (url: string) => {
-    const tables = []
+    const tables: any[] = []
     for (let i = 1; i <= 55; i++) {
       tables.push({
         name: `Table_${i}`,

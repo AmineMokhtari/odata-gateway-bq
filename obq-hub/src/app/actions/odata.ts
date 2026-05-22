@@ -92,13 +92,18 @@ export async function getMetadata(projectId: string, datasetId: string, entitySe
       : [schema.EntityContainer.EntitySet];
 
     // 1. Find EntityType name from EntitySet
-    const targetSet = entitySets.find((s: any) => s.Name === entitySet);
-    if (!targetSet) throw new Error(`EntitySet ${entitySet} not found in metadata`);
+    console.log(`[getMetadata] Looking for entitySet: "${entitySet}" in projectId: "${projectId}", datasetId: "${datasetId}"`);
+    console.log('[getMetadata] Available EntitySets:', JSON.stringify(entitySets, null, 2));
+    const targetSet = entitySets.find((s: any) => s.Name?.toLowerCase() === entitySet?.toLowerCase());
+    if (!targetSet) {
+      console.error(`[getMetadata] FAILED: EntitySet "${entitySet}" not found in metadata!`);
+      throw new Error(`EntitySet ${entitySet} not found in metadata`);
+    }
     
     const entityTypeName = targetSet.EntityType.split('.').pop();
     
     // 2. Find EntityType definition
-    const targetType = entityTypes.find((t: any) => t.Name === entityTypeName);
+    const targetType = entityTypes.find((t: any) => t.Name?.toLowerCase() === entityTypeName?.toLowerCase());
     if (!targetType) throw new Error(`EntityType ${entityTypeName} not found in metadata`);
 
     // 3. Extract Properties

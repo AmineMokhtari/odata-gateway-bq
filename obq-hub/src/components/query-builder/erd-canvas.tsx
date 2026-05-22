@@ -59,13 +59,16 @@ export const ErdCanvas: React.FC<ErdCanvasProps> = ({ projectId, datasetId, root
   }, [projectId, datasetId, rootTable, loadNeighborhood, loadFullSchema, isFallbackMode])
 
   // Hydrate workspace from URL search parameters on mount
+  const hasHydratedRef = React.useRef(false)
   useEffect(() => {
+    if (hasHydratedRef.current) return
     const params = new URLSearchParams(window.location.search)
     const q = params.get('q')
     if (q) {
       try {
         const decoded = JSON.parse(atob(q))
         if (decoded.activeTable && decoded.selected_paths) {
+          hasHydratedRef.current = true
           useVisualQueryStore.getState().hydrateFromUrl(
             decoded.activeTable,
             decoded.selected_paths,
@@ -196,12 +199,6 @@ export const ErdCanvas: React.FC<ErdCanvasProps> = ({ projectId, datasetId, root
         }}
         onNodeClick={(event, node) => {
           toggleNodeSelection(node.id)
-        }}
-        onNodeKeyDown={(event, node) => {
-          if (event.key === ' ' || event.key === 'Enter') {
-            event.preventDefault()
-            toggleNodeSelection(node.id)
-          }
         }}
         onEdgeClick={(event, edge) => {
           toggleEdgeSelection(edge.id)

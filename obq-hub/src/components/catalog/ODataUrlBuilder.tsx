@@ -492,7 +492,22 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
             </label>
             <Select 
               value={selectedProject}
-              onValueChange={(val: string | null) => { if (val) { setSelectedProject(val); setSelectedDataset(''); } }}
+              onValueChange={(val: string | null) => { 
+                if (val) { 
+                  setSelectedProject(val); 
+                  setSelectedDataset(''); 
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('q');
+                    window.history.replaceState(null, '', url.toString());
+                  }
+                  setSelectedTable('');
+                  setSelectedExpands([]);
+                  setSelectedExpandColumns({});
+                  setSelectedColumns([]);
+                  useVisualQueryStore.getState().clearCanvas();
+                } 
+              }}
             >
               <SelectTrigger id="gcp-project-select" className="h-12 border-border focus:ring-primary rounded">
                 <SelectValue placeholder="Select Project" />
@@ -513,7 +528,21 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
             </label>
             <Select 
               disabled={!selectedProject} 
-              onValueChange={(val: string | null) => { if (val) setSelectedDataset(val); }}
+              onValueChange={(val: string | null) => { 
+                if (val) {
+                  setSelectedDataset(val); 
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('q');
+                    window.history.replaceState(null, '', url.toString());
+                  }
+                  setSelectedTable('');
+                  setSelectedExpands([]);
+                  setSelectedExpandColumns({});
+                  setSelectedColumns([]);
+                  useVisualQueryStore.getState().clearCanvas();
+                }
+              }}
               value={selectedDataset}
             >
               <SelectTrigger id="bq-dataset-select" className="h-12 border-border focus:ring-primary rounded">
@@ -1111,7 +1140,7 @@ export const ODataUrlBuilder: React.FC<ODataUrlBuilderProps> = ({
                                   {/* Add Column Dropdown for Expanded Table (Story 13.2) */}
                                   {(() => {
                                     const expNode = nodes.find(n => n.id === expTable);
-                                    const expNodeCols = expNode?.data?.columns || [];
+                                    const expNodeCols = (expNode?.data as any)?.columns || [];
                                     if (expNodeCols.length === 0) return null;
 
                                     const unselectedExpCols = expNodeCols.filter(

@@ -94,6 +94,7 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
 
     assert.equal(res.statusCode, 200)
     const body = res.json()
+    console.log('BODY VALUE IS:', JSON.stringify(body, null, 2))
     assert.ok(body.value.some((v: any) => v.name === 'Sales'), 'Should discover Sales table')
     assert.ok(queryCount > 0, 'Should have queried BigQuery INFORMATION_SCHEMA')
   })
