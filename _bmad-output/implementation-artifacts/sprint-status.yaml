@@ -146,9 +146,9 @@ development_status:
   epic-13-retrospective: optional
 
   # Epic 14: Diagnostics, Observability & Hardening
-  epic-14: in-progress
+  epic-14: done
   14-1-pii-scrubbed-react-error-boundary: done
-  14-2-asynchronous-batched-telemetry-beacon: review
+  14-2-asynchronous-batched-telemetry-beacon: done
   14-3-playwright-e2e-fixtures-deterministic-ui-mocking: done
   epic-14-retrospective: optional
 

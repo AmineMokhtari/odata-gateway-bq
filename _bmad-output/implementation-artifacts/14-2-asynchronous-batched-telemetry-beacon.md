@@ -8,7 +8,7 @@ So that we can collect rich diagnostics on visual builder exploration and system
 
 ## Status
 
-review
+done
 
 ## Acceptance Criteria
 
