@@ -822,4 +822,51 @@ Naming conventions for React Flow custom nodes and Zustand stores are clearly de
 **Key Strengths:**
 - **Thread Safety:** Web Worker offloading ensures complex data structures never freeze the UI.
 - **Cost Protection:** Native BigQuery array subqueries prevent Cartesian explosions and inaccurate Dry-Run pricing.
-- **Universal Access:** Strict screen-reader text fallback ensures the tool is highly accessible.
+- Universal Access: Strict screen-reader text fallback ensures the tool is highly accessible.
+
+## Architectural Revision: Playwright CLI Migration (2026-05-22)
+
+### Decision Priority Analysis
+
+**Critical Decisions:**
+- **Stateless Subprocess Launch Wrapper**: Spawning ephemeral `@playwright/cli` subprocesses over stdio instead of deploying active Model Context Protocol (MCP) servers or long-lived daemons. This prevents memory leaks and ensures process isolation.
+- **Local Disk-Based accessibility Tree Snapshots**: Generating compact, flat YAML representation database structures of the browser's accessibility tree on disk. This limits the active reasoning payload size, reducing token consumption per E2E task by **80% to 95%**.
+- **Decoupled Auth State Rehydration**: Serializing multi-tenant session assets (cookies, `localStorage`, `IndexedDB`) into local storage configuration files via `state-save` and rehydrating them instantly via `state-load`. This eliminates visual login steps, network overhead, and OAuth latency.
+
+**Important Decisions:**
+- **Coordinate-Free Interaction Targeting**: Selecting DOM nodes using stable index references (e.g. `e10`, `e24`) bound to aria accessibility markers rather than fragile pixel coordinates or dynamic CSS selectors.
+- **Sequential Local Runs (`--workers=1`)**: Forcing sequential execution constraints for local agent E2E tasks to eliminate port contention with active Next.js Hot Module Replacement (HMR) compilation processes.
+- **Diagnostics Screenshot Buffer Output**: Outputting lightweight diagnostic PNG screenshot buffers directly to disk on failure, providing a visual review layer without streaming continuous frame feeds.
+
+### Data & State Architecture
+
+**State Management & Storage Caching Flow:**
+* **Authentication Cache**: Session states are written to isolated, ephemeral JSON configurations (`playwright/.auth/session.json`).
+* **Snapshot Pipeline**: Asynchronous tree output generation:
+  ```text
+  Active Canvas Page ➔ aria-accessibility serializing ➔ Compact YAML tree ➔ Disk File
+  ```
+* **Coordinate-Free references**: Stable element references map to semantic role selectors.
+
+### Security & Git Boundaries
+
+* **Git Exclusion Rules**: Strict `.gitignore` configurations enforce the absolute exclusion of the `playwright/.auth/` workspace subdirectory. Storing cookies or bearer tokens on remote servers is strictly forbidden.
+* **Master Session Protection**: Authentications are performed via backend endpoints utilizing secure environment variables.
+
+### Integration & Monorepo Tooling Patterns
+
+**Naming Patterns:**
+* **Configuration File**: Root-level `.playwright/cli.config.json` containing default context launch parameters.
+* **Wrapper Utilities**: Monorepo package scripts wrapped inside `package.json` mappings (e.g. `npm run test:agent`).
+
+**Structure & Boundaries:**
+* **Test Isolation**: Ephemeral agent browser test scripts are placed in `/e2e/agent/`, keeping them distinct from compiled CI regression tests in `/e2e/specs/`.
+* **Private Network Path**: Local mocks run against Fastify directly rather than looping through the public gateway domain, preserving mock state integrity.
+
+### Architecture Validation Results ✅
+
+**Coherence Validation**: Decoupling the browser execution runtime from the AI's reasoning context through local disk files aligns perfectly with the stateless architecture of our Fastify gateway proxy.
+
+**NFR & Cost Validation**: Cutting token footprint down by 80%+ directly supports developer tooling performance and controls operating margins.
+
+---

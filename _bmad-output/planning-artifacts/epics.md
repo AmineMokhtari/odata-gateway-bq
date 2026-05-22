@@ -393,3 +393,69 @@ So that the visual builder remains completely stable and regression-free.
   1. **Schema Mismatch:** Mocking a changed `schema_version` hash in a neighborhood payload verifies that the UI correctly resets and triggers the expected Toast notification.
   2. **Access Control (403):** Mocking a 403 authorization failure on a table verifies that the UI correctly suppresses it from the ERD and opens Elena's Tips Drawer.
   3. **Performance Fallback:** Mocking a massive dataset (>50 tables) verifies that the UI correctly fallbacks to "Neighborhood View" instead of drawing the full ERD.
+
+---
+
+## Epic 15: Playwright CLI Migration for Token Efficiency
+
+**Goal:** Transition active developer browser automation to Microsoft's `@playwright/cli` to minimize token overhead via local disk accessibility tree snapshotting, retaining the existing regression suites for full system-level CI gates.
+
+### Story 15.1: Local Session Caching & Git Boundary Setup
+
+As a security engineer,
+I want to establish local session serialization directories and configure git exclusion rules,
+So that session assets can be safely cached without leaking OIDC tokens or corporate credentials.
+
+**Acceptance Criteria:**
+* **Given** a local monorepo workspace
+* **When** git rules are evaluated
+* **Then** the local folder path `playwright/.auth/` is strictly excluded in `.gitignore` to prevent committing JSON session snapshots.
+* **And** a validation script confirms that temporary credentials or authorization cookies are never pushed to remote version control.
+
+### Story 15.2: Playwright CLI Configuration & Ephemeral Launching
+
+As a developer,
+I want a centralized Playwright CLI configuration file governing headless launch contexts and output paths,
+So that browser processes execute headlessly and generate lightweight, predictable outputs.
+
+**Acceptance Criteria:**
+* **Given** a root-level workspace environment
+* **When** a configuration file is initialized
+* **Then** the system creates a valid `.playwright/cli.config.json` defining the headless state, default 1280x800 viewport size, 30-second network timeouts, and local trace/screenshot storage paths.
+
+### Story 15.3: Ephemeral Subprocess CLI Execution Runner
+
+As an automation agent,
+I want a custom Node execution script that wraps and executes `@playwright/cli` as a isolated subprocess,
+So that browser control processes run without memory leaks, port collisions, or MCP server dependencies.
+
+**Acceptance Criteria:**
+* **Given** package.json scripting parameters
+* **When** a developer or agent triggers `npm run test:agent`
+* **Then** the script spawns a stateless `@playwright/cli` subprocess via stdio.
+* **And** the execution handles inputs and outputs asynchronously, returning an exit code matching the test pass/fail state.
+
+### Story 15.4: Flat YAML Accessibility Tree Extraction Pipeline
+
+As an agentic model,
+I want the E2E tool to generate flat YAML representations of the browser accessibility tree on disk during execution,
+So that my context window consumption is minimized by 80% to 95% per action step.
+
+**Acceptance Criteria:**
+* **Given** a running browser session on the visual builder canvas
+* **When** an action is executed or a page loads
+* **Then** the test fixture serializes the accessibility tree using semantic roles and labels.
+* **And** it writes a flat YAML file (`playwright/snapshots/active-tree.yaml`) to the local disk for prompt reference.
+
+### Story 15.5: Unified Hybrid CI & Local Dev E2E Integration
+
+As a QA engineer,
+I want a unified testing framework that maintains the existing playwright runner for CI regression tests while using the new `@playwright/cli` pipeline for developer agent loops,
+So that our regression safety gates remain fully intact without introducing operational overhead.
+
+**Acceptance Criteria:**
+* **Given** the monorepo E2E suite
+* **When** tests are run in CI
+* **Then** the runner invokes `npx playwright test` with full mock verification.
+* **And** when run locally by an agent, the system defaults to `@playwright/cli` using local cached auth states.
+
