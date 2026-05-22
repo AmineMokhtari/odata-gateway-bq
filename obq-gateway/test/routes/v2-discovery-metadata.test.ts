@@ -80,6 +80,9 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
     getBQClient: () => mockBQ
   })
 
+  // Clear metadata cache so [Story 2.2] starts with an empty cache to test live discovery fallback
+  app.metadataCache.clear()
+
   const projectId = 'my-project'
   const datasetId = 'my_dataset'
   const authorizedToken = await createToken('elena1', 'elena@example.com')
