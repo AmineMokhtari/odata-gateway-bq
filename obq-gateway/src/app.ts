@@ -32,7 +32,7 @@ const options: AppOptions = {
   pluginTimeout: 30000,
   requestIdHeader: 'x-correlation-id',
   requestIdLogLabel: 'correlation_id',
-  logger: config.isDev
+  logger: config.isDev && process.stdout.isTTY
     ? {
         transport: {
           target: 'pino-pretty',
