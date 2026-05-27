@@ -23,7 +23,7 @@ This project transforms a BigQuery lakehouse into a governed **Data Catalog**. B
 - **Framework:** Fastify (Node.js/TypeScript)
 
 ## Key Components
-- **Catalog UI:** Next.js based discovery portal with Visual Join Builder, One-Click Excel integration, and consumption dashboards.
+- **Catalog UI:** Next.js based discovery portal with a Step-by-Step OData Query Builder, One-Click Excel integration, and consumption dashboards.
 - **API Proxy Bridge:** Next.js rewrites to proxy API requests securely to the backend, circumventing CORS and simplifying the connection UI.
 - **Elena Advice Layer:** Global error decoration plugin and reactive drawer for actionable troubleshooting.
 - **Processing Engine:** Hand-written `odata-v4-gcp` SQL generator with full parameterization.

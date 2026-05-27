@@ -6,7 +6,7 @@
 This release introduces a major architectural hardening phase, migrating all metadata discovery to secure Server Actions and enabling full 1:N expansion support for complex data relationships.
 
 ### New Features
-- **1:N Relationship Expansion**: Full support for "To-Many" relationships in the Visual Join Builder. The gateway now automatically identifies inbound Foreign Keys and uses BigQuery's nested `ARRAY` structures for high-fidelity data retrieval.
+- **1:N Relationship Expansion**: Full support for "To-Many" relationships in the Step-by-Step Join Builder. The gateway now automatically identifies inbound Foreign Keys and uses BigQuery's nested `ARRAY` structures for high-fidelity data retrieval.
 - **Server-Action Based Discovery**: Migrated all UI metadata, pulse checks, and cost auditing to Next.js Server Actions. This hides backend infrastructure from the client and ensures unified session propagation.
 - **Identity-Job Binding**: Enhanced security isolation by binding BigQuery Job IDs to the user's OIDC identity via audit labels. This prevents unauthorized result resumption across different user sessions.
 
@@ -44,8 +44,8 @@ This release introduces the **"Elena" Experience**—a set of features designed 
 
 ### New Features
 - **Usage Hub (User Consumption Tracking):** Real-time dashboard for users to track their personal monthly BigQuery consumption and job history.
-- **Visual Join Builder (`$expand`):** Automatic discovery of foreign key relationships allowing users to build complex joins visually.
-- **Visual Aggregation Builder (`$apply`):** Interactive UI for building GroupBy and Aggregate queries without knowing OData syntax.
+- **Step-by-Step Join Builder (`$expand`):** Automatic discovery of foreign key relationships allowing users to build complex joins step-by-step.
+- **Form-Based Aggregation Builder (`$apply`):** Interactive UI for building GroupBy and Aggregate queries without knowing OData syntax.
 - **"Elena Tips" Finalized Integration:** Reactive slide-out guidance for 403 (Budget Exceeded) and 401 (Authentication) errors.
 - **Catalog UI Streamlining:** Cleaned up navigation, removed redundant sidebars, and optimized for high-density data discovery.
 - **Identity Pill (Top Bar):** Persistent, high-visibility security status pill in the navigation bar.

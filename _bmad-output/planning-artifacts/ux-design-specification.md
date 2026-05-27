@@ -233,33 +233,27 @@ We prioritize a high-density interface that adapts across devices while maintain
 - **Units**: Use `rem` for typography and standard `8px` increments for spacing.
 - **Semantic HTML**: Mandatory use of `<main>`, `<nav>`, `<aside>`, and `<section>` to ensure structural clarity for assistive technologies.
 
-## Visual Query Builder Widescreen Dashboard Revision
+## 8-Step OData Query Builder Dashboard Specification
 
-### Layout Architecture (Three-Pane Split Workspace)
-- **Viewport**: Restricted heights `h-[calc(100vh-4.5rem)]` and full-width `w-full` display, eliminating all `max-w-5xl` constraints.
-- **Left Panel (Width: 300px)**: Collapsible. Contains GCP Project selector, BigQuery Dataset selector, and a high-density, scrollable "Available Tables" catalog list.
-- **Center Workspace**: Flex-1 viewport. Houses the `ReactFlow` canvas schema. Height maximized to `100%` of container height.
-- **Right Panel (Width: 340px)**: Collapsible. Contains:
-  - **Query Performance Card**: pre-execution BigQuery dry-run Pulse Badge showing estimated byte scans and budget warning limits.
-  - **Compiled URL Card**: Large OData URL output text area with one-click "Copy" primary action button.
-  - **BI Connectors Card**: Direct download buttons for Power BI (`.pbids`) and Excel (`.odc`).
+### Layout Architecture (Step-by-Step Dynamic Workspace)
+- **Viewport**: Pinned viewport heights `h-[calc(100vh-4.5rem)]` and full-width `w-full` display, eliminating all visual canvas overlays to maximize functional density.
+- **Left Panel (Width: 300px)**: Collapsible sidebar panel with simple toggle chevron buttons. Contains core credentials (GCP Project selector, BigQuery Dataset selector) and a real-time connection status pulse badge (`listening` / `verifying` / `connected` / `blocked`).
+- **Center Workspace**: Flex-1 viewport. Houses the sequential, elegant step-by-step query construction form.
+- **Sticky Footer Panel**: Contains the "Preview Data" action, triggering the schema-aware mockup data modal.
 
-### Unified Canvas Interaction Model
-- **Direct Selection**: Column selections are managed directly inside the custom `TableNode` visual checkboxes on the canvas. Toggling a column checkbox immediately updates the compiled query.
-- **Visual Relationships**: Selecting an edge (relationship link) automatically flags it as a `$expand` join, color-coding the link with Google Blue (`#1a73e8`) and animating the path to show active flow.
-- **Dynamic Resizing**: Left and Right panels feature subtle collapse buttons (`ChevronLeft` / `ChevronRight`). Collapsing sidebars triggers `reactFlowInstance.fitView()` for smooth automatic canvas re-centering.
+### Step-by-Step Query Construction Flow
+1. **Step 1: Table Primaire**: Selecting the primary BigQuery table using a searchable dropdown.
+2. **Step 2: Jointures (Optionnel)**: Including related tables dynamically via OData `$expand` parameters. Relationships can be added and instantly removed with a single trash button.
+3. **Step 3: Sélection des colonnes**: Centralized column projection. It renders a clean search-enabled card for the primary table, along with dynamically stacked projection cards (`ExpandColumnSelector`) for each active relationship expand ($expand).
+   - Columns are styled as highly interactive HSL buttons (Google Blue tag buttons).
+   - Quick actions support **Select All** and **Reset** for rapid, multi-column projection.
+4. **Step 4: Group By**: Selecting categorical columns to cluster query results.
+5. **Step 5: Agrégation**: Numeric column calculations (SUM, AVG, MIN, MAX, COUNT) mapped in real-time, accompanied by descriptive helper warnings.
+6. **Step 6: Order By (Optionnel)**: Sort configuration rules with easy toggling for asc/desc directions.
+7. **Step 7: Limite (Optionnel)**: Standard top rows limit input.
+8. **Step 8: Generated OData URL Output Card**: Houses the real-time compiled OData URL in a read-only input, complete with quick clipboard copies, and direct connection file exports (Excel .odc, Power BI .pbids).
 
-### User-Centric Interface Enhancements & Visual Cues
-- **Sarah's Navigation Guard (Lost Prevention)**:
-  - Integrate a floating **"Return to Root"** button directly on the canvas toolbar. Clicking it immediately animates and re-centers the zoom level onto the primary Root table node, preventing users from getting lost in massive schemas.
-- **David's Hierarchy Cues (OData Structure Visuals)**:
-  - **Visual Distinction for Root Table Node**: Headers and borders are dynamically highlighted in **Google Blue** (`#1a73e8`) and carry a persistent `Root` pill indicator.
-  - **Visual Distinction for Expanded Table Nodes**: Outer borders start as a standard neutral grey and animate to secondary blue when one or more of their columns are selected.
-  - **Color-Coded Column Projections**:
-    - **Primary Selects ($select)**: Columns selected on the root node display with a light blue background (`bg-primary/10 text-primary`) showing they are part of the primary query table.
-    - **Expanded Selects ($expand)**: Columns selected on expanded relation nodes display with a light emerald background (`bg-success/10 text-success`), visually distinguishing join projections.
-- **Performance Node Densities**:
-  - The custom node column checkboxes are capped at a scrollable height of `180px` and include a search filter inside the node to keep node height readable.
-
-
-
+### UX Consistency Patterns for Step 3 Projections
+- **Visual Distinction for Primary Selects ($select)**: Columns selected on the primary table display with a light blue background (`bg-primary text-primary-foreground shadow-sm`) showing they are part of the primary query table.
+- **Visual Distinction for Expanded Selects ($expand)**: Columns selected on expanded relation nodes display with a light blue border but turn to active primary background upon selection, maintaining harmonic visual contrast.
+- **Grid Layout**: Columns are styled inside a flexible, wrapping grid that prevents vertical overflow and ensures readable, dense layouts.

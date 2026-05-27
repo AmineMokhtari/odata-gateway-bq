@@ -8,7 +8,7 @@ The **odata-gateway-bq** is a production-grade OData V4 gateway designed to prov
 ## The 'Elena' North Star
 Every architectural decision is guided by our primary persona:
 - **Zero-Knowledge UX**: Transforming BigQuery technical errors into "Elena Tips" (narrative advice).
-- **Self-Service Governance**: Empowering users to build complex joins and aggregations visually without writing OData syntax (Optional: Toggled via `ENABLE_QUERY_BUILDER`).
+- **Self-Service Governance**: Empowering users to configure tables, dynamic relationship joins ($expand), select projected fields, and map aggregation functions without writing OData syntax (Optional: Toggled via `ENABLE_QUERY_BUILDER`).
 - **Consumption Transparency**: Providing a real-time Usage Hub so business users can manage their own data footprint.
 
 ## Technology Stack

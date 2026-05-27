@@ -7,8 +7,25 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createTelemetryEvent, sendTelemetryBatch } from '../../src/lib/telemetry-beacon'
 import { useVisualQueryStore } from '../../src/store/visual-query'
 
+const originalNavigator = globalThis.navigator
+
+function mockNavigator(value: any) {
+  Object.defineProperty(globalThis, 'navigator', {
+    value,
+    configurable: true,
+    writable: true
+  })
+}
+
+function restoreNavigator() {
+  Object.defineProperty(globalThis, 'navigator', {
+    value: originalNavigator,
+    configurable: true,
+    writable: true
+  })
+}
+
 describe('Telemetry Beacon Utility', () => {
-  const originalNavigator = globalThis.navigator
   const originalFetch = globalThis.fetch
 
   beforeEach(() => {
@@ -17,7 +34,7 @@ describe('Telemetry Beacon Utility', () => {
 
   afterEach(() => {
     vi.useRealTimers()
-    globalThis.navigator = originalNavigator
+    restoreNavigator()
     globalThis.fetch = originalFetch
     vi.restoreAllMocks()
   })
@@ -35,9 +52,9 @@ describe('Telemetry Beacon Utility', () => {
 
   it('sendTelemetryBatch should use navigator.sendBeacon when available', () => {
     const mockSendBeacon = vi.fn().mockReturnValue(true)
-    globalThis.navigator = {
+    mockNavigator({
       sendBeacon: mockSendBeacon,
-    } as any
+    })
 
     const batch = {
       events: [createTelemetryEvent('canvas_cleared')],
@@ -56,7 +73,7 @@ describe('Telemetry Beacon Utility', () => {
   })
 
   it('sendTelemetryBatch should fallback to fetch with keepalive when sendBeacon is not available', () => {
-    globalThis.navigator = {} as any // No sendBeacon
+    mockNavigator({}) // No sendBeacon
 
     const mockFetch = vi.fn().mockResolvedValue({ ok: true })
     globalThis.fetch = mockFetch as any
@@ -92,6 +109,7 @@ describe('Zustand Telemetry Store Integration', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+    restoreNavigator()
     vi.restoreAllMocks()
   })
 
@@ -116,7 +134,7 @@ describe('Zustand Telemetry Store Integration', () => {
 
   it('flushTelemetry should empty the queue and send batch', () => {
     const mockSendBeacon = vi.fn().mockReturnValue(true)
-    globalThis.navigator = { sendBeacon: mockSendBeacon } as any
+    mockNavigator({ sendBeacon: mockSendBeacon })
 
     const store = useVisualQueryStore.getState()
     store.enqueueEvent('canvas_cleared')

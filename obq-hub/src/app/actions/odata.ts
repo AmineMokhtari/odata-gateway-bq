@@ -94,9 +94,48 @@ export async function getMetadata(projectId: string, datasetId: string, entitySe
     // 1. Find EntityType name from EntitySet
     console.log(`[getMetadata] Looking for entitySet: "${entitySet}" in projectId: "${projectId}", datasetId: "${datasetId}"`);
     console.log('[getMetadata] Available EntitySets:', JSON.stringify(entitySets, null, 2));
-    const targetSet = entitySets.find((s: any) => s.Name?.toLowerCase() === entitySet?.toLowerCase());
+    
+    let targetSet = entitySets.find((s: any) => s.Name?.toLowerCase() === entitySet?.toLowerCase());
+    
     if (!targetSet) {
-      console.error(`[getMetadata] FAILED: EntitySet "${entitySet}" not found in metadata!`);
+      console.log(`[getMetadata] Direct EntitySet not found for "${entitySet}". Attempting NavigationProperty resolution fallback...`);
+      // Resolve entitySet as a fully-qualified or short navigation property name
+      const localEntitySetName = entitySet.split('.').pop()?.toLowerCase();
+      let foundType: string | undefined;
+      
+      for (const et of entityTypes) {
+        if (et.NavigationProperty) {
+          const navs = Array.isArray(et.NavigationProperty) ? et.NavigationProperty : [et.NavigationProperty];
+          const matchedNav = navs.find((n: any) => 
+            n.Name?.toLowerCase() === localEntitySetName || 
+            n.Name?.toLowerCase() === entitySet.toLowerCase()
+          );
+          if (matchedNav) {
+            foundType = matchedNav.Type;
+            console.log(`[getMetadata] Found matching NavigationProperty: "${matchedNav.Name}" with type: "${foundType}"`);
+            break;
+          }
+        }
+      }
+      
+      if (foundType) {
+        // Extract base EntityType name (e.g. "Collection(interactions.Customer)" -> "Customer")
+        const baseTypeName = foundType.replace(/Collection\(([^)]+)\)/, '$1').split('.').pop()?.toLowerCase();
+        
+        // Find corresponding EntitySet exposing this EntityType
+        targetSet = entitySets.find((s: any) => {
+          const setTypeName = s.EntityType?.split('.').pop()?.toLowerCase();
+          return setTypeName === baseTypeName;
+        });
+        
+        if (targetSet) {
+          console.log(`[getMetadata] Successfully resolved navigation property to target EntitySet: "${targetSet.Name}"`);
+        }
+      }
+    }
+
+    if (!targetSet) {
+      console.error(`[getMetadata] FAILED: EntitySet "${entitySet}" not found in metadata container!`);
       throw new Error(`EntitySet ${entitySet} not found in metadata`);
     }
     

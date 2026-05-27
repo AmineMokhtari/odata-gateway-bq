@@ -22,7 +22,7 @@ odata-gateway-bq/
 │   ├── src/
 │   │   ├── app/             # Application routes
 │   │   │   ├── catalog/
-│   │   │   │   ├── ODataUrlBuilder.tsx # Visual Join & Aggregation UI
+│   │   │   │   ├── ODataUrlBuilder.tsx # Step-by-Step Join & Aggregation UI
 │   │   │   │   ├── UsageDashboard.tsx # Personal Consumption Hub
 │   │   │   │   └── ElenaAdviceCard.tsx # Narrative Error UI
 │   │   │   └── ui/          # Shared Shadcn components
