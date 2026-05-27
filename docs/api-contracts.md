@@ -8,10 +8,12 @@ All OData endpoints are prefixed with `/v1/:projectId/:datasetId`.
 ### Service Root
 `GET /v1/:projectId/:datasetId`
 Returns automatically the dynamically generated OData Entity Data Model (EDM) in XML format (identical to `/$metadata`).
+- **Response Headers:** `Content-Type: application/xml`, `OData-Version: 4.0`
 
 ### Metadata (CSDL)
 `GET /v1/:projectId/:datasetId/$metadata`
 Returns the dynamically generated OData Entity Data Model (EDM) in XML format.
+- **Response Headers:** `Content-Type: application/xml`, `OData-Version: 4.0`
 
 ### EntitySet (Data Fetch)
 `GET /v1/:projectId/:datasetId/:entitySet`

@@ -1,5 +1,0 @@
-feat(gateway): make Service Root automatically redirect to $metadata XML
-
-- Modified the OData Service Root endpoint `GET /v1/:projectId/:datasetId` to automatically return the dynamically generated EDM XML metadata document, setting the correct content-type header to application/xml. This matches the behavior of the `/$metadata` route exactly and simplifies integration with legacy and custom BI client software.
-- Updated backend integration tests in `v1-data.test.ts` and `v2-discovery-metadata.test.ts` to assert XML content-type and verify correct CSDL entity mapping on Service Root requests.
-- Updated public API contracts documentation in `api-contracts.md` to reflect the new XML metadata response for the Service Root endpoint.

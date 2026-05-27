@@ -43,8 +43,10 @@ const app: FastifyPluginAsync<AppOptions> = async (
   validateConfig()
 
   // Story 1.4: Echo x-correlation-id in every response for end-to-end tracing
+  // OData 4.0 compliance: include protocol version in every response
   fastify.addHook('onSend', async (request, reply) => {
     reply.header('x-correlation-id', request.id)
+    reply.header('OData-Version', '4.0')
   })
 
   // Place here your custom code!
