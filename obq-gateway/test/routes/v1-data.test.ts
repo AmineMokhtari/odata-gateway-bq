@@ -114,7 +114,7 @@ test('v1 data routing', async (t) => {
   })
   app.metadataCache.set(`${projectId}:${datasetId}:xml`, '<?xml version="1.0" encoding="utf-8"?><Edmx xmlns="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0"><DataServices><Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="GCP.my_project.my_dataset"><EntityType Name="Sales"><Key><PropertyRef Name="id"/></Key><Property Name="id" Type="Edm.Int64" Nullable="false"/></EntityType><EntityContainer Name="BigQueryContext"><EntitySet Name="Sales" EntityType="GCP.my_project.my_dataset.Sales"/></EntityContainer></Schema></DataServices></Edmx>' as any)
 
-  await t.test('should parse projectId and datasetId correctly', async () => {
+  await t.test('should parse projectId and datasetId correctly and return XML', async () => {
     const res = await app.inject({
       url: `/v1/${projectId}/${datasetId}`,
       headers: {
@@ -123,9 +123,8 @@ test('v1 data routing', async (t) => {
     })
 
     assert.equal(res.statusCode, 200)
-    const payload = res.json()
-    assert.ok(payload['@odata.context'])
-    assert.ok(Array.isArray(payload.value))
+    assert.ok(res.headers['content-type']?.includes('application/xml'))
+    assert.ok(res.payload.includes('<EntityType Name="'))
   })
 
   await t.test('should return $metadata as XML', async () => {

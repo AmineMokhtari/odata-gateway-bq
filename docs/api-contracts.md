@@ -7,7 +7,7 @@ All OData endpoints are prefixed with `/v1/:projectId/:datasetId`.
 
 ### Service Root
 `GET /v1/:projectId/:datasetId`
-Returns a list of all available EntitySets (BigQuery tables/views) in the dataset.
+Returns automatically the dynamically generated OData Entity Data Model (EDM) in XML format (identical to `/$metadata`).
 
 ### Metadata (CSDL)
 `GET /v1/:projectId/:datasetId/$metadata`

@@ -96,9 +96,8 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
     })
 
     assert.equal(res.statusCode, 200)
-    const body = res.json()
-    console.log('BODY VALUE IS:', JSON.stringify(body, null, 2))
-    assert.ok(body.value.some((v: any) => v.name === 'Sales'), 'Should discover Sales table')
+    assert.match(res.headers['content-type'] as string, /application\/xml/)
+    assert.ok(res.payload.includes('EntitySet Name="Sales"'), 'Should discover Sales table')
     assert.ok(queryCount > 0, 'Should have queried BigQuery INFORMATION_SCHEMA')
   })
 
@@ -111,6 +110,7 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
     })
 
     assert.equal(res.statusCode, 200)
+    assert.match(res.headers['content-type'] as string, /application\/xml/)
     assert.equal(queryCount, startQueries, 'Should NOT have queried BigQuery (cache hit)')
   })
 

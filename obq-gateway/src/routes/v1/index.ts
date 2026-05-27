@@ -74,7 +74,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     return { value: enrichedTenants }
   })
 
-  // OData Service Root
+  // OData Service Root (Returns automatically the same XML result as $metadata)
   fastify.get('/:projectId/:datasetId', {
     schema: {
       params: {
@@ -106,6 +106,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     const cacheKey = `${projectId}:${datasetId}`
+    const xmlCacheKey = `${projectId}:${datasetId}:xml`
     
     // 1. Authenticate & Authorize (Story 5.2)
     const tenantConfig = fastify.tenantsConfig.get(projectId, datasetId)
@@ -118,11 +119,16 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }
     }
 
-    let metadata = fastify.metadataCache.get(cacheKey)
-    if (!metadata) {
-      const bq = fastify.getBQClient(projectId)
-      metadata = await getDatasetMetadata(bq, datasetId, projectId)
-      fastify.metadataCache.set(cacheKey, metadata)
+    let edm = fastify.metadataCache.get(xmlCacheKey) as unknown as string
+    if (!edm) {
+      let metadata = fastify.metadataCache.get(cacheKey)
+      if (!metadata) {
+        const bq = fastify.getBQClient(projectId)
+        metadata = await getDatasetMetadata(bq, datasetId, projectId)
+        fastify.metadataCache.set(cacheKey, metadata)
+      }
+      edm = generateEdm(metadata)
+      fastify.metadataCache.set(xmlCacheKey, edm as any)
     }
 
     // Record Pulse (Story 4.3 & 8.5)
@@ -130,14 +136,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       fastify.usageTracker.recordPulse(projectId, datasetId, request.user.email || request.user.sub, request.id as string)
     }
 
-    return {
-      '@odata.context': `${request.protocol}://${request.hostname}/v1/${projectId}/${datasetId}/$metadata`,
-      value: metadata.tables.map(t => ({
-        name: t.name,
-        kind: 'EntitySet',
-        url: t.name
-      }))
-    }
+    return reply.type('application/xml').send(edm)
   })
 
   // Dataset Schema (Full Metadata)
