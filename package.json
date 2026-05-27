@@ -18,7 +18,7 @@
     "watch:backend": "cd obq-gateway && tsc -w",
     "dev": "concurrently -k -p \"[{name}]\" -n \"Gateway,Hub\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",
     "dev:clean": "npx kill-port 3005 3002 3000 && npm run dev",
-    "dev:backend": "npm run build:backend && cross-env PORT=3005 fastify start --options -a 127.0.0.1 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port 3005",
+    "dev:backend": "npm run build:backend && cross-env PORT=3005 fastify start --options -a 127.0.0.1 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port 3005 | pino-pretty",
     "dev:frontend": "cd obq-hub && npm run dev",
     "dev:frontend:delayed": "npx wait-on http://127.0.0.1:3005/health -t 120000 --interval 2000 && cd obq-hub && cross-env GATEWAY_URL=http://127.0.0.1:3005 NEXT_PUBLIC_GATEWAY_URL=http://127.0.0.1:3005 npm run dev"
   },

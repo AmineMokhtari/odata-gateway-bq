@@ -32,18 +32,7 @@ const options: AppOptions = {
   pluginTimeout: 30000,
   requestIdHeader: 'x-correlation-id',
   requestIdLogLabel: 'correlation_id',
-  logger: config.isDev && process.stdout.isTTY
-    ? {
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname'
-          }
-        }
-      }
-    : true
+  logger: true
 }
 
 const app: FastifyPluginAsync<AppOptions> = async (
