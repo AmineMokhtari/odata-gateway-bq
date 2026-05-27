@@ -5,10 +5,19 @@ This document catalogs the available API endpoints for the **odata-gateway-bq**,
 ## OData V1 Endpoints
 All OData endpoints are prefixed with `/v1/:projectId/:datasetId`.
 
-### Service Root
+### Service Root (Service Document)
 `GET /v1/:projectId/:datasetId`
-Returns automatically the dynamically generated OData Entity Data Model (EDM) in XML format (identical to `/$metadata`).
-- **Response Headers:** `Content-Type: application/xml`, `OData-Version: 4.0`
+Returns the OData v4 Service Document listing all available entity sets in JSON format. This is the entry point for OData clients like PowerBI to discover available data.
+- **Response Headers:** `Content-Type: application/json;odata.metadata=minimal;charset=utf-8`, `OData-Version: 4.0`
+- **Response Body:**
+  ```json
+  {
+    "@odata.context": "http://host/v1/:projectId/:datasetId/$metadata",
+    "value": [
+      { "name": "TableName", "kind": "EntitySet", "url": "TableName" }
+    ]
+  }
+  ```
 
 ### Metadata (CSDL)
 `GET /v1/:projectId/:datasetId/$metadata`

@@ -74,7 +74,9 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     return { value: enrichedTenants }
   })
 
-  // OData Service Root (Returns automatically the same XML result as $metadata)
+  // OData Service Root – returns OData v4 Service Document (JSON listing of EntitySets)
+  // Spec: OData v4 Section 11.1.1 – Service Document
+  // PowerBI connects here first to discover available entity sets.
   fastify.get('/:projectId/:datasetId', {
     schema: {
       params: {
@@ -106,7 +108,6 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     const cacheKey = `${projectId}:${datasetId}`
-    const xmlCacheKey = `${projectId}:${datasetId}:xml`
     
     // 1. Authenticate & Authorize (Story 5.2)
     const tenantConfig = fastify.tenantsConfig.get(projectId, datasetId)
@@ -119,16 +120,11 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }
     }
 
-    let edm = fastify.metadataCache.get(xmlCacheKey) as unknown as string
-    if (!edm) {
-      let metadata = fastify.metadataCache.get(cacheKey)
-      if (!metadata) {
-        const bq = fastify.getBQClient(projectId)
-        metadata = await getDatasetMetadata(bq, datasetId, projectId)
-        fastify.metadataCache.set(cacheKey, metadata)
-      }
-      edm = generateEdm(metadata)
-      fastify.metadataCache.set(xmlCacheKey, edm as any)
+    let metadata = fastify.metadataCache.get(cacheKey)
+    if (!metadata) {
+      const bq = fastify.getBQClient(projectId)
+      metadata = await getDatasetMetadata(bq, datasetId, projectId)
+      fastify.metadataCache.set(cacheKey, metadata)
     }
 
     // Record Pulse (Story 4.3 & 8.5)
@@ -136,7 +132,20 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       fastify.usageTracker.recordPulse(projectId, datasetId, request.user.email || request.user.sub, request.id as string)
     }
 
-    return reply.type('application/xml').send(edm)
+    // OData v4 Service Document (Section 11.1.1)
+    const contextUrl = `${request.protocol}://${request.host}/v1/${projectId}/${datasetId}/$metadata`
+    const serviceDocument = {
+      '@odata.context': contextUrl,
+      value: metadata.tables.map(t => ({
+        name: t.name,
+        kind: 'EntitySet',
+        url: t.name
+      }))
+    }
+
+    return reply
+      .type('application/json;odata.metadata=minimal;charset=utf-8')
+      .send(serviceDocument)
   })
 
   // Dataset Schema (Full Metadata)
@@ -422,7 +431,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     // 3. Translate OData Query to SQL
-    const url = new URL(request.url, `${request.protocol}://${request.hostname}`)
+    const url = new URL(request.url, `${request.protocol}://${request.host}`)
     
     // Filter out custom parameters (like explain) to avoid breaking odata-v4-parser
     const odataSearchParams = new URLSearchParams()
@@ -548,7 +557,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         })
       } catch (err: any) {
         if (err.code === 'BudgetExceeded') {
-          const portalUrl = process.env.PORTAL_URL || `${request.protocol}://${request.hostname}/web`
+          const portalUrl = process.env.PORTAL_URL || `${request.protocol}://${request.host}/web`
           const explainUrl = `${portalUrl}/catalog/${projectId}/${datasetId}/${entitySet}/explain?${odataSearchParams.toString()}`
 
           return reply.code(400).send({
@@ -664,7 +673,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     // 6. Stream Results with OData Envelope
-    const contextUrl = `${request.protocol}://${request.hostname}/v1/${projectId}/${datasetId}/$metadata#${entitySet}`
+    const contextUrl = `${request.protocol}://${request.host}/v1/${projectId}/${datasetId}/$metadata#${entitySet}`
     const isCountRequested = url.searchParams.get('$count') === 'true'
     const transformer = new ODataEnvelopeTransformer({ 
       contextUrl, 

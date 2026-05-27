@@ -96,8 +96,15 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
     })
 
     assert.equal(res.statusCode, 200)
-    assert.match(res.headers['content-type'] as string, /application\/xml/)
-    assert.ok(res.payload.includes('EntitySet Name="Sales"'), 'Should discover Sales table')
+    assert.match(res.headers['content-type'] as string, /application\/json/)
+    const body = res.json()
+    assert.ok(body['@odata.context'], 'Should contain @odata.context')
+    assert.ok(body['@odata.context'].endsWith('/$metadata'), '@odata.context should point to $metadata')
+    assert.ok(Array.isArray(body.value), 'Should contain value array')
+    const salesEntry = body.value.find((e: any) => e.name === 'Sales')
+    assert.ok(salesEntry, 'Should discover Sales entity set')
+    assert.equal(salesEntry.kind, 'EntitySet')
+    assert.equal(salesEntry.url, 'Sales')
     assert.ok(queryCount > 0, 'Should have queried BigQuery INFORMATION_SCHEMA')
   })
 
@@ -110,7 +117,10 @@ test('Epic 2: Metadata discovery and marketplace automation', async (t) => {
     })
 
     assert.equal(res.statusCode, 200)
-    assert.match(res.headers['content-type'] as string, /application\/xml/)
+    assert.match(res.headers['content-type'] as string, /application\/json/)
+    const body = res.json()
+    assert.ok(body['@odata.context'], 'Cached response should still contain @odata.context')
+    assert.ok(Array.isArray(body.value), 'Cached response should still list entity sets')
     assert.equal(queryCount, startQueries, 'Should NOT have queried BigQuery (cache hit)')
   })
 
