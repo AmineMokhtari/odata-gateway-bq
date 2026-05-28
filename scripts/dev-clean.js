@@ -5,7 +5,7 @@ import path from 'path';
 // Load .env
 config();
 
-const gatewayPort = process.env.GATEWAY_PORT || process.env.PORT || '80';
+const gatewayPort = process.env.GATEWAY_PORT || '80';
 const hubPort = process.env.HUB_PORT || '3000';
 console.log(`[dev-clean] Killing processes on ports ${gatewayPort}, ${hubPort}, 3002...`);
 

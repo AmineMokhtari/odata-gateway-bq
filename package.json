@@ -13,7 +13,7 @@
     "validate:boundary": "./playwright/scripts/validate-git-boundary.sh",
     "test:agent": "node playwright/scripts/test-agent-runner.cjs",
     "test:e2e:hybrid": "node playwright/scripts/e2e-hybrid-router.cjs",
-    "start": "npm run build:backend && fastify start --options -a 0.0.0.0 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port ${PORT:-80}",
+    "start": "npm run build:backend && fastify start --options -a 0.0.0.0 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port ${PORT:-3005}",
     "build:backend": "cd obq-gateway && tsc",
     "watch:backend": "cd obq-gateway && tsc -w",
     "dev": "concurrently -k -p \"[{name}]\" -n \"Gateway,Hub\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",

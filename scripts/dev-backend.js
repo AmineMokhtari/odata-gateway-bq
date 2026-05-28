@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 // Load .env
 config();
 
-const port = process.env.GATEWAY_PORT || process.env.PORT || '80';
+const port = process.env.GATEWAY_PORT || '80';
 
 console.log('[dev-backend] Building backend TypeScript...');
 try {

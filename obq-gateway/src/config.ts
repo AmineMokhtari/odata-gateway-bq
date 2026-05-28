@@ -28,7 +28,7 @@ export const config = {
   // GCP / BigQuery Core
   billingProjectId: process.env.BQ_BILLING_PROJECT_ID || '',
   defaultLocation: process.env.BQ_DEFAULT_LOCATION || 'US',
-  
+
   // Audit Logs (Story 8.5)
   auditDataset: process.env.BQ_AUDIT_DATASET || 'obq_audit_logs',
   auditTable: process.env.BQ_AUDIT_TABLE || 'api_audit',
@@ -39,9 +39,9 @@ export const config = {
 
   // Governance
   defaultScanBudgetGb: parseInt(process.env.DEFAULT_SCAN_BUDGET_GB || '1', 10),
-  
+
   // App
-  port: parseInt(process.env.GATEWAY_PORT || process.env.PORT || '80', 10),
+  port: parseInt(process.env.GATEWAY_PORT || '80', 10),
   isDev: process.env.NODE_ENV !== 'production',
   anonymousMode: process.env.ANONYMOUS_MODE === 'true'
 }
@@ -52,7 +52,7 @@ export const config = {
  */
 export function validateConfig() {
   const missing = []
-  
+
   if (!config.billingProjectId) missing.push('BQ_BILLING_PROJECT_ID')
   if (!config.oidcIssuer) missing.push('OIDC_ISSUER')
   if (!config.oidcAudience) missing.push('OIDC_AUDIENCE')
