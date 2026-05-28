@@ -29,6 +29,7 @@ import { generateEdm } from '../../services/odata-metadata.js'
 import { translateODataToSql, PartitionFilterRequiredError } from '../../lib/sql-generator.js'
 import { createBigQueryStream, getJob, getJobResultStream, sanitizeLabelValue } from '../../services/bq-executor.js'
 import { ODataEnvelopeTransformer } from '../../lib/transformers/odata-envelope.js'
+import { createRowReplacer } from '../../lib/transformers/json-caster.js'
 import { pipeline } from 'node:stream/promises'
 import { validateScanBudget } from '../../middleware/audit/dry-run-gate.js'
 import { checkTenantAccess } from '../../middleware/auth/access-control.js'
@@ -700,13 +701,28 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       nextLink = nextUrl.toString()
     }
 
+    // Parse IEEE754Compatible flag (Story: PowerBI Decimal conversion compatibility)
+    const acceptHeader = request.headers['accept'] || ''
+    const formatQuery = (request.query as any)['$format'] || ''
+    const ieee754Compatible = /IEEE754Compatible=true/i.test(acceptHeader) || /IEEE754Compatible=true/i.test(formatQuery)
+
+    request.log.info({
+      correlationId,
+      acceptHeader,
+      formatQuery,
+      ieee754Compatible
+    }, `OData IEEE754Compatible detection: ${ieee754Compatible}`)
+
+    const replacer = createRowReplacer(tableMetadata, ieee754Compatible)
+
     // 6. Stream Results with OData Envelope
     const contextUrl = `${request.getBaseUrl()}/v1/${projectId}/${datasetId}/$metadata#${entitySet}`
     const isCountRequested = url.searchParams.get('$count') === 'true'
     const transformer = new ODataEnvelopeTransformer({ 
       contextUrl, 
       nextLink,
-      count: isCountRequested ? totalRows : undefined
+      count: isCountRequested ? totalRows : undefined,
+      replacer
     })
 
     reply.type('application/json')

@@ -78,3 +78,59 @@ export function bigQueryValueReplacer(key: string, value: any): any {
   }
   return value
 }
+
+/**
+ * Creates a specialized replacer function for JSON.stringify that:
+ * 1. Flattens BigQuery wrapper types (dates/timestamps) to standard strings with 'Z' timezone suffixes.
+ * 2. Coerces Edm.Decimal (BigQuery NUMERIC/BIGNUMERIC) and Edm.Int64 (BigQuery INT64) columns based on IEEE754Compatible parameter:
+ *    - ieee754Compatible = true: represented as strings (quotes)
+ *    - ieee754Compatible = false: represented as numbers (no quotes)
+ */
+export function createRowReplacer(tableMetadata: TableMetadata, ieee754Compatible: boolean) {
+  const decimalCols = new Set<string>()
+  const int64Cols = new Set<string>()
+
+  if (tableMetadata && Array.isArray(tableMetadata.columns)) {
+    for (const col of tableMetadata.columns) {
+      const type = col.type.toUpperCase()
+      if (type === 'NUMERIC' || type === 'BIGNUMERIC') {
+        decimalCols.add(col.name)
+      } else if (type === 'INT64') {
+        int64Cols.add(col.name)
+      }
+    }
+  }
+
+  return function (key: string, value: any): any {
+    // Standard BigQuery value flattening (dates/timestamps)
+    if (value && typeof value === 'object' && typeof value.value === 'string' && Object.keys(value).length === 1) {
+      const str = value.value
+      // If it's a DateTime string (contains T) but lacks a timezone offset, append 'Z'
+      if (str.includes('T') && !str.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(str)) {
+        value = str + 'Z'
+      } else {
+        value = str
+      }
+    }
+
+    // Handle Decimal and Int64 depending on IEEE754Compatible
+    if (key) {
+      if (decimalCols.has(key) || int64Cols.has(key)) {
+        if (value === null || value === undefined) {
+          return null
+        }
+        if (ieee754Compatible) {
+          // Force string representation
+          return String(value)
+        } else {
+          // Force number representation
+          const num = Number(value)
+          return isNaN(num) ? value : num
+        }
+      }
+    }
+
+    return value
+  }
+}
+

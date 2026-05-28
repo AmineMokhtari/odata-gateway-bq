@@ -21,6 +21,7 @@ export interface ODataEnvelopeOptions {
   contextUrl: string
   nextLink?: string
   count?: number
+  replacer?: (key: string, value: any) => any
 }
 
 /**
@@ -34,12 +35,14 @@ export class ODataEnvelopeTransformer extends Transform {
   private contextUrl: string
   private nextLink?: string
   private count?: number
+  private replacer: (key: string, value: any) => any
 
   constructor(options: ODataEnvelopeOptions) {
     super({ writableObjectMode: true })
     this.contextUrl = options.contextUrl
     this.nextLink = options.nextLink
     this.count = options.count
+    this.replacer = options.replacer || bigQueryValueReplacer
   }
 
   _transform(row: any, encoding: string, callback: TransformCallback): void {
@@ -50,14 +53,14 @@ export class ODataEnvelopeTransformer extends Transform {
       }
       head += `,"value":[`
       this.push(head)
-      const canContinue = this.push(JSON.stringify(row, bigQueryValueReplacer))
+      const canContinue = this.push(JSON.stringify(row, this.replacer))
       this.firstRow = false
       if (!canContinue) {
         this.once('drain', callback)
         return
       }
     } else {
-      const canContinue = this.push(',' + JSON.stringify(row, bigQueryValueReplacer))
+      const canContinue = this.push(',' + JSON.stringify(row, this.replacer))
       if (!canContinue) {
         this.once('drain', callback)
         return

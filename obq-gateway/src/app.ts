@@ -59,11 +59,11 @@ const app: FastifyPluginAsync<AppOptions> = async (
 
   // Story 1.4: Echo x-correlation-id in every response for end-to-end tracing
   // OData 4.0 compliance: include protocol version in every response
-  // Intercept all 3xx redirects to ensure they preserve the port (3005) and log traces
+  // Intercept all 3xx redirects to ensure they preserve the configured port and log traces
   fastify.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-correlation-id', request.id)
     reply.header('OData-Version', '4.0')
-    reply.header('X-Forwarded-Port', '3005')
+    reply.header('X-Forwarded-Port', String(config.port))
 
     const statusCode = reply.statusCode
     if (statusCode >= 300 && statusCode < 400) {

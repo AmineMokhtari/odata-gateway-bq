@@ -13,14 +13,14 @@
     "validate:boundary": "./playwright/scripts/validate-git-boundary.sh",
     "test:agent": "node playwright/scripts/test-agent-runner.cjs",
     "test:e2e:hybrid": "node playwright/scripts/e2e-hybrid-router.cjs",
-    "start": "npm run build:backend && fastify start --options -a 0.0.0.0 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port 3005",
+    "start": "npm run build:backend && fastify start --options -a 0.0.0.0 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port ${PORT:-80}",
     "build:backend": "cd obq-gateway && tsc",
     "watch:backend": "cd obq-gateway && tsc -w",
     "dev": "concurrently -k -p \"[{name}]\" -n \"Gateway,Hub\" -c \"yellow.bold,cyan.bold\" \"npm:dev:backend\" \"npm:dev:frontend:delayed\"",
-    "dev:clean": "npx kill-port 3005 3002 3000 && npm run dev",
-    "dev:backend": "npm run build:backend && cross-env PORT=3005 fastify start --options -a 127.0.0.1 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port 3005 | pino-pretty",
+    "dev:clean": "node scripts/dev-clean.js",
+    "dev:backend": "node scripts/dev-backend.js",
     "dev:frontend": "cd obq-hub && npm run dev",
-    "dev:frontend:delayed": "npx wait-on http://127.0.0.1:3005/health -t 120000 --interval 2000 && cd obq-hub && cross-env GATEWAY_URL=http://127.0.0.1:3005 NEXT_PUBLIC_GATEWAY_URL=http://127.0.0.1:3005 npm run dev"
+    "dev:frontend:delayed": "node scripts/dev-frontend-delayed.js"
   },
   "keywords": [],
   "author": "Amine MOKHTARI",
