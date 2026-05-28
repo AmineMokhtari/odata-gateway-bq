@@ -54,8 +54,10 @@ const app: FastifyPluginAsync<AppOptions> = async (
       const location = reply.getHeader('location')
       if (typeof location === 'string') {
         const originalLocation = location
-        const host = request.headers['x-forwarded-host'] || request.host || 'localhost:3005'
-        const protocol = request.headers['x-forwarded-proto'] || request.protocol || 'http'
+        const rawForwardedHost = request.headers['x-forwarded-host']
+        const host = (Array.isArray(rawForwardedHost) ? rawForwardedHost[0] : rawForwardedHost) || request.host || 'localhost:3005'
+        const rawForwardedProto = request.headers['x-forwarded-proto']
+        const protocol = (Array.isArray(rawForwardedProto) ? rawForwardedProto[0] : rawForwardedProto) || request.protocol || 'http'
 
         let newLocation = location
         if (location.startsWith('/') && !location.startsWith('//')) {
