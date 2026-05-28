@@ -85,4 +85,14 @@ test('redirect port preservation hook', async (t) => {
     assert.equal(res.statusCode, 302)
     assert.equal(res.headers.location, 'http://localhost:3005/v1/my-project/my_dataset')
   })
+
+  await t.test('all responses should include X-Forwarded-Port: 3005 header', async () => {
+    const res = await app.inject({
+      url: '/test-relative-redirect',
+      headers: {
+        host: 'localhost:3005'
+      }
+    })
+    assert.equal(res.headers['x-forwarded-port'], '3005')
+  })
 })

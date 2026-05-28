@@ -48,6 +48,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
   fastify.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-correlation-id', request.id)
     reply.header('OData-Version', '4.0')
+    reply.header('X-Forwarded-Port', '3005')
 
     const statusCode = reply.statusCode
     if (statusCode >= 300 && statusCode < 400) {
