@@ -44,9 +44,61 @@ const app: FastifyPluginAsync<AppOptions> = async (
 
   // Story 1.4: Echo x-correlation-id in every response for end-to-end tracing
   // OData 4.0 compliance: include protocol version in every response
-  fastify.addHook('onSend', async (request, reply) => {
+  // Intercept all 3xx redirects to ensure they preserve the port (3005) and log traces
+  fastify.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-correlation-id', request.id)
     reply.header('OData-Version', '4.0')
+
+    const statusCode = reply.statusCode
+    if (statusCode >= 300 && statusCode < 400) {
+      const location = reply.getHeader('location')
+      if (typeof location === 'string') {
+        const originalLocation = location
+        const host = request.headers['x-forwarded-host'] || request.host || 'localhost:3005'
+        const protocol = request.headers['x-forwarded-proto'] || request.protocol || 'http'
+
+        let newLocation = location
+        if (location.startsWith('/') && !location.startsWith('//')) {
+          // Convert relative redirect to absolute including the correct host and port
+          newLocation = `${protocol}://${host}${location}`
+        } else {
+          try {
+            const parsedUrl = new URL(location)
+            const requestHostName = host.split(':')[0]
+            if (
+              parsedUrl.hostname === 'localhost' ||
+              parsedUrl.hostname === '127.0.0.1' ||
+              parsedUrl.hostname === requestHostName
+            ) {
+              // Ensure local redirects use the incoming request's host/port
+              parsedUrl.protocol = protocol.endsWith(':') ? protocol : `${protocol}:`
+              parsedUrl.host = host
+              newLocation = parsedUrl.toString()
+            }
+          } catch (e) {
+            // Leave unchanged if not a valid URL
+          }
+        }
+
+        if (newLocation !== originalLocation) {
+          reply.header('location', newLocation)
+          request.log.info({
+            originalLocation,
+            newLocation,
+            statusCode,
+            correlationId: request.id
+          }, `HTTP redirect intercepted and updated to preserve port: ${originalLocation} -> ${newLocation}`)
+        } else {
+          request.log.info({
+            location,
+            statusCode,
+            correlationId: request.id
+          }, `HTTP redirect issued: ${location}`)
+        }
+      }
+    }
+
+    return payload
   })
 
   // Place here your custom code!

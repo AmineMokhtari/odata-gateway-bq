@@ -21,8 +21,10 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       request.session.set('user', sessionUser)
       request.session.set('tokens', token)
       
-      // Redirect to frontend
-      return reply.redirect('/')
+      // Redirect to frontend preserving host and port (e.g. port 3005)
+      const targetUrl = `${request.protocol}://${request.host}/`
+      request.log.info({ targetUrl, correlationId: request.id }, 'OIDC callback successful, redirecting to frontend')
+      return reply.redirect(targetUrl)
     } catch (err: any) {
       fastify.log.error({ err: err.message }, 'OIDC callback failed')
       return reply.code(401).send({
