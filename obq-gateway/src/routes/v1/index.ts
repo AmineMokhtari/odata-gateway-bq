@@ -74,6 +74,34 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     return { value: enrichedTenants }
   })
 
+  // Redirect GET /v1/:projectId/:datasetId/ to GET /v1/:projectId/:datasetId
+  fastify.get('/:projectId/:datasetId/', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          projectId: { type: 'string', pattern: '^[a-z][a-z0-9-]{5,29}$' },
+          datasetId: { type: 'string', pattern: '^[a-zA-Z0-9_-]+$' }
+        },
+        required: ['projectId', 'datasetId']
+      }
+    }
+  }, async function (request, reply) {
+    const { projectId, datasetId } = request.params as { projectId: string, datasetId: string }
+    const queryStr = request.url.includes('?') ? request.url.substring(request.url.indexOf('?')) : ''
+    const targetUrl = `/v1/${projectId}/${datasetId}${queryStr}`
+    
+    request.log.info({
+      projectId,
+      datasetId,
+      url: request.url,
+      targetUrl,
+      correlationId: request.id
+    }, `Redirecting trailing slash Service Root request: ${request.url} -> ${targetUrl}`)
+    
+    return reply.redirect(targetUrl)
+  })
+
   // OData Service Root – returns OData v4 Service Document (JSON listing of EntitySets)
   // Spec: OData v4 Section 11.1.1 – Service Document
   // PowerBI connects here first to discover available entity sets.

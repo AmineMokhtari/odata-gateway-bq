@@ -74,4 +74,15 @@ test('redirect port preservation hook', async (t) => {
     assert.equal(res.statusCode, 302)
     assert.equal(res.headers.location, 'https://google.com/auth')
   })
+
+  await t.test('trailing slash request on Service Root should redirect to non-trailing slash version preserving port 3005', async () => {
+    const res = await app.inject({
+      url: '/v1/my-project/my_dataset/',
+      headers: {
+        host: 'localhost:3005'
+      }
+    })
+    assert.equal(res.statusCode, 302)
+    assert.equal(res.headers.location, 'http://localhost:3005/v1/my-project/my_dataset')
+  })
 })
