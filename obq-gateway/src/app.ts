@@ -25,7 +25,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
-
+  anonymousMode?: boolean
 }
 // Pass --options via CLI arguments in command to enable these options.
 const options: AppOptions = {
@@ -63,7 +63,18 @@ const app: FastifyPluginAsync<AppOptions> = async (
   fastify.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-correlation-id', request.id)
     reply.header('OData-Version', '4.0')
-    reply.header('X-Forwarded-Port', String(config.port))
+    
+    // Extract request port dynamically from headers or fallback to config
+    const rawForwardedPort = request.headers['x-forwarded-port']
+    let requestPort = Array.isArray(rawForwardedPort) ? rawForwardedPort[0] : rawForwardedPort
+    if (!requestPort) {
+      const host = request.headers.host || ''
+      const match = host.match(/:(\d+)$/)
+      if (match) {
+        requestPort = match[1]
+      }
+    }
+    reply.header('X-Forwarded-Port', requestPort || String(config.port))
 
     const statusCode = reply.statusCode
     if (statusCode >= 300 && statusCode < 400) {

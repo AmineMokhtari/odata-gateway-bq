@@ -110,8 +110,8 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
         // [Patch 8] Robust URL construction
         const configUrl = new URL('.well-known/openid-configuration', issuer!)
         
-        // [Patch 4] Retry logic for discovery
-        const response = await fetchWithRetry(fetchImpl, configUrl.toString())
+        // [Patch 4] Retry logic for discovery (with fast-fail to prevent Fastify plugin exec timeout)
+        const response = await fetchWithRetry(fetchImpl, configUrl.toString(), { timeout: 4000 }, 2, 1000)
         
         if (!response.ok) {
           throw new Error(`Failed to fetch OIDC config: ${response.statusText}`)
