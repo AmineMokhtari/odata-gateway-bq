@@ -80,10 +80,8 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
         }
       },
       startRedirectPath: '/auth/login',
-      callbackUri: (req) => {
-        const host = req.headers['x-forwarded-host'] || req.headers.host
-        const protocol = req.headers['x-forwarded-proto'] || 'http'
-        return `${protocol}://${host}/auth/callback`
+      callbackUri: (req: any) => {
+        return `${req.getBaseUrl()}/auth/callback`
       },
       discovery: {
         issuer: issuer!

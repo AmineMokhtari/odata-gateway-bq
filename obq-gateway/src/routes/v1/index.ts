@@ -161,7 +161,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     // OData v4 Service Document (Section 11.1.1)
-    const contextUrl = `${request.protocol}://${request.host}/v1/${projectId}/${datasetId}/$metadata`
+    const contextUrl = `${request.getBaseUrl()}/v1/${projectId}/${datasetId}/$metadata`
     const serviceDocument = {
       '@odata.context': contextUrl,
       value: metadata.tables.map(t => ({
@@ -459,7 +459,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     // 3. Translate OData Query to SQL
-    const url = new URL(request.url, `${request.protocol}://${request.host}`)
+    const url = new URL(request.url, request.getBaseUrl())
     
     // Filter out custom parameters (like explain) to avoid breaking odata-v4-parser
     const odataSearchParams = new URLSearchParams()
@@ -585,7 +585,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         })
       } catch (err: any) {
         if (err.code === 'BudgetExceeded') {
-          const portalUrl = process.env.PORTAL_URL || `${request.protocol}://${request.host}/web`
+          const portalUrl = process.env.PORTAL_URL || `${request.getBaseUrl()}/web`
           const explainUrl = `${portalUrl}/catalog/${projectId}/${datasetId}/${entitySet}/explain?${odataSearchParams.toString()}`
 
           return reply.code(400).send({
@@ -701,7 +701,7 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
 
     // 6. Stream Results with OData Envelope
-    const contextUrl = `${request.protocol}://${request.host}/v1/${projectId}/${datasetId}/$metadata#${entitySet}`
+    const contextUrl = `${request.getBaseUrl()}/v1/${projectId}/${datasetId}/$metadata#${entitySet}`
     const isCountRequested = url.searchParams.get('$count') === 'true'
     const transformer = new ODataEnvelopeTransformer({ 
       contextUrl, 

@@ -42,6 +42,21 @@ const app: FastifyPluginAsync<AppOptions> = async (
   // Fail fast if configuration is missing (Story 8.5 Tech Debt CFG)
   validateConfig()
 
+  fastify.decorateRequest('getBaseUrl', function (this: any) {
+    const rawForwardedHost = this.headers['x-forwarded-host']
+    let host = (Array.isArray(rawForwardedHost) ? rawForwardedHost[0] : rawForwardedHost) || this.host || 'localhost'
+    
+    // Explicitly include port to ensure generated links are correct
+    if (!host.includes(':')) {
+      host = `${host}:${config.port}`
+    }
+
+    const rawForwardedProto = this.headers['x-forwarded-proto']
+    const protocol = (Array.isArray(rawForwardedProto) ? rawForwardedProto[0] : rawForwardedProto) || this.protocol || 'http'
+    
+    return `${protocol}://${host}`
+  })
+
   // Story 1.4: Echo x-correlation-id in every response for end-to-end tracing
   // OData 4.0 compliance: include protocol version in every response
   // Intercept all 3xx redirects to ensure they preserve the port (3005) and log traces
@@ -55,27 +70,25 @@ const app: FastifyPluginAsync<AppOptions> = async (
       const location = reply.getHeader('location')
       if (typeof location === 'string') {
         const originalLocation = location
-        const rawForwardedHost = request.headers['x-forwarded-host']
-        const host = (Array.isArray(rawForwardedHost) ? rawForwardedHost[0] : rawForwardedHost) || request.host || 'localhost:3005'
-        const rawForwardedProto = request.headers['x-forwarded-proto']
-        const protocol = (Array.isArray(rawForwardedProto) ? rawForwardedProto[0] : rawForwardedProto) || request.protocol || 'http'
+        const baseUrl = request.getBaseUrl()
+        const parsedBaseUrl = new URL(baseUrl)
 
         let newLocation = location
         if (location.startsWith('/') && !location.startsWith('//')) {
           // Convert relative redirect to absolute including the correct host and port
-          newLocation = `${protocol}://${host}${location}`
+          newLocation = `${baseUrl}${location}`
         } else {
           try {
             const parsedUrl = new URL(location)
-            const requestHostName = host.split(':')[0]
+            const requestHostName = parsedBaseUrl.hostname
             if (
               parsedUrl.hostname === 'localhost' ||
               parsedUrl.hostname === '127.0.0.1' ||
               parsedUrl.hostname === requestHostName
             ) {
               // Ensure local redirects use the incoming request's host/port
-              parsedUrl.protocol = protocol.endsWith(':') ? protocol : `${protocol}:`
-              parsedUrl.host = host
+              parsedUrl.protocol = parsedBaseUrl.protocol
+              parsedUrl.host = parsedBaseUrl.host
               newLocation = parsedUrl.toString()
             }
           } catch (e) {
@@ -124,6 +137,12 @@ const app: FastifyPluginAsync<AppOptions> = async (
     dir: join(__dirname, 'routes'),
     options: { ...opts }
   })
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    getBaseUrl(): string
+  }
 }
 
 export default app
