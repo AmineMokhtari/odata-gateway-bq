@@ -41,7 +41,7 @@ export const config = {
   defaultScanBudgetGb: parseInt(process.env.DEFAULT_SCAN_BUDGET_GB || '1', 10),
   
   // App
-  port: parseInt(process.env.PORT || '3005', 10),
+  port: parseInt(process.env.GATEWAY_PORT || process.env.PORT || '80', 10),
   isDev: process.env.NODE_ENV !== 'production',
   anonymousMode: process.env.ANONYMOUS_MODE === 'true'
 }

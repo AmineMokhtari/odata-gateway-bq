@@ -5,12 +5,13 @@ import path from 'path';
 // Load .env
 config();
 
-const port = process.env.PORT || '80';
-console.log(`[dev-clean] Killing processes on ports ${port}, 3002, 3000...`);
+const gatewayPort = process.env.GATEWAY_PORT || process.env.PORT || '80';
+const hubPort = process.env.HUB_PORT || '3000';
+console.log(`[dev-clean] Killing processes on ports ${gatewayPort}, ${hubPort}, 3002...`);
 
 try {
   // Run kill-port using npx
-  execSync(`npx kill-port ${port} 3002 3000`, { stdio: 'inherit' });
+  execSync(`npx kill-port ${gatewayPort} ${hubPort} 3002`, { stdio: 'inherit' });
 } catch (e) {
   console.warn('[dev-clean] Warning: Some ports could not be killed (they might already be free).');
 }
