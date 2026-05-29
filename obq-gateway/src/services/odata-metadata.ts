@@ -103,7 +103,18 @@ export function generateEdm(metadata: DatasetMetadata): string {
         </Key>${tableDescription}
 ${properties}${navigationProperties}      </EntityType>`
 
-    entitySets += `        <EntitySet Name="${entityName}" EntityType="${namespace}.${entityName}" />\n`
+    let bindings = ''
+    for (const rel of (table.relationships || [])) {
+      const navPropName = escapeXml(rel.name)
+      const targetEntitySet = escapeXml(rel.referencedTable)
+      bindings += `          <NavigationPropertyBinding Path="${navPropName}" Target="${targetEntitySet}" />\n`
+    }
+
+    if (bindings) {
+      entitySets += `        <EntitySet Name="${entityName}" EntityType="${namespace}.${entityName}">\n${bindings}        </EntitySet>\n`
+    } else {
+      entitySets += `        <EntitySet Name="${entityName}" EntityType="${namespace}.${entityName}" />\n`
+    }
   }
 
   return `<?xml version="1.0" encoding="utf-8"?>
