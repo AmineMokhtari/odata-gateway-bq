@@ -19,19 +19,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Menu, 
-  Database, 
-  LayoutDashboard, 
+import {
+  Menu,
+  Database,
+  LayoutDashboard,
   Lock,
   Activity
 } from 'lucide-react';
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -59,7 +59,7 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
             <Database className="w-5 h-5" />
           </div>
           <span className="font-sans font-medium text-foreground tracking-tight text-lg">
-            OData Gateway for BigQuery Hub
+            OData Gateway for BigQuery
           </span>
         </Link>
 
@@ -82,8 +82,8 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
               href={item.href}
               className={cn(
                 "text-sm font-medium transition-colors",
-                pathname === item.href 
-                  ? "text-primary" 
+                pathname === item.href
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -113,8 +113,8 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
                     href={item.href}
                     className={cn(
                       "flex items-center gap-4 text-base font-medium p-4 rounded transition-colors",
-                      pathname === item.href 
-                        ? "bg-accent text-accent-foreground" 
+                      pathname === item.href
+                        ? "bg-accent text-accent-foreground"
                         : "text-foreground hover:bg-secondary"
                     )}
                   >
