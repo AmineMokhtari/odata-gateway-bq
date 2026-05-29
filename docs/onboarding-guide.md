@@ -115,7 +115,7 @@ This mode replicates a production-like environment using OIDC for authentication
 1. **Register App**: Go to [Azure App Registrations](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps).
 2. **Create Dev App**: Name it `odata-gateway-bq-dev`.
 3. **Account Type**: Select **"Accounts in this organizational directory only (Single tenant)"**.
-4. **Platform**: Select **"Web"** and set the Redirect URI to `http://localhost:3000/api/auth/callback/azure-ad`.
+4. **Platform**: Select **"Web"** and set the Redirect URI to `http://localhost:3005/auth/callback`.
 5. **Permissions**: Add `User.Read` (Delegated).
 6. **Note IDs**: Capture the **Client ID** and **Tenant ID**.
 
