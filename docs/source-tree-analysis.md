@@ -20,15 +20,18 @@ odata-gateway-bq/
 │   │       └── odata-metadata.ts # $metadata XML generator
 ├── obq-hub/                 # Catalog UI (Next.js)
 │   ├── src/
-│   │   ├── app/             # Application routes
+│   │   ├── app/             # Application routes and page containers
+│   │   ├── components/      # UI components
 │   │   │   ├── catalog/
 │   │   │   │   ├── ODataUrlBuilder.tsx # Step-by-Step Join & Aggregation UI
+│   │   │   │   ├── DatasetDescriptionView.tsx # Dataset details with direct exports & PK/FK badges
 │   │   │   │   ├── UsageDashboard.tsx # Personal Consumption Hub
 │   │   │   │   └── ElenaAdviceCard.tsx # Narrative Error UI
 │   │   │   └── ui/          # Shared Shadcn components
 │   │   └── lib/
 │   │       ├── gateway-client.ts # Unified cookie-aware fetch client
-│   │       └── error-mapping.ts # Technical to Narrative mapping
+│   │       ├── error-mapping.ts # Technical to Narrative mapping
+│   │       └── excel-generator.ts # ODC and PBIDS connection file builders
 ├── odata-v4-gcp/            # Custom OData V4 to BQ Engine (TS)
 │   ├── src/
 │   │   ├── lexer.ts         # Tokenizer
