@@ -43,7 +43,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 px-4 py-1 font-semibold uppercase tracking-wider text-xs rounded-full">
-              Enterprise Data Catalog & Query Bridge
+              BigQuery scale. Excel comfort.
             </Badge>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight font-sans leading-tight">
