@@ -19,14 +19,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Database, 
-  ArrowRight, 
-  BookOpen, 
-  ShieldCheck, 
-  Activity, 
-  Copy, 
-  FileSpreadsheet, 
+import {
+  Database,
+  ArrowRight,
+  BookOpen,
+  ShieldCheck,
+  Activity,
+  Copy,
+  FileSpreadsheet,
   Download,
   Key,
   Compass,
@@ -39,21 +39,27 @@ export default function LandingPage() {
       {/* Hero Section - Pure Presentation */}
       <section className="relative overflow-hidden py-16 lg:py-24 border-b border-border bg-gradient-to-b from-indigo-50/30 to-slate-50">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100/50),theme(colors.slate.50))]" />
-        
+
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 px-4 py-1 font-semibold uppercase tracking-wider text-xs rounded-full">
               Enterprise Data Catalog & Query Bridge
             </Badge>
-            
+
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight font-sans leading-tight">
-              Welcome to OBQ Hub
+              Welcome to OData Gateway for BigQuery Hub
             </h1>
-            
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              OBQ Hub is a self-service **Data Catalog** and **OData Query Builder** designed for Google BigQuery. It enables business analysts, developers, and standard applications like Microsoft Excel and Power BI to securely connect directly to BigQuery tables—**without installing local database drivers (ODBC/JDBC)** or managing complex cloud IAM credentials.
-            </p>
-            
+
+            <div className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto space-y-4">
+              <p>
+                OData Gateway for BigQuery is a self-service <strong className="font-semibold text-slate-900 bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">Data Catalog</strong> designed for Google BigQuery.
+              </p>
+              <p>
+                It enables business analysts, developers, and standard applications like <strong className="font-semibold text-slate-900">Microsoft Excel</strong> and <strong className="font-semibold text-slate-900">Power BI</strong> to securely connect directly to BigQuery tables—<span className="text-slate-900 font-semibold underline decoration-primary/20">without installing local database drivers (ODBC/JDBC)</span> or managing complex cloud IAM credentials.
+              </p>
+            </div>
+
+
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link href="/catalog">
                 <Button size="lg" className="h-14 px-8 text-base font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all duration-300 gap-2 cursor-pointer">
@@ -92,7 +98,7 @@ export default function LandingPage() {
                     Browse the Catalog
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Enter the **Data Catalog**, choose a GCP project, and browse the available BigQuery datasets. Select a table to instantly review column types, descriptions, and **Required** constraint tags.
+                    Enter the <b>Data Catalog</b>, choose a GCP project, and browse the available BigQuery datasets. Select a table to instantly review column types, descriptions, and <b>Required</b> constraint tags.
                   </p>
                 </div>
                 <div className="pt-2 flex flex-wrap gap-1.5 border-t border-border/50">
@@ -118,7 +124,7 @@ export default function LandingPage() {
                     Generate Connections
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    On the dataset details header, use the direct action controls to copy the feed URL or click **Export Excel (.odc)** or **Export Power BI (.pbids)** to instantly download pre-configured data profiles.
+                    On the dataset details header, use the direct action controls to copy the feed URL or click <b>Export Excel (.odc)</b> or <b>Export Power BI (.pbids)</b> to instantly download pre-configured data profiles.
                   </p>
                 </div>
                 <div className="pt-2 flex flex-wrap gap-1.5 border-t border-border/50">
@@ -146,7 +152,7 @@ export default function LandingPage() {
                     Authenticate & Load
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Double-click the downloaded connection file to launch Excel or Power BI. Choose **Organizational Account** as your connection method, sign in using your standard work email, and load your live data!
+                    Double-click the downloaded connection file to launch Excel or Power BI. Choose <b>Organizational Account</b> as your connection method, sign in using your standard work email, and load your live data!
                   </p>
                 </div>
                 <div className="pt-2 flex items-center gap-2 text-[10px] text-muted-foreground border-t border-border/50">
@@ -167,7 +173,7 @@ export default function LandingPage() {
               Key Platform Governance & Features
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              OBQ Hub integrates robust administrative and cost-protection controls into your data workspace.
+              OData Gateway for BigQuery (OBQ)) Hub integrates robust administrative and cost-protection controls into your data workspace.
             </p>
           </div>
 
