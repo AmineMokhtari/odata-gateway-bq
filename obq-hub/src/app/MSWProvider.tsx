@@ -7,19 +7,24 @@ export function MSWProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const init = async () => {
-      if (process.env.NEXT_PUBLIC_API_MOCKING === 'true') {
-        const { worker } = await import('../mocks/browser')
-        await worker.start({
-          serviceWorker: {
-            url: '/web/mockServiceWorker.js',
-            options: {
-              scope: '/web/'
-            }
-          },
-          onUnhandledRequest: 'bypass',
-        })
+      try {
+        if (process.env.NEXT_PUBLIC_API_MOCKING === 'true') {
+          const { worker } = await import('../mocks/browser')
+          await worker.start({
+            serviceWorker: {
+              url: '/web/mockServiceWorker.js',
+              options: {
+                scope: '/'
+              }
+            },
+            onUnhandledRequest: 'bypass',
+          })
+        }
+      } catch (error) {
+        console.error('[MSW] failed to start mock service worker:', error)
+      } finally {
+        setMswReady(true)
       }
-      setMswReady(true)
     }
 
     if (!mswReady) {

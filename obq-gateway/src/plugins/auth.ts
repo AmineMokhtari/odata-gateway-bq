@@ -15,10 +15,7 @@
  */
 
 import fp from 'fastify-plugin'
-import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose'
-import fastifyCookie from '@fastify/cookie'
-import fastifySecureSession from '@fastify/secure-session'
-import fastifyOauth2 from '@fastify/oauth2'
+import { createRemoteJWKSet, jwtVerify, decodeJwt, JWTPayload } from 'jose'
 import { fetchWithRetry } from '../../../common/src/utils/fetch-retry.js'
 import { config } from '../config.js'
 
@@ -38,65 +35,15 @@ export interface AuthPluginOptions {
   fetch?: typeof fetch
   jwks?: ReturnType<typeof createRemoteJWKSet>
   anonymousMode?: boolean
-  sessionSecret?: string
 }
 
 export default fp<AuthPluginOptions>(async (fastify, opts) => {
   const anonymousMode = opts.anonymousMode !== undefined ? opts.anonymousMode : config.anonymousMode
   let issuer = opts.issuer !== undefined ? opts.issuer : process.env.OIDC_ISSUER
   const audience = opts.audience !== undefined ? opts.audience : process.env.OIDC_AUDIENCE
-  const sessionSecret = process.env.SESSION_SECRET || 'a-very-long-secret-that-is-at-least-32-chars'
   const fetchImpl = opts.fetch || globalThis.fetch
-  if (sessionSecret.length < 32) {
-    throw new Error('SESSION_SECRET must be at least 32 characters long')
-  }
-
   if (!anonymousMode && (!issuer || !audience)) {
     throw new Error('OIDC_ISSUER and OIDC_AUDIENCE are mandatory for authentication. Security initialization failed.')
-  }
-
-  // Register cookie and session plugins
-  await fastify.register(fastifyCookie)
-  await fastify.register(fastifySecureSession, {
-    secret: sessionSecret,
-    salt: process.env.SESSION_SALT || 'mq9M97066986Csa7', // Must be 16 chars
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      sameSite: 'strict',
-      maxAge: 3600 // 1 hour (in seconds for secure-session)
-    }
-  })
-
-  // Register OAuth2/OIDC plugin
-  if (!anonymousMode) {
-    await fastify.register(fastifyOauth2, {
-      name: 'oidc',
-      scope: ['openid', 'profile', 'email', 'offline_access'], // offline_access for refresh token
-      credentials: {
-        client: {
-          id: process.env.OIDC_CLIENT_ID || '',
-          secret: process.env.OIDC_CLIENT_SECRET || ''
-        }
-      },
-      startRedirectPath: '/auth/login',
-      callbackUri: (req: any) => {
-        return `${req.getBaseUrl()}/auth/callback`
-      },
-      discovery: {
-        issuer: issuer!
-      }
-    })
-
-    fastify.addHook('preHandler', async (request, reply) => {
-      // @ts-ignore fastifyOauth2 registers this route
-      if (request.routeOptions.url === '/auth/login' || request.url.startsWith('/auth/login')) {
-        const query = request.query as { returnTo?: string }
-        if (query.returnTo) {
-          request.session.set('returnTo', query.returnTo)
-        }
-      }
-    })
   }
 
   fastify.decorate('isAnonymousMode', anonymousMode)
@@ -105,10 +52,8 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
     fastify.log.warn('Authentication is running in ANONYMOUS_MODE. This is intended for development or offloaded authentication scenarios only.')
   }
 
-  // Normalize issuer to have trailing slash for consistency
-  if (issuer && !issuer.endsWith('/')) {
-    issuer = `${issuer}/`
-  }
+  // Do NOT mutate `issuer` here by appending a trailing slash,
+  // as Azure AD requires the strict `iss` claim to NOT have a trailing slash during jwtVerify!
 
   let jwksUri: string | null = null
   let JWKS: any = null
@@ -117,8 +62,9 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
     if (!opts.jwks) {
       fastify.log.debug('Starting OIDC discovery')
       try {
-        // [Patch 8] Robust URL construction
-        const configUrl = new URL('.well-known/openid-configuration', issuer!)
+        // [Patch 8] Robust URL construction (ensure we don't truncate the issuer path)
+        const discoveryBase = issuer!.endsWith('/') ? issuer! : `${issuer!}/`
+        const configUrl = new URL('.well-known/openid-configuration', discoveryBase)
         
         // [Patch 4] Retry logic for discovery (with fast-fail to prevent Fastify plugin exec timeout)
         const response = await fetchWithRetry(fetchImpl, configUrl.toString(), { timeout: 4000 }, 2, 1000)
@@ -150,6 +96,12 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
   fastify.decorateRequest('user', null)
 
   const verifyToken = async (token: string): Promise<UserIdentity> => {
+    // TEMPORARY: Decode without verify to see what the actual iss claim is
+    try {
+      const decoded = decodeJwt(token)
+      fastify.log.info({ tokenIss: decoded.iss, configuredIss: issuer }, 'JWT Issuer Check')
+    } catch (e) {}
+
     const { payload } = await jwtVerify(token, JWKS, {
       issuer,
       audience,
@@ -204,19 +156,7 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
       return
     }
 
-    // 1. Check Session
-    if (request.session.get('user')) {
-      const user = request.session.get('user')
-      
-      // Story 1.1 Patch: Silent Refresh Logic
-      // If token is close to expiry (e.g., < 5 mins), try refreshing
-      // For now, we just restore the identity. Full refresh exchange would happen here if we stored the refresh_token.
-      
-      request.user = user || null
-      return
-    }
-
-    // 2. Fallback to Authorization Header (for legacy/direct API calls)
+    // Only Bearer token is supported
     const authHeader = request.headers.authorization
     if (authHeader && /^Bearer /i.test(authHeader)) {
       const token = authHeader.substring(7).trim()
@@ -239,8 +179,6 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
   name: 'auth'
 })
 
-import { Session } from '@fastify/secure-session'
-
 declare module 'fastify' {
   interface FastifyInstance {
     isAnonymousMode: boolean
@@ -248,20 +186,5 @@ declare module 'fastify' {
   }
   interface FastifyRequest {
     user: UserIdentity | null
-    session: Session
-  }
-}
-
-export interface SessionUser {
-  sub: string
-  email?: string
-  groups: string[]
-}
-
-declare module '@fastify/secure-session' {
-  interface SessionData {
-    user: SessionUser
-    tokens?: any
-    returnTo?: string
   }
 }

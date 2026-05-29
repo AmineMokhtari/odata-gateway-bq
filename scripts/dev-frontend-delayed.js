@@ -22,11 +22,12 @@ try {
 // Spawn Next.js dev server on the configured HUB_PORT
 const nextProcess = spawn(
   'npm',
-  ['run', 'dev', '--', '-p', hubPort],
+  ['run', 'dev'],
   {
     cwd: path.resolve('obq-hub'),
     env: {
       ...process.env,
+      PORT: hubPort,
       NEXT_PUBLIC_GATEWAY_URL: `http://127.0.0.1:${gatewayPort}`,
       GATEWAY_URL: `http://127.0.0.1:${gatewayPort}`
     },

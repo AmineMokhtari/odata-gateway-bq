@@ -17,7 +17,7 @@ try {
 console.log(`[dev-backend] Starting Fastify backend on port ${port}...`);
 
 const fastifyProcess = spawn(
-  `npx fastify start --options -a 127.0.0.1 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port ${port} | npx pino-pretty`,
+  `npx fastify start --options -a 127.0.0.1 -l info -T 30000 obq-gateway/dist/obq-gateway/src/app.js --port ${port}`,
   {
     stdio: 'inherit',
     shell: true

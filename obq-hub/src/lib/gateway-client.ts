@@ -50,13 +50,18 @@ export class GatewayClient {
   async fetch(path: string, options: RequestInit = {}): Promise<Response> {
     const url = `${this.baseUrl}${path.startsWith('/') ? '' : '/'}${path}`
     
-    // 1. Get cookies from Next.js server context (or mock)
-    let cookieHeader = ''
+    // 1. Get access token from NextAuth session
+    let bearerToken = ''
     try {
-      const cookieStore = await this.cookiesFn()
-      cookieHeader = cookieStore.toString()
+      const { auth } = await import('@/auth')
+      const session = await auth()
+      if (session && (session as any).idToken) {
+        // Fallback to idToken if accessToken is not valid for the gateway, but typically idToken or accessToken is used.
+        // We will use idToken because Azure AD v2 gateway validates the ID token.
+        bearerToken = (session as any).idToken
+      }
     } catch (e) {
-      console.warn('[GatewayClient] Failed to read cookies. Ensure this is called from a Server Component or Action.')
+      console.warn('[GatewayClient] Failed to read session. Ensure this is called from a Server Component or Action.')
     }
 
     // 2. Get headers from Next.js server context (for correlation-id passthrough)
@@ -70,8 +75,8 @@ export class GatewayClient {
 
     // 3. Merge headers
     const mergedHeaders = new Headers(options.headers)
-    if (cookieHeader) {
-      mergedHeaders.set('Cookie', cookieHeader)
+    if (bearerToken) {
+      mergedHeaders.set('Authorization', `Bearer ${bearerToken}`)
     }
     mergedHeaders.set('x-correlation-id', correlationId)
     

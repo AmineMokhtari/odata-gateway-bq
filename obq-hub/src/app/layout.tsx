@@ -38,12 +38,36 @@ import { Toaster } from "@/components/ui/sonner";
 import { Navigation } from "@/components/Navigation";
 import { ElenaDrawer } from "@/components/drawers/ElenaDrawer";
 import { MSWProvider } from "./MSWProvider";
+import { gatewayClient } from "@/lib/gateway-client";
+import { redirect } from "next/navigation";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let userName = process.env.DEFAULT_ANONYMOUS_USER_NAME || 'ANONYMOUS';
+  let shouldRedirect = false;
+
+  if (process.env.ANONYMOUS_MODE !== 'true') {
+    try {
+      const { auth } = await import('@/auth');
+      const session = await auth();
+      if (session && session.user) {
+        userName = session.user.email || session.user.name || 'Authenticated User';
+      } else {
+        shouldRedirect = true;
+      }
+    } catch (e: any) {
+      console.error('[layout] failed to fetch next-auth session:', e.message);
+      shouldRedirect = true;
+    }
+  }
+
+  if (shouldRedirect) {
+    redirect('/api/auth/signin');
+  }
+
   return (
     <html
       lang="en"
@@ -51,7 +75,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <MSWProvider>
-          <Navigation userName={process.env.DEFAULT_ANONYMOUS_USER_NAME} />
+          <Navigation userName={userName} />
           {children}
           <ElenaDrawer />
           <Toaster position="top-right" closeButton richColors />

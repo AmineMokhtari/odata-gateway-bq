@@ -31,8 +31,7 @@ export async function getTenants(): Promise<TenantConfig[]> {
     return data.value || [];
   } catch (err: any) {
     if (err.status === 401 && process.env.ANONYMOUS_MODE !== 'true') {
-      const target = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3005';
-      redirect(`${target}/auth/login`);
+      redirect('/api/auth/signin');
     }
 
     console.warn('[getTenants] Failed to fetch tenants from backend, falling back to local config:', err.message);
@@ -41,11 +40,11 @@ export async function getTenants(): Promise<TenantConfig[]> {
     try {
       const envPath = process.env.TENANTS_CONFIG_PATH || 'obq-gateway/config/tenants.yaml';
       const pathsToTry = [
-        join(process.cwd(), envPath),
-        join(process.cwd(), '..', envPath),
-        join(process.cwd(), '..', '..', envPath),
-        join(process.cwd(), 'dev-tenants.yaml'),
-        join(process.cwd(), '..', 'dev-tenants.yaml')
+        join(/*turbopackIgnore: true*/ process.cwd(), envPath),
+        join(/*turbopackIgnore: true*/ process.cwd(), '..', envPath),
+        join(/*turbopackIgnore: true*/ process.cwd(), '..', '..', envPath),
+        join(/*turbopackIgnore: true*/ process.cwd(), 'dev-tenants.yaml'),
+        join(/*turbopackIgnore: true*/ process.cwd(), '..', 'dev-tenants.yaml')
       ];
 
       let fileContents = '';

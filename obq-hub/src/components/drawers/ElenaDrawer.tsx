@@ -86,9 +86,8 @@ export const ElenaDrawer: React.FC = () => {
               <Button 
                 onClick={() => {
                   if (activeTip.action === 'REFRESH_SESSION') {
-                    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3005';
                     const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
-                    window.location.href = `${baseUrl}/auth/login?returnTo=${returnTo}`;
+                    window.location.href = `/web/api/auth/signin?callbackUrl=${returnTo}`;
                   } else if (activeTip.action === 'REDIRECT' && activeTip.action_url) {
                     window.location.href = activeTip.action_url;
                   } else {
