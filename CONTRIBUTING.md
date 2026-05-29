@@ -77,7 +77,9 @@ Our frontend should feel premium, alive, and encouraging.
 
 - **Styling**: Use Tailwind CSS (via Shadcn/UI) but maintain a custom, high-end aesthetic.
 - **Icons**: Use `lucide-react` for all iconography.
-- **Animations**: Use `framer-motion` for smooth state transitions and "Success Pulses."
+- **Animations**: Use `framer-motion` for smooth state transitions, scale cues (`active:scale-95`), and "Success Pulses."
+- **Direct Connections**: Include high-focus OData Action Bars in the catalog detail headers to allow Copy URL, Export ODC (Excel), and Export PBIDS (Power BI) actions instantly.
+- **Visual Schema Indicators**: Visually decorate tables with Primary Key (PK, blue badge) and Foreign Key (FK, violet badge with target details tooltips) status badges to simplify schema discovery for Elena.
 - **Narrative**: Use the `ElenaAdviceCard` to provide feedback. Never show a raw JSON error to the user.
 
 ---
@@ -88,6 +90,7 @@ Our frontend should feel premium, alive, and encouraging.
 - **Cost Control**: Every query must undergo a **Dry Run** check before execution.
 - **Streaming**: Data must be streamed from BigQuery to the client using Node.js `Transform` streams. Avoid `res.send(hugeArray)`.
 - **SQL Safety**: Use the `translateODataToSql` engine. Never concatenate raw user input into SQL strings.
+- **PBIDS Compliance**: Power BI Data Source Reference (`.pbids`) file builders MUST strictly wrap the feed URL inside the address object structure: `address: { url: url }` to avoid parser deserialization errors in Power BI Desktop.
 
 ---
 
