@@ -1,86 +1,75 @@
 # Recent Commits & Feature Integrations - Deep Dive Documentation
 
-**Generated:** 2026-05-12
-**Scope:** Last 10 Commits (Recent Feature Integrations)
+**Generated:** 2026-05-29
+**Scope:** Recent Feature Integrations (Direct Exports, PBIDS Fix, Schema Keys)
 **Workflow Mode:** Exhaustive Deep-Dive
 
 ## Overview
 
-This deep-dive documentation covers the technical implementations and architectural shifts introduced in the last 10 commits. The primary focus of these changes was the transition from a "Marketplace" to a "Catalog" experience, the implementation of the Elena's Tips error-handling layer, the Personal Usage Hub, and overall UI/UX alignment with Google Cloud Console aesthetics.
+This deep-dive documentation covers the technical implementations and architectural shifts introduced recently. The primary focus of these changes was enhancing dataset-level discovery and integration capabilities, fixing Power BI connectivity payload structures, and providing visual metadata highlights (Primary Keys and Foreign Keys) on the main catalog dataset detail page.
 
 **Purpose:** Document the recent architectural additions and ensure future contributors understand the new components and their integration points.
-**Key Responsibilities:** UI component updates, Error-handling middleware, API Proxy bridge for OData connections.
-**Integration Points:** Next.js frontend to Fastify backend, BigQuery Usage APIs.
+**Key Responsibilities:** UI component updates, Connection file generation, BigQuery relationships parsing.
+**Integration Points:** Next.js frontend to Fastify backend, OData Feed exports, Microsoft Excel ODC connections, Power BI PBIDS configurations.
 
 ## Complete Feature Inventory
 
-### 1. Catalog Experience & UI Alignment
+### 1. Dataset-Level Direct Action Buttons
+- **Implementation:** Added high-density interactive actions ("COPY URL", "Export Excel (.odc)", "Export Power BI (.pbids)") on the top side of the dataset details header (`DatasetDescriptionView.tsx`).
+- **Key Components:** `DatasetDescriptionView.tsx`, `@/lib/excel-generator.ts`.
+- **Details:** The action buttons construct a dynamic URL pointing to the dataset's OData service root endpoint (`/v1/{projectId}/{datasetId}`). When triggered, the copy/export functions generate files using automated tenant settings.
+- **Micro-interactions:** Configured smooth CSS hover rings and scale animations (`active:scale-95`), tailored HSL backgrounds (emerald green overlays for Excel, amber gold for Power BI), and sonner toast success triggers.
+
+### 2. Corrected Power BI PBIDS Connection Schema
+- **Implementation:** Corrected a JSON schema mismatch when exporting Power BI data source files (`.pbids`). Power BI expects the address to map to a structured dictionary rather than a raw string.
+- **Key Components:** `obq-hub/src/lib/excel-generator.ts`.
+- **Details:** Updated the `downloadODataPBIDS` utility to nest the target OData feed URL within a structured `address.url` property:
+  ```json
+  "address": {
+    "url": "http://127.0.0.1:3005/v1/{projectId}/{datasetId}"
+  }
+  ```
+  This resolves the parser error `Unable to parse data source file: Error converting value ... to type System.Collections.Generic.Dictionary`.
+
+### 3. Primary & Foreign Key Visual Highlights
+- **Implementation:** Extended the `DatasetMetadata` interface and columns parser to dynamically scan and decorate column fields with status badges representing relational keys.
+- **Key Components:** `DatasetDescriptionView.tsx`.
+- **Primary Keys (PK):** Derived dynamically using key naming heuristics matching OData entity key requirements (columns named `id`, ending in `_id`, or fallbacks). Renders an elegant blue **PK** badge.
+- **Foreign Keys (FK):** Evaluated by scanning active outbound navigation relationships (`relationships` metadata table matching `TO_ONE` targets). Displays a violet **FK** badge with a responsive HTML hover tooltip stating the exact referenced target (e.g. `References Customers(id)`).
+
+### 4. Catalog Experience & UI Alignment
 - **Implementation:** The terminology across the frontend and documentation was updated from "Marketplace" to "Catalog". The UI was heavily optimized and aligned with Google Cloud Console aesthetics, utilizing a full-width layout and branded loading states.
 - **Key Components:** `CatalogView.tsx`, `DatasetCatalog.tsx`, `Navigation.tsx`.
-- **What Future Contributors Must Know:** The design system now strictly follows a clean, enterprise-grade aesthetic. Avoid introducing conflicting design paradigms.
 
-### 2. Elena's Tips Error-Handling Layer (Story 6.1)
+### 5. Elena's Tips Error-Handling Layer (Story 6.1)
 - **Implementation:** Integrated an actionable error layer called "Elena's Tips". This intercepts common errors (like 403 Budget Exceeded or 401 Unauthorized) and presents them to the user via a reactive, MD3-compliant slide-out drawer with actionable advice.
 - **Key Components:** `ElenaAdviceCard.tsx`, `ElenaDrawer.tsx`, `backend/src/plugins/elena-tips.ts`.
-- **What Future Contributors Must Know:** Any new backend error should map to the `error-mapping.ts` utility to ensure Elena can provide meaningful guidance rather than exposing raw stack traces.
 
-### 3. Personal Usage Hub & Query History
+### 6. Personal Usage Hub & Query History
 - **Implementation:** Implemented a self-service usage dashboard allowing users to track their personal BigQuery consumption against their monthly limits.
 - **Key Components:** `UsageDashboard.tsx`, `backend/src/routes/internal/usage.ts`, `backend/src/services/usage-audit.ts`.
-- **Integration:** Fetches real-time usage data from the backend's `/internal/usage` endpoint.
-
-### 4. OData Connection UI & API Proxy Bridge
-- **Implementation:** Finalized the one-click Excel integration and improved the OData Connection UI. To resolve CORS and mixed-content issues during local development, a Next.js API proxy bridge (`next.config.ts`) was implemented to route `/web/api/gateway/*` requests directly to the backend.
-- **Key Components:** `ODataUrlBuilder.tsx`, `next.config.ts`.
-- **What Future Contributors Must Know:** Client-side fetches in the builder MUST use the relative proxy URL (`/web/api/gateway/v1/...`) rather than hitting the backend port directly.
-
-### 5. Documentation & Research
-- **Implementation:** Refactored the onboarding guide into distinct sections (Common, Anonymous, Entra ID) and added a comprehensive market research and product comparison report.
-- **Key Components:** `docs/onboarding-guide.md`, `planning-artifacts/research/market-odata-comparison-research.md`.
 
 ## Architecture & Design Patterns
 
 ### Code Organization
 The recent commits reinforced the separation of concerns:
-- **Frontend:** Next.js Server Actions (`actions/`) are used for secure backend communication, while client components handle interactive UI states.
+- **Frontend:** Next.js Server Actions (`actions/`) are used for secure backend communication, while client components (`components/`) handle interactive UI states.
 - **Backend:** Fastify plugins (`plugins/`) manage cross-cutting concerns like Elena's Tips and authorization.
 
-### State Management Strategy
-The frontend utilizes Zustand (`useProjectStore.ts`) for global UI state, particularly for managing the visibility and content of the `ElenaDrawer`.
-
-### Error Handling Philosophy
-Errors are intercepted and transformed from technical exceptions into narrative, actionable guidance via the Elena Advice Layer.
-
-## Data Flow
-
-1. **Usage Dashboard Flow:**
-   - Client accesses `/web` dashboard.
-   - Server Action `getGlobalUsage()` calls `http://127.0.0.1:3002/internal/usage`.
-   - Backend `usage-audit.ts` queries BigQuery `INFORMATION_SCHEMA.JOBS`.
-   - Formatted usage data is returned and displayed in `BudgetGauge.tsx`.
-
-2. **OData Builder Proxy Flow:**
-   - Client interacts with `ODataUrlBuilder.tsx`.
-   - Browser fetches relative URL: `/web/api/gateway/v1/dev-env-mokhtari/aperio_ds_001`.
-   - Next.js `rewrites()` proxies the request to `http://127.0.0.1:3002/v1/...`.
-   - Backend processes the request and returns metadata.
+### Key and Relationship Extraction Strategy
+Introspective database schemas are loaded server-side:
+- **BigQuery Introspection:** Crawls BigQuery's `INFORMATION_SCHEMA.COLUMNS` and `INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE` to reconstruct table structures, PK heuristics, and FK relationships.
+- **Client-Side Annotation:** The React catalog consumes these payloads to visually highlight key metadata, preventing the need for separate client-side API lookups.
 
 ## Dependency Graph
 
+- `DatasetDescriptionView.tsx` -> `downloadODataODC`/`downloadODataPBIDS` -> `excel-generator.ts`
+- `DatasetDescriptionView.tsx` -> `getDatasetSchema` -> `actions/schema.ts` -> Fastify `/schema` Endpoint
 - `ODataUrlBuilder.tsx` -> `useEntityMetadata.ts` -> Next.js Proxy -> `backend/src/routes/v1/index.ts`
 - `ElenaDrawer.tsx` -> `useProjectStore.ts`
-- `backend/src/plugins/elena-tips.ts` -> Fastify `onError` hook
-
-## Modification Guidance
-
-### To Add New Elena Tips
-Update `frontend/src/lib/error-mapping.ts` and ensure the backend throws errors with specific codes that the mapper can intercept.
-
-### To Modify the API Proxy
-Update the `rewrites` function in `frontend/next.config.ts`. Ensure both local development and production environments are accounted for.
 
 ---
 _Generated by `document-project` workflow (deep-dive mode)_
 _Base Documentation: docs/index.md_
-_Scan Date: 2026-05-12_
-_Analysis Mode: Exhaustive (Last 10 Commits)_
+_Scan Date: 2026-05-29_
+_Analysis Mode: Exhaustive (Recent Enhancements)_
