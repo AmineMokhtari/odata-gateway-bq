@@ -30,7 +30,9 @@ import {
   Copy,
   Check,
   FileSpreadsheet,
-  Download
+  Download,
+  Key,
+  Link as LinkIcon
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,6 +56,15 @@ interface DatasetMetadata {
       type: string;
       isNullable: boolean;
       description?: string;
+    }>;
+    relationships?: Array<{
+      name: string;
+      column: string;
+      referencedProject?: string;
+      referencedDataset?: string;
+      referencedTable: string;
+      referencedColumn: string;
+      type: 'TO_ONE' | 'TO_MANY';
     }>;
   }>;
 }
@@ -249,26 +260,49 @@ export const DatasetDescriptionView: React.FC<DatasetDescriptionViewProps> = ({ 
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/50">
-                        {selectedTable.columns.map(column => (
-                          <tr key={column.name} className="hover:bg-muted/30 transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-foreground">{column.name}</span>
-                                {!column.isNullable && (
-                                  <Badge variant="ghost" className="h-4 px-1 text-[8px] border border-primary/20 text-primary uppercase font-bold">Required</Badge>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <code className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono text-primary">{column.type}</code>
-                            </td>
-                            <td className="px-6 py-4">
-                              <p className="text-xs text-muted-foreground leading-snug max-w-sm">
-                                {column.description || "-"}
-                              </p>
-                            </td>
-                          </tr>
-                        ))}
+                        {selectedTable.columns.map(column => {
+                          const isPrimaryKey = (selectedTable.columns || []).find(c => 
+                            c.name.toLowerCase() === 'id' || 
+                            c.name.toLowerCase().endsWith('_id') || 
+                            c.name.toLowerCase().endsWith('id')
+                          )?.name === column.name || (!selectedTable.columns.some(c => c.name.toLowerCase() === 'id' || c.name.toLowerCase().endsWith('_id') || c.name.toLowerCase().endsWith('id')) && selectedTable.columns[0]?.name === column.name);
+
+                          const fkRef = selectedTable.relationships?.find(rel => 
+                            rel.type === 'TO_ONE' && rel.column === column.name
+                          );
+                          const isForeignKey = !!fkRef;
+
+                          return (
+                            <tr key={column.name} className="hover:bg-muted/30 transition-colors">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-bold text-foreground">{column.name}</span>
+                                  {isPrimaryKey && (
+                                    <Badge variant="ghost" className="h-4 px-1.5 text-[8px] border border-blue-500/20 bg-blue-500/5 text-blue-500 uppercase font-extrabold flex items-center gap-0.5">
+                                      <Key className="w-2.5 h-2.5" /> PK
+                                    </Badge>
+                                  )}
+                                  {isForeignKey && (
+                                    <Badge variant="ghost" className="h-4 px-1.5 text-[8px] border border-violet-500/20 bg-violet-500/5 text-violet-500 uppercase font-extrabold flex items-center gap-0.5" title={`References ${fkRef.referencedTable}(${fkRef.referencedColumn})`}>
+                                      <LinkIcon className="w-2.5 h-2.5" /> FK
+                                    </Badge>
+                                  )}
+                                  {!column.isNullable && (
+                                    <Badge variant="ghost" className="h-4 px-1 text-[8px] border border-primary/20 text-primary uppercase font-bold">Required</Badge>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <code className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono text-primary">{column.type}</code>
+                              </td>
+                              <td className="px-6 py-4">
+                                <p className="text-xs text-muted-foreground leading-snug max-w-sm">
+                                  {column.description || "-"}
+                                </p>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
