@@ -1,4 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
+import { config } from '../../config.js'
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/callback', async (request, reply) => {
@@ -21,8 +22,21 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       request.session.set('user', sessionUser)
       request.session.set('tokens', token)
       
-      // Redirect to frontend preserving host and port (e.g. port 3005)
-      const targetUrl = `${request.getBaseUrl()}/`
+      // Redirect to frontend and restore state
+      const returnTo = request.session.get('returnTo')
+      request.session.set('returnTo', undefined) // clear it
+
+      let targetUrl: string
+      try {
+        const base = new URL(config.hubUrl)
+        if (returnTo && returnTo.startsWith('/')) {
+          base.pathname = returnTo
+        }
+        targetUrl = base.toString()
+      } catch (e) {
+        targetUrl = config.hubUrl.endsWith('/') ? config.hubUrl : `${config.hubUrl}/`
+      }
+
       request.log.info({ targetUrl, correlationId: request.id }, 'OIDC callback successful, redirecting to frontend')
       return reply.redirect(targetUrl)
     } catch (err: any) {

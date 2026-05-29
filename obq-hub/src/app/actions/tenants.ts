@@ -16,6 +16,7 @@
 
 'use server'
 
+import { redirect } from 'next/navigation'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import yaml from 'js-yaml'
@@ -26,17 +27,14 @@ export async function getTenants(): Promise<TenantConfig[]> {
   try {
     const response = await gatewayClient.get('/v1/catalog');
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Log unauthorized but let it fallback for now or we could redirect
-        console.warn('[getTenants] Unauthorized access to catalog');
-      }
-      throw new Error(`Backend returned ${response.status}`);
-    }
-
     const data = await response.json();
     return data.value || [];
   } catch (err: any) {
+    if (err.status === 401 && process.env.ANONYMOUS_MODE !== 'true') {
+      const target = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3005';
+      redirect(`${target}/auth/login`);
+    }
+
     console.warn('[getTenants] Failed to fetch tenants from backend, falling back to local config:', err.message);
     
     // Fallback to local file reading if backend is unavailable

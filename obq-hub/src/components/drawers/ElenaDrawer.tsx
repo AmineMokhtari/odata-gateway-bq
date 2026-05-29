@@ -84,10 +84,20 @@ export const ElenaDrawer: React.FC = () => {
           {activeTip.action && !activeTip.quick_fixes && (
             <div className="pt-4">
               <Button 
-                onClick={() => applyFix(activeTip.action!)}
+                onClick={() => {
+                  if (activeTip.action === 'REFRESH_SESSION') {
+                    const baseUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3005';
+                    const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
+                    window.location.href = `${baseUrl}/auth/login?returnTo=${returnTo}`;
+                  } else if (activeTip.action === 'REDIRECT' && activeTip.action_url) {
+                    window.location.href = activeTip.action_url;
+                  } else {
+                    applyFix(activeTip.action!);
+                  }
+                }}
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded shadow-sm"
               >
-                Perform Action: {activeTip.action}
+                {activeTip.action_label || (activeTip.action === 'REFRESH_SESSION' ? 'Refresh Session' : `Perform Action: ${activeTip.action}`)}
               </Button>
             </div>
           )}

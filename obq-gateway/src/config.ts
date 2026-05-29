@@ -43,7 +43,8 @@ export const config = {
   // App
   port: parseInt(process.env.GATEWAY_PORT || '80', 10),
   isDev: process.env.NODE_ENV !== 'production',
-  anonymousMode: process.env.ANONYMOUS_MODE === 'true'
+  anonymousMode: process.env.ANONYMOUS_MODE === 'true',
+  hubUrl: process.env.HUB_URL || 'http://localhost:3000'
 }
 
 /**

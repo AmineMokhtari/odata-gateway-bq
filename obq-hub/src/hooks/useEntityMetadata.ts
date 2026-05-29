@@ -18,6 +18,7 @@
 
 import { useState, useEffect } from 'react';
 import { getMetadata, type NavigationProperty, type EntityProperty } from '@/app/actions/odata';
+import { useProjectStore } from '@/store/project-store';
 
 export type { NavigationProperty, EntityProperty };
 
@@ -40,11 +41,19 @@ export const useEntityMetadata = (projectId: string, datasetId: string, entitySe
       try {
         const data = await getMetadata(projectId, datasetId, entitySet);
         
-        setProperties(data.properties);
-        setNavProps(data.navProps);
+        if (data.error) {
+          console.error('Failed to fetch entity metadata:', data.error);
+          if (data.error.elena_tip) {
+            useProjectStore.getState().setElenaTip(data.error.elena_tip);
+            useProjectStore.getState().openElenaDrawer();
+          }
+        }
+
+        setProperties(data.properties || []);
+        setNavProps(data.navProps || []);
         setTableDescription(data.tableDescription);
       } catch (err: any) {
-        console.error('Failed to fetch entity metadata via Server Action:', err);
+        console.error('Unexpected error fetching metadata:', err);
       } finally {
         setLoading(false);
       }

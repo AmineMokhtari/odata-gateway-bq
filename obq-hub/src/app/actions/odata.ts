@@ -35,12 +35,14 @@ export interface MetadataResult {
   properties: EntityProperty[];
   navProps: NavigationProperty[];
   tableDescription?: string;
+  error?: any;
 }
 
 export interface ConnectionStatusResult {
   status: 'listening' | 'connected' | 'anonymous';
   lastActive: number | null;
   serverTime: number;
+  error?: any;
 }
 
 /**
@@ -190,7 +192,11 @@ export async function getMetadata(projectId: string, datasetId: string, entitySe
     return { properties, navProps, tableDescription };
   } catch (err: any) {
     console.error(`[odata] Failed to parse metadata for ${entitySet}:`, err.message);
-    throw err;
+    return {
+      properties: [],
+      navProps: [],
+      error: err.data?.error || { message: err.message, elena_tip: err.data?.error?.elena_tip }
+    };
   }
 }
 
@@ -207,7 +213,12 @@ export async function getConnectionStatus(projectId: string, datasetId: string):
     return await response.json();
   } catch (err: any) {
     console.error(`[odata] Connection status error for ${projectId}/${datasetId}:`, err.message);
-    return { status: 'listening', lastActive: null, serverTime: Date.now() };
+    return { 
+      status: 'listening', 
+      lastActive: null, 
+      serverTime: Date.now(),
+      error: err.data?.error || { message: err.message, elena_tip: err.data?.error?.elena_tip }
+    };
   }
 }
 
@@ -228,7 +239,7 @@ export async function explainQuery(projectId: string, datasetId: string, entityS
     return await response.json();
   } catch (err: any) {
     console.error(`[odata] Explain failed for ${entitySet}:`, err.message);
-    return null;
+    return { error: err.data?.error || { message: err.message, elena_tip: err.data?.error?.elena_tip } };
   }
 }
 
@@ -249,7 +260,8 @@ export async function dryRunQueryAction(projectId: string, datasetId: string, en
           status: response.status,
           code: data.error?.code || 'ExplainFailed',
           message: data.error?.message || 'Explain failed',
-          details: data.error?.details || []
+          details: data.error?.details || [],
+          elena_tip: data.error?.elena_tip
         }
       };
     }
@@ -266,7 +278,8 @@ export async function dryRunQueryAction(projectId: string, datasetId: string, en
         status: err.status || 500,
         code: err.data?.error?.code || 'NetworkError',
         message: err.message || 'Network error during dry-run',
-        details: err.data?.error?.details || []
+        details: err.data?.error?.details || [],
+        elena_tip: err.data?.error?.elena_tip
       }
     };
   }

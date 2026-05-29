@@ -6,6 +6,8 @@ export interface ElenaTip {
   advice?: string
   quick_fixes?: Array<{ label: string, action: string }>
   action?: string
+  action_label?: string
+  action_url?: string
 }
 
 interface ProjectState {

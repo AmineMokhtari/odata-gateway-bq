@@ -26,6 +26,8 @@ interface UseConnectionStatusProps {
   interval?: number;
 }
 
+import { useProjectStore } from '@/store/project-store';
+
 export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: UseConnectionStatusProps) {
   const [state, setState] = useState<ConnectionState>('listening');
   const [lastActive, setLastActive] = useState<number | null>(null);
@@ -38,6 +40,16 @@ export function useConnectionStatus({ projectId, datasetId, interval = 5000 }: U
       // Use Server Action (Story 9.1)
       const data = await getConnectionStatus(projectId, datasetId);
       
+      if (data.error) {
+        if (data.error.elena_tip) {
+          useProjectStore.getState().setElenaTip(data.error.elena_tip);
+          useProjectStore.getState().openElenaDrawer();
+        }
+        setError(data.error.message || 'Connection error');
+        setState('listening');
+        return;
+      }
+
       if (data.status === 'connected') {
         setState('connected');
         setLastActive(data.lastActive);

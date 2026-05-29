@@ -87,6 +87,16 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
         issuer: issuer!
       }
     })
+
+    fastify.addHook('preHandler', async (request, reply) => {
+      // @ts-ignore fastifyOauth2 registers this route
+      if (request.routeOptions.url === '/auth/login' || request.url.startsWith('/auth/login')) {
+        const query = request.query as { returnTo?: string }
+        if (query.returnTo) {
+          request.session.set('returnTo', query.returnTo)
+        }
+      }
+    })
   }
 
   fastify.decorate('isAnonymousMode', anonymousMode)
@@ -252,5 +262,6 @@ declare module '@fastify/secure-session' {
   interface SessionData {
     user: SessionUser
     tokens?: any
+    returnTo?: string
   }
 }

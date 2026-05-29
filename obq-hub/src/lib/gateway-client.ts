@@ -90,13 +90,28 @@ export class GatewayClient {
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error(`[GatewayClient] Request failed: ${response.status} ${response.statusText}`, errorData)
+      let errorData: any;
+      let rawText: string | undefined;
+      try {
+        rawText = await response.text();
+        errorData = rawText ? JSON.parse(rawText) : {};
+      } catch (e) {
+        errorData = { raw: rawText };
+      }
+      
+      const errorMessage = errorData?.error?.message || errorData?.message || response.statusText;
+
+      // Do not suppress 401s as just warnings; log them as errors to expose auth failures
+      console.error(`[GatewayClient] Request failed: ${response.status} ${response.statusText}`, {
+        message: errorMessage,
+        data: errorData
+      });
+
       throw new ResponseError(
-        errorData?.error?.message || response.statusText,
+        errorMessage,
         response.status,
         errorData
-      )
+      );
     }
 
     return response
