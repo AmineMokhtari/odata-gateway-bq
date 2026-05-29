@@ -59,14 +59,15 @@ This folder contains the Test Architect (TEA) workflows converted to skill-drive
 
 ## TEA Workflows
 
+- teach-me-testing
 - test-design
-- automate
-- atdd
-- test-review
-- trace
 - framework
 - ci
+- atdd
+- automate
+- test-review
 - nfr-assess
+- trace
 
 ## Notes
 
@@ -74,4 +75,3 @@ This folder contains the Test Architect (TEA) workflows converted to skill-drive
 - `customize.toml` defines activation hooks, persistent facts, and the optional `on_complete` hook.
 - Output files typically use `{test_artifacts}` or `{project-root}` variables.
 - If a workflow produces multiple artifacts (e.g., system-level vs epic-level), the step file will specify which templates and output paths to use.
-
