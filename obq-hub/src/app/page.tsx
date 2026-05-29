@@ -98,7 +98,7 @@ export default function LandingPage() {
                     Browse the Catalog
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Enter the <b>Data Catalog</b>, choose a GCP project, and browse the available BigQuery datasets. Select a table to instantly review column types, descriptions, and <b>Required</b> constraint tags.
+                    Enter the <b>Catalog</b>, and browse the available BigQuery datasets (Data products). Select a dataset to instantly review tables, table descriptions, column types, and <b>Required</b> constraint tags.
                   </p>
                 </div>
                 <div className="pt-2 flex flex-wrap gap-1.5 border-t border-border/50">

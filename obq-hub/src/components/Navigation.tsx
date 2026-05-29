@@ -59,7 +59,7 @@ export const Navigation: React.FC<NavigationProps> = ({ userName = 'ANONYMOUS' }
             <Database className="w-5 h-5" />
           </div>
           <span className="font-sans font-medium text-foreground tracking-tight text-lg">
-            OData Gateway
+            OData Gateway for BigQuery Hub
           </span>
         </Link>
 
