@@ -1,5 +1,22 @@
 # Release Notes
 
+## Version 1.4.0 (Direct Integration & Visual Schema Keying)
+*Release Date: May 29, 2026*
+
+This release introduces direct connection integrations from the main dataset catalog view and enhances table discoverability with visual primary and foreign key indicators, alongside critical Power BI desktop schema compliance updates.
+
+### New Features
+- **Dataset Direct Connection Buttons**: Added high-density, interactive "COPY URL", "Export Excel (.odc)", and "Export Power BI (.pbids)" actions on the top side of the dataset details header. Users can now obtain dataset-wide integration parameters with a single click.
+- **Primary & Foreign Key Indicators**: Enabled visual PK (blue badge) and FK (violet badge) badges next to column names in each table's schema detail grid. FK badges contain rich tooltips identifying their exact target constraints (e.g. `References Customers(id)`).
+
+### Enhancements
+- **Power BI PBIDS Parser Compliance**: Resolved an `Unable to parse data source file` deserialization error in Power BI Desktop by nesting the feed URL inside the correct `address.url` object schema (i.e. `address: { url: url }`).
+- **Dynamic Dataset-Wide Scope**: Wired all catalog connection exports to automatically target the global dataset service root rather than the selected table, simplifying multi-table connections.
+
+### How to Upgrade
+This release contains client connection upgrades. No manual intervention or breaking schema updates are needed; simply deploy the update to allow users to pull down the newly formatted ODC/PBIDS connection files.
+
+
 ## Version 1.3.0 (Architecture Hardening & 1:N Expansion)
 *Release Date: May 16, 2026*
 
