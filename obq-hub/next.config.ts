@@ -18,6 +18,19 @@ const nextConfig: NextConfig = {
         basePath: false,
       },
     ]
+  },
+  async headers() {
+    return [
+      {
+        source: '/mockServiceWorker.js',
+        headers: [
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
+    ]
   }
 };
 
