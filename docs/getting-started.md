@@ -15,20 +15,35 @@ Instead of manually typing OData URLs, we recommend using the **Data Catalog Por
 
 1. Navigate to the Data Catalog URL provided by your administrator.
 2. Browse or search for available BigQuery datasets.
-3. Click on a dataset to view its tables, descriptions, and metadata.
+3. Click on a dataset to open the **Dataset Details** page.
 4. **Usage Hub:** Check the top navigation bar to access your **Personal Usage Hub**, where you can monitor your monthly query usage and recent job history.
 
 ---
 
-## One-Click Excel Integration
+## One-Click Dataset Connections
 
-The easiest way to connect to a dataset is via the Catalog's One-Click Excel integration:
+On the top-right side of the **Dataset Details** page, you will find a premium Action Bar containing three connection helpers for the entire dataset:
 
-1. In the Data Catalog, navigate to your desired dataset and table.
-2. Click the **"One-Click Excel"** (or Download `.odc`) button.
-3. Open the downloaded `.odc` (Office Data Connection) file.
-4. Excel will automatically launch and prompt you for authentication.
-5. Select **Organizational Account**, sign in, and your data will begin loading automatically!
+### 1. Copy URL
+- Click the **"Copy URL"** button. The OData service root endpoint URL of your dataset is instantly copied to your clipboard. You can paste this directly into Excel, Power BI, or any compatible BI tool.
+
+### 2. Export Excel (.odc)
+- Click the **"Export Excel (.odc)"** button to download a pre-configured Office Data Connection file for the dataset.
+- Double-click/open the downloaded `.odc` file.
+- Microsoft Excel will launch automatically and prompt you for credentials. Select **Organizational Account**, sign in, and Excel will establish a live connection to the entire dataset!
+
+### 3. Export Power BI (.pbids)
+- Click the **"Export Power BI (.pbids)"** button to download a Power BI Data Source Reference file.
+- Double-click the downloaded `.pbids` file.
+- Power BI Desktop will launch instantly and pre-configure the data connection. Sign in using your **Organizational account** when prompted, and all tables in the dataset will load in the Navigator!
+
+---
+
+## Visual Schema Badges (PK & FK)
+
+When exploring table columns on the **Dataset Details** page:
+- **Primary Keys (PK)**: Marked with a blue **PK** badge next to the column name. This represents the unique key used to index the table.
+- **Foreign Keys (FK)**: Marked with a violet **FK** badge. Hover your cursor over the **FK** badge to view a tooltip stating the target constraint relationship (e.g. `References Customers(id)`), making schema joins highly discoverable.
 
 ---
 
@@ -37,7 +52,7 @@ The easiest way to connect to a dataset is via the Catalog's One-Click Excel int
 1. **Open Excel** and create a new workbook.
 2. Go to the **Data** tab in the ribbon.
 3. Select **Get Data** > **From Other Sources** > **From OData Feed**.
-4. **Enter your URL:** Paste the OData Gateway URL provided by your administrator.
+4. **Enter your URL:** Paste the OData Gateway URL copied from the Catalog details.
 5. **Authentication:**
    - In the login window, select **Organizational Account**.
    - Click **Sign in**.
@@ -45,7 +60,7 @@ The easiest way to connect to a dataset is via the Catalog's One-Click Excel int
 6. **Select Data:** Once connected, a "Navigator" window will appear showing all available tables and views in your dataset.
 7. **Load:** Select the table you want and click **Load**.
 
-## Connecting via Power BI Desktop
+## Manual Connection via Power BI Desktop
 
 1. **Open Power BI Desktop**.
 2. Click **Get Data** in the Home ribbon and select **OData feed**.
