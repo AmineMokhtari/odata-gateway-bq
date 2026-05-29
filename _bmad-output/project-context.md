@@ -35,6 +35,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **State Management:** `zustand` (Global frontend state)
 - **Logging:** `pino` (structured logs)
 - **Icons:** Lucide-React
+- **Direct Connection Formats:** Office Data Connection (`.odc`), Power BI Data Source (`.pbids`)
 
 ## Critical Implementation Rules
 
@@ -43,7 +44,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Configuration:** Project MUST use strict mode and ESM. NodeNext resolution is mandatory in `backend` tsconfig.
 - **Import/Export:** Use explicit `.js` extensions for backend local imports. Prefer named exports over defaults for better refactorability.
 - **React Components:** Use functional components with explicit `interface` or `type` for Props. Avoid `any` rigorously.
-- **Next.js Pattern:** Strictly utilize **App Router** conventions. Default to **Server Components** for page layouts and SEO-critical content; use **Client Components** (`'use client'`) only for interactive elements like the OData URL Builder or Success Pulse Badge.
+- **Next.js Pattern:** Strictly utilize **App Router** conventions. Default to **Server Components** for page layouts and SEO-critical content; use **Client Components** (`'use client'`) only for interactive elements like the OData URL Builder, Copy buttons, and direct export actions.
 - **Error Handling:** Use Fastify's `sensible` patterns for backend errors and React **Error Boundaries** for frontend stability. Always provide OData V4 compliant error objects: `{ "error": { "code": "CodeName", "message": "human message" } }`.
 - **Elena's Advice Pattern:** Backend 401/403 errors MUST be decorated with an `elena_tip` object containing a human-readable `message` and `quick_fixes` (actions like `SELECT_COLUMNS`). Frontend MUST reactively trigger the `ElenaDrawer` using Zustand state when these decorated errors are received.
 - **Async Pattern:** Exclusively use `async/await`. Use the `pipeline` function from `node:stream/promises` for all BigQuery streaming operations.
@@ -53,7 +54,9 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Plugin Isolation:** Backend core capabilities (Auth, BQ Client, Caching) MUST be registered as independent plugins using `fastify-plugin`.
 - **The "Audit-Execute" Pipeline:** Mandatory request flow for all data paths: `Identify` -> `Authorize` -> `Translate` -> `Audit` -> `Execute/Stream`.
 - **Stateless Compliance:** The entire system MUST remain stateless for Cloud Run. UI interactivity MUST use **long-polling** against usage/audit endpoints; persistent WebSockets or server-side sticky sessions are FORBIDDEN.
-- **Next.js UI Patterns:** Use **Server Components** by default. Use **Client Components** only for the OData URL Builder, Copy buttons, and Success Pulse animations.
+- **Next.js UI Patterns:** Use **Server Components** by default. Use **Client Components** only for the OData URL Builder, Copy/Export buttons, and Success Pulse animations.
+- **OData Exports (ODC & PBIDS):** Direct OData export actions on the dataset description page MUST target the entire dataset's service root. For PBIDS exports, the feed URL MUST be nested inside the `address` object (i.e. `address: { url: url }`) to satisfy Power BI connection schema parser rules and prevent deserialization errors.
+- **Visual Schema Indicators:** Dataset details tables MUST visually flag Primary Keys (PK, blue badge) and Foreign Keys (FK, violet badge with a detailed hover tooltip identifying its referenced target like `References Customers(id)`) to improve catalog discoverability.
 - **Portal Routing:** All web portal routes MUST be prefixed with `/web/` (e.g., `/web/`, `/web/Catalog`, `/web/admin`). This MUST be enforced via `basePath: '/web'` in the Next.js configuration.
 - **Styling Standards:** Use **Tailwind CSS** with the 8px spacing system and established "Trust" palette (Indigo-700, Emerald, Amber). Use **Shadcn/UI** (Radix UI) for all interactive primitives to ensure WCAG AA compliance.
 - **Request Decoration:** Verified user identities and correlation IDs MUST be attached to the request object for BigQuery Job Labeling.
@@ -120,5 +123,5 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Review quarterly for outdated rules
 - Remove rules that become obvious over time
 
-Last Updated: 2026-05-09
+Last Updated: 2026-05-29
 
