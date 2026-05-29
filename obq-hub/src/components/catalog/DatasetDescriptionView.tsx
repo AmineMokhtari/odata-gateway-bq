@@ -26,7 +26,11 @@ import {
   Info,
   Search,
   Filter,
-  ExternalLink
+  ExternalLink,
+  Copy,
+  Check,
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,6 +39,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { downloadODataODC, downloadODataPBIDS } from '@/lib/excel-generator';
+import { toast } from 'sonner';
 
 interface DatasetMetadata {
   projectId: string;
@@ -60,6 +66,7 @@ export const DatasetDescriptionView: React.FC<DatasetDescriptionViewProps> = ({ 
   const router = useRouter();
   const [selectedTableName, setSelectedTableName] = useState<string>(metadata.tables[0]?.name || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const selectedTable = metadata.tables.find(t => t.name === selectedTableName);
 
@@ -67,10 +74,40 @@ export const DatasetDescriptionView: React.FC<DatasetDescriptionViewProps> = ({ 
     t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Dynamic OData URL targeting the service root of the dataset (not the selected table)
+  const publicGatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://127.0.0.1:3005';
+  const normalizedPublicBase = publicGatewayBase.endsWith('/') ? publicGatewayBase.slice(0, -1) : publicGatewayBase;
+  const odataUrl = `${normalizedPublicBase}/v1/${metadata.projectId}/${metadata.datasetId}`;
+
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(odataUrl);
+    setCopied(true);
+    toast.success('OData URL copied to clipboard!', {
+      description: 'Service root link is ready.',
+    });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExcelExport = () => {
+    const filename = `${metadata.projectId}_${metadata.datasetId}`;
+    downloadODataODC(odataUrl, filename);
+    toast.success('Excel Connection Created!', {
+      description: 'Open the downloaded .odc file to start your analysis.',
+    });
+  };
+
+  const handlePowerBIExport = () => {
+    const filename = `${metadata.projectId}_${metadata.datasetId}`;
+    downloadODataPBIDS(odataUrl, filename);
+    toast.success('Power BI Connection Created!', {
+      description: 'Open the downloaded .pbids file to start your analysis.',
+    });
+  };
+
   return (
     <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-widest text-[10px]">
              <Button variant="ghost" size="sm" onClick={() => router.push('/catalog')} className="h-6 px-1 gap-1 -ml-1 text-primary hover:bg-primary/10">
@@ -90,12 +127,48 @@ export const DatasetDescriptionView: React.FC<DatasetDescriptionViewProps> = ({ 
           </p>
         </div>
 
-        <Link href={`/catalog/${metadata.projectId}/${metadata.datasetId}/builder`}>
-          <Button size="lg" className="gap-2 shadow-sm shadow-primary/20">
-            <ArrowRight className="w-4 h-4" />
-            Build OData Query
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* COPY URL Button */}
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handleCopyUrl}
+            className="gap-2 border-border hover:border-primary/50 hover:bg-primary/[0.04] dark:hover:bg-primary/[0.08] hover:text-primary transition-all duration-300 shadow-sm active:scale-95 rounded-lg h-10 px-4 text-xs font-semibold"
+          >
+            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-primary" />}
+            {copied ? 'Copied!' : 'Copy URL'}
           </Button>
-        </Link>
+
+          {/* Export Excel Button */}
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handleExcelExport}
+            className="gap-2 border-border hover:border-emerald-500/50 hover:bg-emerald-500/[0.04] dark:hover:bg-emerald-500/[0.08] hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 shadow-sm active:scale-95 rounded-lg h-10 px-4 text-xs font-semibold"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+            Export Excel (.odc)
+          </Button>
+
+          {/* Export Power BI Button */}
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handlePowerBIExport}
+            className="gap-2 border-border hover:border-amber-500/50 hover:bg-amber-500/[0.04] dark:hover:bg-amber-500/[0.08] hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-300 shadow-sm active:scale-95 rounded-lg h-10 px-4 text-xs font-semibold"
+          >
+            <Download className="w-4 h-4 text-amber-500" />
+            Export Power BI (.pbids)
+          </Button>
+
+          {/* Build OData Query Button */}
+          <Link href={`/catalog/${metadata.projectId}/${metadata.datasetId}/builder`}>
+            <Button size="lg" className="gap-2 shadow-sm shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 rounded-lg h-10 text-xs font-semibold">
+              <ArrowRight className="w-4 h-4" />
+              Build OData Query
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="border-border bg-card/50 backdrop-blur-sm overflow-hidden">

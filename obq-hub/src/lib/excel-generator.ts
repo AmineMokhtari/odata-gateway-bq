@@ -70,7 +70,9 @@ export function downloadODataPBIDS(url: string, tableName: string = 'BigQuery_Da
       {
         details: {
           protocol: 'odata',
-          address: url
+          address: {
+            url: url
+          }
         },
         options: {},
         meta: {}
