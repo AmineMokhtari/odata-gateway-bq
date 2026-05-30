@@ -92,6 +92,36 @@ test('auth plugin', async (t) => {
     assert.equal(res.statusCode, 401)
   })
 
+  await t.test('should return WWW-Authenticate header with fallback authorization_uri for 401 responses', async (t) => {
+    const fastify = Fastify()
+    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any, anonymousMode: false })
+    fastify.get('/protected', async () => ({ ok: true }))
+    await fastify.ready()
+
+    const res = await fastify.inject({
+      url: '/protected'
+    })
+    assert.equal(res.statusCode, 401)
+    const wwwAuthHeader = res.headers['www-authenticate']
+    assert.ok(wwwAuthHeader)
+    assert.match(String(wwwAuthHeader), /Bearer authorization_uri="http:\/\/localhost\/oauth2\/authorize", resource="api:\/\/test-audience"/)
+  })
+
+  await t.test('should return WWW-Authenticate header with explicit authorizationEndpoint for 401 responses', async (t) => {
+    const fastify = Fastify()
+    await fastify.register(Auth, { issuer, audience, jwks, fetch: dummyFetch as any, anonymousMode: false, authorizationEndpoint: `${issuer}auth` })
+    fastify.get('/protected', async () => ({ ok: true }))
+    await fastify.ready()
+
+    const res = await fastify.inject({
+      url: '/protected'
+    })
+    assert.equal(res.statusCode, 401)
+    const wwwAuthHeader = res.headers['www-authenticate']
+    assert.ok(wwwAuthHeader)
+    assert.match(String(wwwAuthHeader), /Bearer authorization_uri="http:\/\/localhost\/auth", resource="api:\/\/test-audience"/)
+  })
+
   await t.test('should accept request with valid token', async (t) => {
     const fastify = Fastify()
     await fastify.register(Auth, { 

@@ -109,18 +109,35 @@ tenants:
 ---
 
 ## 3. Non-Anonymous Mode (Microsoft Entra ID)
-This mode replicates a production-like environment using OIDC for authentication.
+This mode replicates a production-like environment using OIDC for authentication. To support Power BI and Excel desktop clients effectively, we use a local domain name instead of `localhost` or `127.0.0.1`.
 
-### A. Azure AD App Registration
-1. **Register App**: Go to [Azure App Registrations](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps).
-2. **Create Dev App**: Name it `odata-gateway-bq-dev`.
-3. **Account Type**: Select **"Accounts in this organizational directory only (Single tenant)"**.
-4. **Platform**: Select **"Web"** and set the Redirect URI to `http://localhost:3005/auth/callback`.
-5. **Permissions**: Add `User.Read` (Delegated).
-6. **Note IDs**: Capture the **Client ID** and **Tenant ID**.
+### A. Local Network Configuration
+Power BI and Entra ID require a valid resource URI. Add a local DNS mapping to your `hosts` file:
+1. Open Notepad as Administrator.
+2. Edit `C:\Windows\System32\drivers\etc\hosts` (Windows) or `/etc/hosts` (Mac/Linux).
+3. Add the following line:
+   ```text
+   127.0.0.1 local.odatabq.com
+   ```
 
-### B. Environment Configuration
-Update your `.env` file with the OIDC details:
+### B. Azure AD App Registration
+1. **Register App**: Go to [Azure App Registrations](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps) and create a new app named `odata-gateway-bq-dev`.
+2. **Account Type**: Select **"Accounts in this organizational directory only (Single tenant)"**.
+3. **Authentication**: 
+   - Add a **Web** platform and set the Redirect URI to `http://local.odatabq.com:3005/auth/callback`.
+   - Add a **Mobile and desktop applications** platform with custom redirect URIs if needed for testing, though Power BI Desktop will handle its own redirect.
+4. **Certificates & secrets**:
+   - Go to "Certificates & secrets" and create a **New client secret**.
+   - Copy the secret `Value` immediately (you will need it for the backend).
+5. **Expose an API**:
+   - Go to "Expose an API".
+   - Set the **Application ID URI** to `http://local.odatabq.com:3005`. (This fixes the `AADSTS500011` invalid resource error).
+   - Add a scope (e.g., `OData.Read`) and ensure it is enabled for admins and users.
+   - (Optional) If "Add a client application" is disabled, ensure you have set the Application ID URI first. Then, you can add Power BI's client IDs if you want to pre-authorize them, but typical interactive logins won't require this.
+6. **Note IDs**: Capture the **Client ID** and **Tenant ID** from the Overview page.
+
+### C. Environment Configuration
+Update your `.env` file with the local domain and OIDC details:
 ```env
 # Mandatory for BQ Execution
 BQ_BILLING_PROJECT_ID="your-gcp-project-id"
@@ -128,12 +145,18 @@ BQ_BILLING_PROJECT_ID="your-gcp-project-id"
 # Disable Anonymous Mode
 ANONYMOUS_MODE=false
 
-# OIDC Configuration (From Step 3A)
+# OIDC Configuration (From Step 3B)
 OIDC_ISSUER="https://login.microsoftonline.com/{tenant_id}/v2.0"
-OIDC_AUDIENCE="your-client-id"
+OIDC_AUDIENCE="http://local.odatabq.com:3005"
+# Note: In development, token validation might fail if the issuer in the token 
+# is from v1.0 but configured as v2.0. Ensure they match your App Registration setup.
+
+# Set the gateway host and port
+HOST="local.odatabq.com"
+PORT=3005
 ```
 
-### C. Tenant Configuration
+### D. Tenant Configuration
 In your `dev-tenants.yaml`, define `access_rules` to map user emails (from Entra ID) to datasets:
 ```yaml
 tenants:
@@ -146,6 +169,17 @@ tenants:
       - identity: "user@yourdomain.com"
         datasets: ["*"]
 ```
+
+### E. Power BI Configuration
+To connect Power BI Desktop to your local gateway:
+1. Ensure your backend is running (`npm run dev`) and accessible at `http://local.odatabq.com:3005`.
+2. Open Power BI Desktop. If you previously failed an authentication attempt, clear it:
+   - Go to **File > Options and settings > Data source settings**.
+   - Find any entries for `127.0.0.1` or `local.odatabq.com` and select **Clear Permissions**.
+3. Click **Get Data > OData feed**.
+4. Enter your local endpoint (e.g., `http://local.odatabq.com:3005/v1/dev-tenant/...`).
+5. In the authentication prompt, select **Organizational account**.
+6. Click **Sign in**, complete the Entra ID flow, and then click **Connect**.
 
 ---
 

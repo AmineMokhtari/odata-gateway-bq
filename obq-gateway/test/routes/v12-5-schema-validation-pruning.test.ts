@@ -104,7 +104,8 @@ test('Story 12.5: Periodic Schema Validation & Orphan Relationship Pruning', asy
 
   const app = await build(t, {
     getBQClient: () => mockBq,
-    logger: { level: 'silent' }
+    logger: { level: 'silent' },
+    anonymousMode: true
   })
 
   await t.test('should load and merge manual relationships successfully during introspection', async () => {

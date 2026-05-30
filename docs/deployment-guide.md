@@ -27,6 +27,36 @@ The project includes a GitHub Action for automated deployment:
 - **Location:** `.github/workflows/deploy-cloud-run.yml`
 - **Workflow:** Build Image → Push to Artifact Registry → Deploy to Cloud Run (Regional).
 
+## Production Authentication Setup (Microsoft Entra ID)
+
+If you are not using an Identity-Aware Proxy (IAP) and rely on the Gateway's built-in OIDC verification, you must configure a production App Registration.
+
+### 1. Custom Domain Requirement
+Desktop clients like Power BI and Excel, combined with Entra ID, require a valid, trusted domain for resource identification. Do not use raw IP addresses or the default `*.run.app` Cloud Run URL as your primary identity endpoint if possible.
+- Map a custom domain (e.g., `https://odata.yourcompany.com`) to your Cloud Run instance.
+
+### 2. Azure AD App Registration (Production)
+1. **Register App**: Create an app in Azure App Registrations (e.g., `odata-gateway-bq-prod`).
+2. **Account Type**: Select **"Accounts in this organizational directory only (Single tenant)"**.
+3. **Authentication**: 
+   - Add a **Web** platform.
+   - Set the Redirect URI to `https://odata.yourcompany.com/auth/callback`.
+4. **Certificates & secrets**:
+   - Generate a **New client secret** and store the value securely in Google Secret Manager.
+   - Inject this secret into your Cloud Run environment variables.
+5. **Expose an API (Crucial for Power BI)**:
+   - Go to **Expose an API**.
+   - Set the **Application ID URI** to your custom domain: `https://odata.yourcompany.com`. 
+   - *Failure to set this will result in the `AADSTS500011` (invalid_resource) error when users attempt to connect via Power BI's Organizational account.*
+   - Add a scope (e.g., `OData.Read`) to allow token generation.
+
+### 3. Environment Variables (Production)
+In your Cloud Run configuration, ensure the OIDC variables match your production App Registration exactly:
+```env
+OIDC_ISSUER="https://login.microsoftonline.com/{tenant_id}/v2.0"
+OIDC_AUDIENCE="https://odata.yourcompany.com"
+```
+
 ## Governance at Scale (Multi-Instance)
 In large organizations with multiple running instances, tenant configurations can be managed centrally.
 

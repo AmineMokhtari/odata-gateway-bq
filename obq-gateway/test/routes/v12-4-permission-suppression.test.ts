@@ -8,7 +8,8 @@ test('Story 12.4: Dynamic Permission Suppression backend dry-run', async (t) => 
 
   // Build the app with our default configurations
   const app = await build(t, {
-    logger: { level: 'silent' }
+    logger: { level: 'silent' },
+    anonymousMode: true
   })
 
   // Pre-seed the metadata cache with tables Sales and Billing

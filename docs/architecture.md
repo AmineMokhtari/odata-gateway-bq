@@ -52,6 +52,11 @@ The system implements a non-intrusive guidance layer that intercepts technical B
 - **Deny-by-Default:** Access is strictly controlled by explicit rules in `tenants.yaml`. If no rules match, the request is rejected with a `403 Unauthorized`.
 - **Identity-Job Isolation:** Verified user identities are injected into BigQuery Job Labels. The gateway enforces strict isolation, ensuring that users can only access the results of BigQuery jobs they personally initiated.
 
+### Identity Provider Integration (Entra ID)
+When integrating with Microsoft Entra ID for Power BI and Excel clients, the system architecture mandates strict resource principal alignment to pass OIDC token validation:
+- **Custom Domains Required:** Entra ID does not support raw IP addresses or `localhost` (in some contexts) as valid Application ID URIs for organizational account flows. The gateway must be deployed behind a valid, trusted custom domain (e.g., `https://odata.yourcompany.com` or `local.odatabq.com` for local DNS).
+- **Resource Principal Alignment:** The App Registration's **Application ID URI** (exposed API) must exactly match the `OIDC_AUDIENCE` configured in the gateway. A mismatch or missing URI will result in token rejection (e.g., `AADSTS500011: invalid_resource`) during Power BI's authentication handshake.
+
 ## Deployment Architecture
 - **Primary Target:** Google Cloud Run (Regional serverless containers).
 - **Decoupled Billing (Enterprise Mode):** Supports a dedicated **Billing Project** (`BQ_BILLING_PROJECT_ID`). This allows the gateway to run queries in a centralized "Execution" project while reading data from decentralized "Source" projects.

@@ -35,6 +35,21 @@ export interface AuthPluginOptions {
   fetch?: typeof fetch
   jwks?: ReturnType<typeof createRemoteJWKSet>
   anonymousMode?: boolean
+  authorizationEndpoint?: string
+}
+
+function getFallbackAuthorizationUri(issuer: string): string {
+  if (issuer.includes('login.microsoftonline.com')) {
+    // Check if it's a v2.0 issuer URL
+    if (issuer.endsWith('/v2.0') || issuer.endsWith('/v2.0/')) {
+      const tenant = issuer.replace('https://login.microsoftonline.com/', '').replace('/v2.0', '').replace('/', '')
+      return `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`
+    } else {
+      const tenant = issuer.replace('https://login.microsoftonline.com/', '').replace('/', '')
+      return `https://login.microsoftonline.com/${tenant}/oauth2/authorize`
+    }
+  }
+  return `${issuer.replace(/\/$/, '')}/oauth2/authorize`
 }
 
 export default fp<AuthPluginOptions>(async (fastify, opts) => {
@@ -57,6 +72,7 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
 
   let jwksUri: string | null = null
   let JWKS: any = null
+  let authorizationEndpoint = opts.authorizationEndpoint || null
 
   if (!anonymousMode) {
     if (!opts.jwks) {
@@ -73,13 +89,17 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
           throw new Error(`Failed to fetch OIDC config: ${response.statusText}`)
         }
         
-        const config = (await response.json()) as { jwks_uri: string }
-        jwksUri = config.jwks_uri
+        const oidcConfig = (await response.json()) as { jwks_uri: string; authorization_endpoint?: string }
+        jwksUri = oidcConfig.jwks_uri
+        
+        if (oidcConfig.authorization_endpoint) {
+          authorizationEndpoint = oidcConfig.authorization_endpoint
+        }
         
         if (!jwksUri) {
           throw new Error('jwks_uri not found in OIDC configuration')
         }
-        fastify.log.info({ jwksUri }, 'Discovered JWKS URI')
+        fastify.log.info({ jwksUri, authorizationEndpoint }, 'Discovered JWKS URI and Authorization Endpoint')
       } catch (err: any) {
         // [Patch 1 & 9] Fail closed on discovery failure
         fastify.log.error({ err: err.message }, 'Failed to initialize OIDC discovery')
@@ -90,21 +110,49 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
       jwksUri = 'internal://mock'
     }
 
+    if (!authorizationEndpoint && issuer) {
+      authorizationEndpoint = getFallbackAuthorizationUri(issuer)
+    }
+
     JWKS = opts.jwks || createRemoteJWKSet(new URL(jwksUri!))
   }
 
   fastify.decorateRequest('user', null)
 
   const verifyToken = async (token: string): Promise<UserIdentity> => {
-    // TEMPORARY: Decode without verify to see what the actual iss claim is
+    // TEMPORARY: Decode without verify to see what the actual iss and aud claims are
+    let tokenIss: string | undefined
     try {
       const decoded = decodeJwt(token)
-      fastify.log.info({ tokenIss: decoded.iss, configuredIss: issuer }, 'JWT Issuer Check')
+      tokenIss = decoded.iss
+      fastify.log.info({ tokenIss, configuredIss: issuer, tokenAud: decoded.aud }, 'JWT Issuer and Audience Check')
     } catch (e) {}
 
-    const { payload } = await jwtVerify(token, JWKS, {
-      issuer,
+    // Support both Entra ID v1.0 (sts.windows.net) and v2.0 (login.microsoftonline.com) issuers dynamically for the configured tenant
+    let verificationIssuer = issuer
+    if (tokenIss && tokenIss.includes('sts.windows.net') && issuer) {
+      const tenantMatch = issuer.match(/(?:login\.)?microsoftonline\.com\/([a-fA-F0-9-]+)/)
+      if (tenantMatch) {
+        const tenantId = tenantMatch[1]
+        const v1Issuer = `https://sts.windows.net/${tenantId}/`
+        const v1IssuerNoSlash = `https://sts.windows.net/${tenantId}`
+        if (tokenIss === v1Issuer || tokenIss === v1IssuerNoSlash) {
+          verificationIssuer = tokenIss
+        }
+      }
+    }
+
+    const allowedAudiences = [
       audience,
+      audience ? `api://${audience}` : null,
+      'http://local.odatabq.com:3005',
+      'http://127.0.0.1:3005',
+      'http://localhost:3005'
+    ].filter(Boolean) as string[]
+
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: verificationIssuer,
+      audience: allowedAudiences,
       clockTolerance: opts.clockTolerance || '30s',
       algorithms: opts.algorithms || ['RS256']
     })
@@ -166,6 +214,13 @@ export default fp<AuthPluginOptions>(async (fastify, opts) => {
       } catch (err: any) {
         fastify.log.error({ err: err.message }, 'JWT verification failed')
       }
+    }
+
+    if (authorizationEndpoint) {
+      const resourceUri = audience ? `api://${audience}` : ''
+      reply.header('WWW-Authenticate', `Bearer authorization_uri="${authorizationEndpoint}", resource="${resourceUri}"`)
+    } else {
+      reply.header('WWW-Authenticate', 'Bearer')
     }
 
     return reply.code(401).send({

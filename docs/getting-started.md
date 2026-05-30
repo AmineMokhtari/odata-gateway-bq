@@ -73,6 +73,24 @@ When exploring table columns on the **Dataset Details** page:
 
 ---
 
+## Troubleshooting Authentication Errors
+
+If you encounter authentication failures (e.g., you see a message saying "Authentication failed" in your browser, or an error starting with **AADSTS500011**), follow these steps to reset your connection:
+
+### 1. Clear Cached Credentials
+Power BI and Excel often remember old, failed authentication attempts.
+- **Power BI:** Go to **File > Options and settings > Data source settings**.
+- **Excel:** Go to **Data > Get Data > Data Source Settings**.
+- Locate the URL you are trying to connect to (e.g., your gateway endpoint) and select **Clear Permissions**.
+
+### 2. Verify Connection Details
+- **Ensure you selected 'Organizational account':** "Basic", "Windows", or "Anonymous" authentication types will not work if the gateway requires Entra ID login.
+- **Use the correct URL:** Ensure you copied the exact URL provided by your administrator or the Data Catalog. (e.g., If testing locally, ensure you use the designated local domain like `local.odatabq.com` instead of `127.0.0.1` or `localhost`).
+
+After clearing permissions, try the connection process again.
+
+---
+
 ## Row-Level Filtering & "Query Folding" (Highly Recommended)
 
 When working with large BigQuery datasets, **do not load the entire table first and then filter it**. Doing so scans more data, increases query execution times, and can consume your personal query budget.
