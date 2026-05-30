@@ -34,15 +34,25 @@ export function checkTenantAccess(user: UserIdentity, config: TenantConfig, anon
   const userEmail = user.email?.toLowerCase()
   const userGroups = user.groups.map(g => g.toLowerCase())
 
+  // Normalize emails to an array of strings, handling string fallback
+  const emailsRule = access_rules.emails 
+    ? (Array.isArray(access_rules.emails) ? access_rules.emails : [access_rules.emails])
+    : []
+
   // [Patch 2] 1. Check Emails (Case-Insensitive)
-  if (userEmail && access_rules.emails) {
-    const isEmailAllowed = access_rules.emails.some((e: string) => e.toLowerCase() === userEmail)
+  if (userEmail && emailsRule.length > 0) {
+    const isEmailAllowed = emailsRule.some((e: string) => e.toLowerCase() === userEmail)
     if (isEmailAllowed) return true
   }
 
+  // Normalize groups to an array of strings, handling string fallback
+  const groupsRule = access_rules.groups
+    ? (Array.isArray(access_rules.groups) ? access_rules.groups : [access_rules.groups])
+    : []
+
   // [Patch 2] 2. Check Groups (Case-Insensitive)
-  if (access_rules.groups) {
-    const allowedGroups = access_rules.groups.map((g: string) => g.toLowerCase())
+  if (groupsRule.length > 0) {
+    const allowedGroups = groupsRule.map((g: string) => g.toLowerCase())
     const isGroupAllowed = userGroups.some(group => allowedGroups.includes(group))
     if (isGroupAllowed) {
       return true

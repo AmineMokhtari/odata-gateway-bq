@@ -39,7 +39,11 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   
   // Data Catalog (Story: Visual Data catalog)
   fastify.get('/catalog', async function (request, reply) {
-    const tenants = fastify.tenantsConfig.all()
+    let tenants = fastify.tenantsConfig.all()
+    
+    if (!fastify.isAnonymousMode && request.user) {
+      tenants = tenants.filter(t => checkTenantAccess(request.user!, t, false))
+    }
     
     // Group tenants by project to minimize BigQuery queries
     const projectMap = new Map<string, string[]>()

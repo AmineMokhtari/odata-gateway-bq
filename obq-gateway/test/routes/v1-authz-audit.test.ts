@@ -170,4 +170,27 @@ test('Epic 1: Identity propagation and rule-based authorization', async (t) => {
 
     assert.notEqual(firstId, secondId, 'Each request must have a unique correlation ID')
   })
+
+  // 5. Verify Catalog Filtering under Secure Mode (ANONYMOUS_MODE=false)
+  await t.test('[P1] should filter catalog to only show explicitly authorized datasets when ANONYMOUS_MODE=false', async () => {
+    // Elena is an authorized email for 'my-project:my_dataset' in default tenants.yaml
+    const authorizedToken = await createToken('elena1', 'elena@example.com', ['Analyst'])
+    
+    const res = await app.inject({
+      url: '/v1/catalog',
+      headers: { authorization: `Bearer ${authorizedToken}` }
+    })
+    
+    assert.equal(res.statusCode, 200)
+    const body = res.json()
+    assert.ok(body.value, 'Response should contain value array')
+    
+    // Check that 'my-project:my_dataset' is in the returned list
+    const hasMyDataset = body.value.some((t: any) => t.project_id === 'my-project' && t.dataset_id === 'my_dataset')
+    assert.ok(hasMyDataset, 'Should contain explicitly authorized dataset')
+    
+    // Check that 'sales-staging:crm' is NOT in the returned list
+    const hasSalesCrm = body.value.some((t: any) => t.project_id === 'sales-staging' && t.dataset_id === 'crm')
+    assert.ok(!hasSalesCrm, 'Should not contain unauthorized dataset')
+  })
 })
