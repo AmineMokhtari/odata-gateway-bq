@@ -5,7 +5,7 @@ import path from 'path';
 // Load .env
 config();
 
-const gatewayPort = process.env.GATEWAY_PORT || '80';
+const gatewayPort = process.env.GATEWAY_URL ? (new URL(process.env.GATEWAY_URL).port || '80') : '80';
 const hubPort = process.env.HUB_PORT || '3000';
 const healthUrl = `http://127.0.0.1:${gatewayPort}/health`;
 

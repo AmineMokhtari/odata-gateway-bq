@@ -41,7 +41,7 @@ export const config = {
   defaultScanBudgetGb: parseInt(process.env.DEFAULT_SCAN_BUDGET_GB || '1', 10),
 
   // App
-  port: parseInt(process.env.GATEWAY_PORT || '80', 10),
+  port: parseInt(process.env.GATEWAY_URL ? (new URL(process.env.GATEWAY_URL).port || '80') : '80', 10),
   isDev: process.env.NODE_ENV !== 'production',
   anonymousMode: process.env.ANONYMOUS_MODE === 'true',
   hubUrl: process.env.HUB_URL || 'http://localhost:3000'
