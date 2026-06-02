@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: process.env.HUB_AUTH_SECRET,
   basePath: "/web/api/auth",
   providers: [
 
