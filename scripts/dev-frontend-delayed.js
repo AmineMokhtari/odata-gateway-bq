@@ -6,7 +6,7 @@ import path from 'path';
 config();
 
 const gatewayPort = process.env.GATEWAY_URL ? (new URL(process.env.GATEWAY_URL).port || '80') : '80';
-const hubPort = process.env.HUB_PORT || '3000';
+const hubPort = process.env.HUB_URL ? (new URL(process.env.HUB_URL).port || '3000') : '3000';
 const healthUrl = `http://127.0.0.1:${gatewayPort}/health`;
 
 console.log(`[dev-frontend-delayed] Waiting for backend at ${healthUrl}...`);
@@ -19,7 +19,7 @@ try {
   process.exit(1);
 }
 
-// Spawn Next.js dev server on the configured HUB_PORT
+// Spawn Next.js dev server on the port extracted from HUB_URL
 const nextProcess = spawn(
   'npm',
   ['run', 'dev'],

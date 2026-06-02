@@ -7,7 +7,7 @@ import fs from 'fs';
 config();
 
 const gatewayPort = process.env.GATEWAY_URL ? (new URL(process.env.GATEWAY_URL).port || '80') : '80';
-const hubPort = process.env.HUB_PORT || '3000';
+const hubPort = process.env.HUB_URL ? (new URL(process.env.HUB_URL).port || '3000') : '3000';
 console.log(`[dev-clean] Killing processes on ports ${gatewayPort}, ${hubPort}, 3002...`);
 
 try {
