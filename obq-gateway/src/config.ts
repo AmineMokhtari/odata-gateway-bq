@@ -39,6 +39,10 @@ export const config = {
 
   // Governance
   defaultScanBudgetGb: parseInt(process.env.DEFAULT_SCAN_BUDGET_GB || '1', 10),
+  defaultFetchSize: (() => {
+    const parsed = parseInt(process.env.DEFAULT_FETCH_SIZE as string, 10)
+    return !Number.isNaN(parsed) && parsed > 0 ? parsed : 10000
+  })(),
 
   // App
   port: parseInt(process.env.GATEWAY_URL ? (new URL(process.env.GATEWAY_URL).port || '80') : '80', 10),

@@ -88,7 +88,7 @@ Our frontend should feel premium, alive, and encouraging.
 
 - **Type Safety**: No `any`. No `!`. Use TypeScript interfaces for all API contracts.
 - **Cost Control**: Every query must undergo a **Dry Run** check before execution.
-- **Streaming**: Data must be streamed from BigQuery to the client using Node.js `Transform` streams. Avoid `res.send(hugeArray)`.
+- **Streaming & Chunking**: Data must be streamed from BigQuery to the client using Node.js `Transform` streams. Always respect `config.defaultFetchSize` via Server-Driven Paging (`@odata.nextLink`) to avoid `res.send(hugeArray)` and OOM crashes.
 - **SQL Safety**: Use the `translateODataToSql` engine. Never concatenate raw user input into SQL strings.
 - **PBIDS Compliance**: Power BI Data Source Reference (`.pbids`) file builders MUST strictly wrap the feed URL inside the address object structure: `address: { url: url }` to avoid parser deserialization errors in Power BI Desktop.
 

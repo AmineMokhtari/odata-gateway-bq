@@ -66,6 +66,7 @@ When integrating with Microsoft Entra ID for Power BI and Excel clients, the sys
 ## Reliability & Operational Integrity
 - **Graceful Shutdown:** The system natively handles `SIGTERM` signals. When a shutdown is initiated, the gateway stops accepting new requests but stays alive to finish streaming data for all active connections.
 - **Job Lifecycle Management:** To prevent financial leakage, the gateway monitors every active connection. If a client disconnects prematurely (e.g., closing Excel during a refresh), the system catches the `ERR_STREAM_PREMATURE_CLOSE` error and automatically sends a cancellation signal to the corresponding BigQuery job.
+- **Resilient Memory Bounding (Server-Driven Paging):** To prevent OOM crashes during massive un-chunked extractions, the gateway enforces a strict `DEFAULT_FETCH_SIZE` (e.g., 10,000 rows). Requests exceeding this limit are automatically truncated, and the response is appended with an `@odata.nextLink` containing an opaque `$skiptoken` and remaining `$top` count, forcing the client to paginate safely.
 - **Deterministic Error Codes:** System failures are translated into standard OData error codes (e.g., `BudgetExceeded`, `Unauthorized`) to ensure compatible error handling in Excel and Power BI.
 
 ## Persistent Auditing & Observability

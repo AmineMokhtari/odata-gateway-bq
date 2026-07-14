@@ -499,9 +499,23 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       throw err
     }
 
-    // 4. Handle Stateful Paging (Story 8.1)
+    // 4. Handle Stateful Paging (Story 8.1 & Epic 1)
     const skiptoken = url.searchParams.get('$skiptoken')
-    const pageSize = parseInt(url.searchParams.get('$top') || '50', 10)
+    
+    // Explicitly ignore client-provided $skip if skiptoken is present to enforce token integrity
+    if (skiptoken) {
+      url.searchParams.delete('$skip')
+    }
+
+    const hasTop = url.searchParams.has('$top')
+    let requestedTop = Infinity
+    if (hasTop) {
+      const parsedTop = parseInt(url.searchParams.get('$top')!, 10)
+      if (!Number.isNaN(parsedTop) && parsedTop >= 0) {
+        requestedTop = parsedTop
+      }
+    }
+    const pageSize = Math.min(requestedTop, config.defaultFetchSize)
     let currentOffset = 0
     
     let bqStream: Readable
@@ -699,10 +713,30 @@ const v1: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const totalRows = parseInt(job.metadata.statistics?.query?.totalRows || '0', 10)
     const nextOffset = currentOffset + pageSize
     
-    if (nextOffset < totalRows) {
+    // Epic 1: Calculate remaining rows to fetch for Server-Driven Paging
+    const remainingToFetch = Math.min(requestedTop - pageSize, totalRows - nextOffset)
+    
+    if (remainingToFetch > 0) {
       const nextUrl = new URL(url.toString())
       nextUrl.searchParams.set('$skiptoken', `${job.id}:${nextOffset}`)
+      if (hasTop) {
+        nextUrl.searchParams.set('$top', remainingToFetch.toString())
+      }
       nextLink = nextUrl.toString()
+      
+      // Story 1.4: Telemetry for Multi-Chunk Paging
+      request.log.info({
+        type: 'usage-audit',
+        jobId: job.id,
+        nextLinkIssued: true,
+        remainingToFetch,
+        correlationId
+      }, 'Pagination chunk served (Server-Driven Paging)')
+      
+      // Story 1.3: Validate URL length to prevent Excel truncation
+      if (nextLink.length > 2000) {
+        request.log.warn({ urlLength: nextLink.length }, 'NextLink URL exceeds 2000 characters, client may truncate')
+      }
     }
 
     // Parse IEEE754Compatible flag (Story: PowerBI Decimal conversion compatibility)

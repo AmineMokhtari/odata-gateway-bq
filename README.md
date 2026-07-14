@@ -25,7 +25,7 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 | :--- | :--- |
 | **Trusted Subsystem Security** | **Democratize Data Instantly.** Decouple app-access from cloud IAM. Verify users via O365/OIDC and authorize via internal rules without waiting 48h for cloud permission sync. |
 | **Dry-Run Circuit Breaker** | **Zero Cost Leakage.** Every query is audited *before* execution. If a request exceeds your defined scan budget (e.g., 10GB), it is blocked automatically. |
-| **Zero-Footprint Streaming** | **Infinite Scale.** Data is streamed directly from BigQuery to the client. The gateway maintains a near-zero memory footprint (< 256MB) even when handling millions of rows. |
+| **Zero-Footprint Streaming** | **Infinite Scale.** Data is streamed directly from BigQuery to the client. The gateway utilizes resilient Server-Driven Paging to enforce strict memory boundaries (< 256MB) even when handling massive un-chunked requests. |
 | **Auto-Discovery (EDM)** | **Frictionless Onboarding.** The gateway automatically crawls your BigQuery schema. New tables appear in Excel/Power BI navigators automatically within 24 hours. |
 | **Live Discovery Fallback** | **Zero-Wait Access.** If a table is missing from the cache, the gateway performs a targeted live check. Newly created tables are accessible instantly without waiting for a full refresh. |
 | **Metadata Descriptions** | **Rich Context.** Table and column descriptions from BigQuery are exposed as OData annotations and surfaced in the Catalog UI. |

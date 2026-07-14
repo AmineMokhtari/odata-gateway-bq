@@ -1,5 +1,19 @@
 # Release Notes
 
+## Version 1.5.0 (Resilient Server-Driven Paging)
+*Release Date: July 14, 2026*
+
+This release hardens the gateway's data extraction pipeline by introducing intelligent, server-driven pagination to protect against memory exhaustion during massive data pulls.
+
+### New Features
+- **Configurable Chunking limits (`DEFAULT_FETCH_SIZE`)**: Administrators can now strictly cap the maximum number of rows returned per OData request (defaults to 10,000). 
+- **Opaque Server-Driven Paging**: OData responses now automatically generate `@odata.nextLink` pagination URLs when a dataset exceeds the fetch size limit. The link calculates remaining row targets and protects state by ignoring client-injected `$skip` parameters if a BigQuery `$skiptoken` is present.
+- **Paging Telemetry**: Multi-chunk pagination events are now explicitly tracked in the `usage-audit` logs to improve visibility into BigQuery API overhead caused by fragmented data extractions.
+
+### How to Upgrade
+Deploy the new version. Non-compliant OData clients that ignore `@odata.nextLink` will now safely receive truncated datasets rather than crashing the gateway. You can tune the memory/API overhead balance using the `DEFAULT_FETCH_SIZE` environment variable.
+
+
 ## Version 1.4.0 (Direct Integration & Visual Schema Keying)
 *Release Date: May 29, 2026*
 
