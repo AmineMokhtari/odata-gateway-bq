@@ -21,25 +21,47 @@ import type { NextRequest } from 'next/server'
  * Proxy handler to manage Correlation ID tracing.
  * Ensures every request has an x-correlation-id.
  */
-export function proxy(request: NextRequest) {
+import { auth } from '@/auth'
+
+export const proxy = auth((request) => {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID()
 
   // 1. Inject into request headers so Server Components can read it
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-correlation-id', correlationId)
 
-  // 2. Proceed with the request
+  // 2. Auth logic
+  if (process.env.ANONYMOUS_MODE !== 'true') {
+    const isLoggedIn = !!request.auth;
+    const isAuthPage = request.nextUrl.pathname.startsWith('/login');
+
+    if (!isLoggedIn && !isAuthPage) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      redirectUrl.searchParams.set('callbackUrl', request.nextUrl.href);
+      return Response.redirect(redirectUrl);
+    }
+
+    if (isLoggedIn && isAuthPage) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/';
+      redirectUrl.searchParams.delete('callbackUrl');
+      return Response.redirect(redirectUrl);
+    }
+  }
+
+  // 3. Proceed with the request
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   })
 
-  // 3. Inject into response headers so the browser/client can see it
+  // 4. Inject into response headers so the browser/client can see it
   response.headers.set('x-correlation-id', correlationId)
 
   return response
-}
+})
 
 /**
  * Configure which paths should trigger the proxy handler.
@@ -52,7 +74,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - mockServiceWorker.js (MSW file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|mockServiceWorker.js).*)',
   ],
 }

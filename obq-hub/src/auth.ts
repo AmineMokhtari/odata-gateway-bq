@@ -5,6 +5,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.HUB_AUTH_SECRET,
   trustHost: process.env.HUB_AUTH_TRUST_HOST === 'true',
   basePath: "/web/api/auth",
+  pages: {
+    signIn: '/login',
+  },
   providers: [
 
     MicrosoftEntraID({

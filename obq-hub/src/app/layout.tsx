@@ -39,7 +39,6 @@ import { Navigation } from "@/components/Navigation";
 import { ElenaDrawer } from "@/components/drawers/ElenaDrawer";
 import { MSWProvider } from "./MSWProvider";
 import { gatewayClient } from "@/lib/gateway-client";
-import { redirect } from "next/navigation";
 
 export default async function RootLayout({
   children,
@@ -47,25 +46,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let userName = process.env.DEFAULT_ANONYMOUS_USER_NAME || 'ANONYMOUS';
-  let shouldRedirect = false;
-
   if (process.env.ANONYMOUS_MODE !== 'true') {
     try {
       const { auth } = await import('@/auth');
       const session = await auth();
       if (session && session.user) {
         userName = session.user.email || session.user.name || 'Authenticated User';
-      } else {
-        shouldRedirect = true;
       }
     } catch (e: any) {
       console.error('[layout] failed to fetch next-auth session:', e.message);
-      shouldRedirect = true;
     }
-  }
-
-  if (shouldRedirect) {
-    redirect('/api/auth/signin');
   }
 
   return (
