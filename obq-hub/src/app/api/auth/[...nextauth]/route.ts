@@ -14,7 +14,7 @@ function rewriteRequest(req: NextRequest) {
       // Node 18+ fetch requires duplex for streaming bodies
       ;(init as any).duplex = 'half'
     }
-    return new NextRequest(url, init)
+    return new NextRequest(url, init as any)
   }
   return req
 }

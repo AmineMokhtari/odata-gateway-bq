@@ -5,13 +5,14 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-COPY common/package*.json ./common/
+COPY odata-v4-gcp/package*.json ./odata-v4-gcp/
 COPY obq-hub/package*.json ./obq-hub/
 
-RUN npm install
+RUN npm install && npm install --prefix obq-hub
 
 # Copy source code
 COPY common ./common
+COPY odata-v4-gcp ./odata-v4-gcp
 COPY obq-hub ./obq-hub
 
 # Build frontend

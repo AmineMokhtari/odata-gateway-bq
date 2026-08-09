@@ -27,6 +27,53 @@ The project includes a GitHub Action for automated deployment:
 - **Location:** `.github/workflows/deploy-cloud-run.yml`
 - **Workflow:** Build Image → Push to Artifact Registry → Deploy to Cloud Run (Regional).
 
+### Automated Publishing to Artifact Registry via Cloud Build
+You can build and publish the Docker images for both `obq-gateway` and `obq-hub` using the provided publish scripts. 
+
+These scripts securely delegate the build process to **GCP Cloud Build**, completely removing the need for a local Docker installation. The scripts automatically set up the correct Docker build context to include shared dependencies (like `common/` and `odata-v4-gcp/`), execute the build securely in the cloud, and push the final image directly to your **GCP Artifact Registry** repository.
+
+**Prerequisites:**
+- Authenticated `gcloud` CLI.
+- Cloud Build API enabled on the target project.
+- Proper IAM permissions (e.g., Cloud Build Editor) to submit builds.
+- An existing Docker repository in GCP Artifact Registry.
+
+### Publishing All Services
+To build and publish both `obq-gateway` and `obq-hub` simultaneously, use the root publish scripts:
+
+**Bash:**
+```bash
+chmod +x publish.sh
+./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+**PowerShell:**
+```powershell
+.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+**For `obq-gateway`:**
+```bash
+cd obq-gateway
+# Bash
+chmod +x publish.sh
+./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+
+# PowerShell
+.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+```
+
+**For `obq-hub`:**
+```bash
+cd obq-hub
+# Bash
+chmod +x publish.sh
+./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+
+# PowerShell
+.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+```
+
 ## Production Authentication Setup (Microsoft Entra ID)
 
 If you are not using an Identity-Aware Proxy (IAP) and rely on the Gateway's built-in OIDC verification, you must configure a production App Registration.

@@ -71,19 +71,72 @@ Get the gateway running locally in three simple steps:
 
 ---
 
+## 🐳 Publishing Docker Images to GCP Artifact Registry (via Cloud Build)
+
+You can build and publish the Docker images for both `obq-gateway` and `obq-hub` using the provided publish scripts. 
+
+These scripts delegate the entire build process to **GCP Cloud Build**, meaning **you do not need a local Docker daemon installed**. The built images are pushed directly to your specified **GCP Artifact Registry** repository. The scripts automatically set up the correct build context to include shared dependencies from the `common` and `odata-v4-gcp` folders.
+
+### Prerequisites
+* Ensure you are authenticated with GCP (`gcloud auth login`) and the active account has permissions to submit Cloud Builds (e.g., Cloud Build Editor).
+* The **Cloud Build API** (`cloudbuild.googleapis.com`) must be enabled on your GCP project.
+* You must have a Docker repository created in **GCP Artifact Registry** in the target region.
+
+### Publishing All Services
+To build and publish both `obq-gateway` and `obq-hub` simultaneously, use the root publish scripts:
+
+**Bash:**
+```bash
+chmod +x publish.sh
+./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+**PowerShell:**
+```powershell
+.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+### For `obq-gateway`
+Navigate to the `obq-gateway` directory and run either the Bash or PowerShell script:
+
+**Bash:**
+```bash
+cd obq-gateway
+chmod +x publish.sh
+./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+# Example: ./publish.sh -p my-gcp-project -r us-central1 -repo my-docker-repo
+```
+
+**PowerShell:**
+```powershell
+cd obq-gateway
+.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+```
+
+### For `obq-hub`
+Navigate to the `obq-hub` directory and run either the Bash or PowerShell script:
+
+**Bash:**
+```bash
+cd obq-hub
+chmod +x publish.sh
+./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+```
+
+**PowerShell:**
+```powershell
+cd obq-hub
+.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+```
+
+---
+
 ## 🗺️ Documentation & Roadmap
 
 *   **[Full Documentation Index](./docs/index.md)** - Deep dives into Architecture, Security, and API Contracts.
 *   **[Deployment Guide](./docs/tasks.md)** - Step-by-step instructions for **Google Cloud Run**, **Kubernetes**, and **OpenShift**.
 *   **[User Guide](./docs/getting-started.md)** - How to connect Excel and Power BI in minutes.
 
-### Roadmap 🚀
-- [x] **Phase 2:** Support for OData `$expand` via relationship manifests (BigQuery `ARRAY` sub-queries).
-- [x] **Phase 2:** Support for OData `$apply` (BigQuery aggregation push-down).
-- [x] **Phase 2:** Native BigQuery `$search` and `$compute` support.
-- [ ] **Phase 3:** AI-Agent shims for Microsoft Copilot specialized connectors.
-
----
 
 ## 🙌 Support the Project
 

@@ -5,12 +5,13 @@ WORKDIR /app
 
 # Install dependencies from root
 COPY package*.json ./
-COPY common/package*.json ./common/
+COPY odata-v4-gcp/package*.json ./odata-v4-gcp/
 
 RUN npm install
 
 # Copy source code
 COPY common ./common
+COPY odata-v4-gcp ./odata-v4-gcp
 COPY obq-gateway ./obq-gateway
 
 # Build backend (using the root's tsc and package scripts)
