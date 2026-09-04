@@ -1,4 +1,4 @@
-# 🚀 OData Gateway for BigQuery
+# OData Gateway for BigQuery
 
 ### Unlock Your BigQuery Lakehouse for the Modern Enterprise.
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 🌟 What is it?
+## What is it?
 The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge that transforms your BigQuery datasets into a governed **Data Catalog**. It allows business users to access petabyte-scale data directly from tools like **Microsoft Excel**, **Power BI**, and **Microsoft Copilot** using the standard OData V4 protocol.
 
 ### Who is it for?
@@ -19,7 +19,7 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 
 ---
 
-## 💎 Why It Matters (Features & Benefits)
+## Why It Matters (Features & Benefits)
 
 | Feature | Benefit |
 | :--- | :--- |
@@ -35,7 +35,7 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 
 ---
 
-## ⚡ Quick Start (30 Seconds)
+## Quick Start (30 Seconds)
 
 Get the gateway running locally in three simple steps:
 
@@ -71,7 +71,7 @@ Get the gateway running locally in three simple steps:
 
 ---
 
-## 🐳 Publishing Docker Images to GCP Artifact Registry (via Cloud Build)
+## Publishing Docker Images to GCP Artifact Registry (via Cloud Build)
 
 You can build and publish the Docker images for both `obq-gateway` and `obq-hub` using the provided publish scripts. 
 
@@ -131,20 +131,15 @@ cd obq-hub
 
 ---
 
-## 🗺️ Documentation & Roadmap
 
-*   **[Full Documentation Index](./docs/index.md)** - Deep dives into Architecture, Security, and API Contracts.
-*   **[Deployment Guide](./docs/tasks.md)** - Step-by-step instructions for **Google Cloud Run**, **Kubernetes**, and **OpenShift**.
-*   **[User Guide](./docs/getting-started.md)** - How to connect Excel and Power BI in minutes.
-
-
-## 🙌 Support the Project
+## Support the Project
 
 This project is built to make data access simple and secure. If this gateway helped you unlock your data lakehouse, please consider supporting us:
 
-*   **⭐ Give us a Star:** It helps the project grow and reach more developers.
-*   **🐛 Report Bugs:** Use the GitHub Issues to help us improve.
-*   **💡 Share Feedback:** Tell us how you're using the gateway!
+*   **Give us a Star:** It helps the project grow and reach more developers.
+*   **Report Bugs:** Use the GitHub Issues to help us improve.
+*   **Share Feedback:** Tell us how you're using the gateway!
 
-**Made with ❤️ for the Data Community.**
 
+## IMPORTANT 
+**This is not an officially supported Google product. This project is not eligible for the [Google Open Source Software Vulnerability Rewards Program](https://bughunters.google.com/open-source-security).**
