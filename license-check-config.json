@@ -1,0 +1,30 @@
+{
+  "license": "license-header.txt",
+  "ignore": [
+    "**/.gemini/**",
+    "**/.agent/**",
+    "**/.agents/**",
+    "**/.bmad/**",
+    "**/.bmad-output/**",
+    "**/_bmad/**",
+    "**/docs/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/coverage/**",
+    "**/playwright-report/**",
+    "**/*.md",
+    "**/*.yaml",
+    "**/*.yml",
+    "**/*.json",
+    "**/*.csv",
+    "**/*.map",
+    "**/*.css",
+    "**/*.sql",
+    "**/*.py",
+    "**/*.txt",
+    "**/*.example",
+    "**/.gitignore",
+    "**/.env*"
+  ]
+}
