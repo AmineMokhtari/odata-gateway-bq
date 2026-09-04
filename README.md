@@ -1,4 +1,6 @@
-# OData Gateway for BigQuery
+# [OData Gateway for BigQuery](https://github.com/AmineMokhtari/odata-gateway-bq)
+By [Amine Mokhtari](https://github.com/AmineMokhtari)
+
 
 ### Unlock Your BigQuery Lakehouse for the Modern Enterprise.
 
@@ -35,13 +37,32 @@ The **OData Gateway for BigQuery** is a production-grade, zero-trust data bridge
 
 ---
 
+## Table of Contents
+- [What is it?](#what-is-it)
+- [Why It Matters (Features & Benefits)](#why-it-matters-features--benefits)
+- [Quick Start](#quick-start-30-seconds)
+- [Publishing Docker Images](#publishing-docker-images-to-gcp-artifact-registry-via-cloud-build)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Getting Help & Support](#getting-help--support)
+- [Important](#important)
+- [License](#license)
+
+---
+
 ## Quick Start (30 Seconds)
 
-Get the gateway running locally in three simple steps:
+### Prerequisites
+Before getting started, make sure you have:
+* **Node.js**: v18.0.0 or later (v20+ LTS recommended) and `npm`
+* **[Google Cloud SDK (gcloud CLI)](https://cloud.google.com/sdk/docs/install)** installed and authenticated
+* **Google Cloud Project**: with BigQuery API enabled and active billing
+
+Get the gateway running locally in simple steps:
 
 1.  **Clone and Install:**
     ```bash
-    git clone https://github.com/your-repo/odata-gateway-bq.git
+    git clone https://github.com/AmineMokhtari/odata-gateway-bq.git
     cd odata-gateway-bq
     npm install
     ```
@@ -59,7 +80,7 @@ Get the gateway running locally in three simple steps:
     export ANONYMOUS_MODE="true"
     ```
 
-3.  **Launch:**
+4.  **Launch:**
     ```bash
     npm run dev
     ```
@@ -132,14 +153,43 @@ cd obq-hub
 ---
 
 
-## Support the Project
+## Documentation
 
-This project is built to make data access simple and secure. If this gateway helped you unlock your data lakehouse, please consider supporting us:
+For comprehensive guides, architecture deep dives, and operational manuals:
 
-*   **Give us a Star:** It helps the project grow and reach more developers.
-*   **Report Bugs:** Use the GitHub Issues to help us improve.
-*   **Share Feedback:** Tell us how you're using the gateway!
+*   **[Full Documentation Index](./docs/index.md)** – Complete reference for architecture, APIs, and operations.
+*   **[Getting Started Guide](./docs/getting-started.md)** – Step-by-step user guide for connecting Microsoft Excel and Power BI.
+*   **[System Architecture](./docs/architecture.md)** – Detailed design of the Audit-Execute pipeline, security model, and BigQuery streaming.
+*   **[API Contracts](./docs/api-contracts.md)** – Specification of OData v4 endpoints, governance routes, and admin controls.
+*   **[Deployment Guide](./docs/deployment-guide.md)** – Production deployment instructions for Google Cloud Run, Docker, and CI/CD.
+*   **[Troubleshooting & FAQ](./docs/troubleshooting.md)** – Common error resolutions, Elena Tips, and operational advice.
 
+---
 
-## IMPORTANT 
+## Contributing
+
+We welcome contributions from the community!
+
+*   Please read our **[Contributing Guide](./CONTRIBUTING.md)** for details on the Contributor License Agreement (CLA), coding standards, and our pull request process.
+*   Please review our **[Code of Conduct](./docs/code-of-conduct.md)** to ensure an inclusive and respectful environment for everyone.
+
+---
+
+## Getting Help & Support
+
+*   **Bug Reports & Feature Requests:** Please search existing issues or open a new one via **[GitHub Issues](https://github.com/AmineMokhtari/odata-gateway-bq/issues)**.
+*   **Feedback & Discussions:** Share how you are using the gateway or discuss ideas in **[GitHub Discussions](https://github.com/AmineMokhtari/odata-gateway-bq/discussions)** (or Issues).
+*   **Star the Project:** If this gateway helps you unlock your BigQuery data lakehouse, please consider starring the repository on GitHub!
+
+---
+
+## Important 
+
 **This is not an officially supported Google product. This project is not eligible for the [Google Open Source Software Vulnerability Rewards Program](https://bughunters.google.com/open-source-security).**
+
+---
+
+## License
+
+This project is licensed under the **Apache License, Version 2.0**. You are free to use, modify, and distribute this software under its terms. See the **[LICENSE](./LICENSE)** file for the full license text.
+
