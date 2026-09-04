@@ -52,10 +52,10 @@ done
 - E2E tests require dev server to be running (infrastructure dependency)
 
 ### Completion Notes
-- ✅ PII scrubber utility created with 18 passing unit tests covering hash consistency, identifier scrubbing, coordinate preservation, path scrubbing, and edge cases
-- ✅ React Error Boundary component created with Google Cloud-style "Visualizer Offline" fallback UI, retry button, and PII-scrubbed console logging
-- ✅ ErdCanvas wrapped with Error Boundary in ODataUrlBuilder.tsx
-- ✅ E2E test suite created for structural verification
+- PII scrubber utility created with 18 passing unit tests covering hash consistency, identifier scrubbing, coordinate preservation, path scrubbing, and edge cases
+- React Error Boundary component created with Google Cloud-style "Visualizer Offline" fallback UI, retry button, and PII-scrubbed console logging
+- ErdCanvas wrapped with Error Boundary in ODataUrlBuilder.tsx
+- E2E test suite created for structural verification
 
 ## File List
 

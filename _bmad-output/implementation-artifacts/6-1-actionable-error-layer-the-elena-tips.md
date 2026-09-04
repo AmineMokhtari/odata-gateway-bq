@@ -64,10 +64,10 @@ Antigravity (Claude 3.5 Sonnet)
 
 ### Completion Notes List
 
-- ✅ Created `error-mapping.ts` utility to translate technical codes (BudgetExceeded, Unauthorized, etc.) into business-friendly advice.
-- ✅ Developed `ElenaAdviceCard.tsx` - a premium, narrative-driven component to display Elena's guidance.
-- ✅ Integrated the error layer into the Query Governance Audit (Explain) page to provide context-aware pro-tips when queries are blocked.
-- ✅ Verified that the advice card appears correctly when `estimatedBytes > budgetBytes`.
+- Created `error-mapping.ts` utility to translate technical codes (BudgetExceeded, Unauthorized, etc.) into business-friendly advice.
+- Developed `ElenaAdviceCard.tsx` - a premium, narrative-driven component to display Elena's guidance.
+- Integrated the error layer into the Query Governance Audit (Explain) page to provide context-aware pro-tips when queries are blocked.
+- Verified that the advice card appears correctly when `estimatedBytes > budgetBytes`.
 
 ### File List
 

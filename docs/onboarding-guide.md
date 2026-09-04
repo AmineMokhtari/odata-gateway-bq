@@ -183,7 +183,7 @@ To connect Power BI Desktop to your local gateway:
 
 ---
 
-## 🏗️ Best Practices & Architecture
+## Best Practices & Architecture
 - **Trusted Subsystem**: The server runs with its own identity. User identity is propagated via BigQuery **Job Labels** (`user_identity`) for auditing.
 - **Zero-Buffered Streams**: Data is streamed from BigQuery to the client using Node.js `Transform` streams.
 - **Actionable Guidance**: The system uses the **Elena's Tips** engine to intercept technical errors and provide reactive, human-readable advice in the UI.

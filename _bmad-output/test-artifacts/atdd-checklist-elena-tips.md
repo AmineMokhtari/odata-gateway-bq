@@ -12,7 +12,7 @@ generatedTestFiles: ['tests/api/elena-tips.spec.ts', 'tests/e2e/elena-tips.spec.
 # ATDD Checklist: Elena's Tips (Story 6.1)
 
 ## TDD Red Phase (Current)
-✅ Red-phase test scaffolds generated
+Red-phase test scaffolds generated
 
 - API Tests: 2 tests (all skipped)
 - E2E Tests: 1 test (all skipped)
@@ -20,9 +20,9 @@ generatedTestFiles: ['tests/api/elena-tips.spec.ts', 'tests/e2e/elena-tips.spec.
 ## Acceptance Criteria Coverage
 | Criterion | API Test | E2E Test | Status |
 | :--- | :--- | :--- | :--- |
-| Given 403, display tip | `elena-tips.spec.ts` | `elena-tips.spec.ts` | 🔴 RED |
-| Provide 'Next Step' tip | `elena-tips.spec.ts` | `elena-tips.spec.ts` | 🔴 RED |
-| Actionable fix application | N/A | `elena-tips.spec.ts` | 🔴 RED |
+| Given 403, display tip | `elena-tips.spec.ts` | `elena-tips.spec.ts` | RED |
+| Provide 'Next Step' tip | `elena-tips.spec.ts` | `elena-tips.spec.ts` | RED |
+| Actionable fix application | N/A | `elena-tips.spec.ts` | RED |
 
 ## Next Steps (Task-by-Task Activation)
 During implementation of each task:

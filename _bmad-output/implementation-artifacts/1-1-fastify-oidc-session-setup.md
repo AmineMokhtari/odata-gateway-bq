@@ -45,24 +45,24 @@ last_updated: "2026-05-13"
 
 ## Developer Context & Guardrails
 
-### 🏗️ Architecture Compliance
+### Architecture Compliance
 - **Hybrid BFF Model**: Fastify is now the Source of Truth for identity.
 - **Strict ESM**: All backend code must use ESM imports with explicit `.js` extensions.
 - **Fastify v5**: Ensure compatibility with the latest Fastify version.
 - **Statelessness**: Session data must be stored in a way that supports Cloud Run (e.g., encrypted cookie session or external store). For this MVP, use `@fastify/session` with an encrypted cookie store.
 
-### 🛠️ Technical Requirements
+### Technical Requirements
 - **Verification**: Use `jose` (`jwtVerify`) with a `RemoteJWKSet` to verify the OIDC token. Do NOT use manual decoding.
 - **Claims**: Extract `email` and `sub` from the token and store them in the `request.session`.
 - **Labels**: Every authenticated request must have `request.user_email` and `request.correlation_id` decorated for downstream BigQuery logging.
 - **Environment**: Use `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and `OIDC_ISSUER` from `.env`.
 
-### 📂 File Structure Requirements
+### File Structure Requirements
 - **Plugin**: Create `backend/src/plugins/auth.ts` for the OIDC/Session logic.
 - **Routes**: Create `backend/src/routes/auth.ts` for the login/callback/session endpoints.
 - **Tests**: Create `backend/test/plugins/auth.test.ts` to verify the OIDC flow mocking the provider.
 
-### 📦 Library Requirements
+### Library Requirements
 - `jose`: v6.2.2 (Verification)
 - `@fastify/oauth2`: (OIDC Flow)
 - `@fastify/session`: (Session management)

@@ -3,7 +3,7 @@
 ## Summary of Accomplishments
 Epic 10 successfully delivered a highly interactive, 60fps-capable schema explorer for the OData Gateway. By shifting graph layout logic away from the main thread, the platform achieved fluid user experiences even for extremely dense tables.
 
-### 📊 Delivery Metrics
+### Delivery Metrics
 - **Completed Stories:** 4/4 (100%)
 - **Quality Gates:** 100% test coverage across backend Introspection/Neighborhood controllers and frontend Zustand stores.
 - **Production Incidents:** 0
@@ -31,7 +31,7 @@ Epic 10 successfully delivered a highly interactive, 60fps-capable schema explor
 
 ---
 
-## 💡 Team Insights & Action Items
+## Team Insights & Action Items
 
 | Theme | Insight | Action Item | Owner |
 | :--- | :--- | :--- | :--- |
@@ -41,7 +41,7 @@ Epic 10 successfully delivered a highly interactive, 60fps-capable schema explor
 
 ---
 
-## 🚀 Epic 13 Kickoff Preparation
+## Epic 13 Kickoff Preparation
 With Epic 10, 11, and 12 completely finished, the platform has solid foundation layers for discovery, query generation, and budget/security guardrails.
 Our next milestone is **Epic 13: Accessible & Inclusive Interaction** (WCAG canvas accessibility, spatial coordinates hiding, sidebar text alternative builders, and high-visibility focus indicator navigation).
 - **Prerequisites:** None. All backend and state engines are 100% complete.

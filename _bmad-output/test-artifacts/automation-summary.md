@@ -13,7 +13,7 @@ inputDocuments:
 
 # Automation Summary - Epic 1: Identity & Trusted Access
 
-## 🎯 Automation Targets
+## Automation Targets
 
 ### Story 1.2: OIDC Token Interception & Validation
 - **Scenario:** Valid token allows access, missing/invalid token returns 401.
@@ -35,7 +35,7 @@ inputDocuments:
 - **Level:** Integration
 - **Priority:** P0
 
-## 🧪 Coverage Plan
+## Coverage Plan
 
 | Target Scenario | Level | Priority | File |
 | :--- | :--- | :--- | :--- |
@@ -43,7 +43,7 @@ inputDocuments:
 | **Rule Engine (Emails/Groups)** | Unit | P1 | `backend/test/middleware/access-control.test.ts` (Existing) |
 | **Token Verification & Discovery** | Unit/API | P1 | `backend/test/plugins/auth.test.ts` (Existing) |
 
-## 🏗️ Technical Approach
+## Technical Approach
 - **Mocking:** Mock `jose` for token generation and `bigquery` for job creation.
 - **Verification:** Assert on `app.inject` response codes and verify mock calls receive the expected `labels`.
 - **Statelessness:** Ensure no cross-test pollution in the `metadataCache`.

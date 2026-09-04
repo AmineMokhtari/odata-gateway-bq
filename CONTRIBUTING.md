@@ -36,7 +36,7 @@ for this purpose.
 
 ---
 
-## 🌟 Our North Star: The 'Elena' Persona
+## Our North Star: The 'Elena' Persona
 
 Every line of code in this project should serve **Elena**, our "Stranded Analyst."
 - **Who she is**: A brilliant business person who knows her data but doesn't know SQL or Python.
@@ -47,7 +47,7 @@ Every line of code in this project should serve **Elena**, our "Stranded Analyst
 
 ---
 
-## 🏗️ Architecture Philosophy
+## Architecture Philosophy
 
 We follow the **Trusted Subsystem** model to eliminate IAM management overhead.
 
@@ -58,7 +58,7 @@ We follow the **Trusted Subsystem** model to eliminate IAM management overhead.
 
 ---
 
-## 🚀 Development Workflow (The BMad Way)
+## Development Workflow (The BMad Way)
 
 We use the **BMad Framework** for a rigorous, story-driven implementation trail.
 
@@ -71,7 +71,7 @@ We use the **BMad Framework** for a rigorous, story-driven implementation trail.
 
 ---
 
-## 🎨 Premium UX Standards
+## Premium UX Standards
 
 Our frontend should feel premium, alive, and encouraging.
 
@@ -84,7 +84,7 @@ Our frontend should feel premium, alive, and encouraging.
 
 ---
 
-## 🛠️ Technical Guardrails
+## Technical Guardrails
 
 - **Type Safety**: No `any`. No `!`. Use TypeScript interfaces for all API contracts.
 - **Cost Control**: Every query must undergo a **Dry Run** check before execution.
@@ -94,7 +94,7 @@ Our frontend should feel premium, alive, and encouraging.
 
 ---
 
-## 📥 Getting Started
+## Getting Started
 
 1. **Environment**: Copy `.env.example` to `.env` and configure your GCP and OIDC settings.
 2. **Auth**: Run `gcloud auth application-default login` to enable local BigQuery access.
@@ -103,12 +103,12 @@ Our frontend should feel premium, alive, and encouraging.
 
 ---
 
-## 📬 Submitting Changes
+## Submitting Changes
 
 1. Create a new Story file in `_bmad-output/implementation-artifacts/`.
 2. Follow the story implementation steps.
 3. Run `npm test` to ensure no regressions.
 4. Submit your PR with a link to your `walkthrough.md`.
 
-Thank you for helping us empower the next generation of analysts! 🚀
+Thank you for helping us empower the next generation of analysts!
 
