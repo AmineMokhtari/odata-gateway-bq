@@ -1,40 +1,48 @@
 # Documentation Index
 
-Welcome to the technical documentation for the **odata-gateway-bq**. This guide is organized into several sections to help you understand the architecture, API, and operational procedures.
+Welcome to the technical documentation for the **odata-gateway-bq**. This documentation is organized according to the [Diátaxis framework](https://diataxis.fr/), splitting content into four distinct quadrants based on the user's needs.
 
-## Core Documentation
+## 1. Tutorials (Learning-Oriented)
 
-- **[Project Overview](./project-overview.md)** - High-level summary of goals, value propositions, and repository structure.
-- **[System Architecture](./architecture.md)** - Detailed design of the Audit-Execute pipeline, security model, and BigQuery integration.
-- **[Source Tree Analysis](./source-tree-analysis.md)** - Annotated directory structure and critical entry points.
+*Tutorials help you achieve your first success safely. They are highly prescriptive and step-by-step.*
 
-## API & Data
+- **[Getting Started: Connecting to the Data Catalog](./tutorials/getting-started.md)** - Guide for end-users connecting Excel and Power BI for the first time.
+- **[Local Developer Onboarding](./tutorials/local-onboarding.md)** - Guide for developers setting up a fresh local environment.
 
-- **[API Contracts](./api-contracts.md)** - Catalog of OData v4 endpoints, governance routes, and administrative controls.
-- **[Data Models](./data-models.md)** - Definition of the core domain objects used across the system.
+## 2. How-To Guides (Problem-Oriented)
 
-## Guides & Operations
+*How-to guides are recipes that help you solve specific problems or achieve specific goals.*
 
-- **[Getting Started](./getting-started.md)** - End-user guide for connecting Excel and Power BI to the gateway.
-- **[Onboarding Guide](./onboarding-guide.md)** - Developer-focused setup guide for fresh environment initialization.
-- **[Deployment Guide](./deployment-guide.md)** - Operational instructions for Cloud Run, Docker, and CI/CD.
-- **[Configuration](./configuration.md)** - Deep dive into `tenants.yaml` and environment variable hardening.
-- **[Troubleshooting](./troubleshooting.md)** - FAQ and common error resolution strategies.
+- **[Deploying to Google Cloud Run](./guides/deployment.md)** - Actionable steps for CI/CD and Cloud Build deployment.
+- **[Configuring Tenants and Access Rules](./guides/configuring-tenants.md)** - How to map BigQuery datasets to OData routes securely.
+- **[Configuring Entra ID Authentication](./guides/configuring-entra-id.md)** - How to set up Azure AD / OIDC for production environments.
+- **[Optimizing Queries with Query Folding](./guides/query-folding.md)** - How to filter large datasets visually without exceeding budgets.
+- **[Troubleshooting Connection and Query Errors](./guides/troubleshooting.md)** - How to resolve common authentication and budget errors.
 
-## Project Management
+## 3. Reference (Information-Oriented)
 
-- **[Tasks](./tasks.md)** - High-level roadmap and feature tracking.
-- **[Release Notes](./release-notes.md)** - Log of major architectural shifts and feature additions.
-- **[Knowledge Base](./knowledge-base.md)** - Collection of distilled technical decisions and research.
-- **[Project Scan Report](./project-scan-report.json)** - Machine-readable state of the latest project documentation scan.
+*Reference material provides dry, factual information without explanations or instructions.*
 
-## Deep-Dive Documentation
+- **[API Contracts](./reference/api-contracts.md)** - Catalog of OData v4 endpoints, governance routes, and admin controls.
+- **[Configuration Flags & Schema](./reference/configuration-flags.md)** - Exhaustive list of environment variables and the `tenants.yaml` schema.
+- **[Data Models](./reference/data-models.md)** - Definition of the core domain objects used across the system.
+- **[Source Tree Analysis](./reference/source-tree.md)** - Annotated directory structure and file layout.
+- **[Release Notes](./reference/release-notes.md)** - Changelog of major architectural shifts and feature additions.
+- **[Project Scan Report](./reference/project-scan-report.json)** - Machine-readable state of the latest documentation scan.
 
-Detailed exhaustive analysis of specific areas:
+## 4. Explanation & Architecture (Understanding-Oriented)
 
-- [Recent Commits Deep-Dive](./deep-dive-recent-commits.md) - Comprehensive analysis of direct OData exports, PBIDS connection schema fixes, visual PK/FK schema badges, Usage Hub, Catalog UI, API Proxy, and Elena Tips - Generated 2026-05-29
-- [Core Gateway & Governance Deep-Dive](./deep-dive-core-gateway-governance.md) - Comprehensive analysis of OData translation, budget enforcement, and Elena Tips (7 files, 1949 LOC) - Generated 2026-05-13
+*Explanation provides context, architectural design decisions, and high-level understanding.*
+
+- **[Project Overview](./architecture/project-overview.md)** - High-level summary of goals and value propositions.
+- **[System Design & Architecture](./architecture/system-design.md)** - Detailed design of the Audit-Execute pipeline, security model, and BigQuery integration.
+- **[Core Gateway Governance Deep-Dive](./architecture/core-governance.md)** - Comprehensive analysis of OData translation and budget enforcement.
+- **[Recent Commits Deep-Dive](./architecture/recent-commits-analysis.md)** - Context on recent major feature additions (Catalog UI, PK/FK badges, Usage Hub).
+- **[Knowledge Base](./architecture/knowledge-base.md)** - Collection of distilled technical decisions and research.
 
 ---
-*Last updated: 2026-05-29*
-Deep-Dives: 2
+
+> [!NOTE]
+> Project management and community guidelines are available at the root of the repository:
+> - [Tasks](../tasks.md)
+> - [Code of Conduct](../code-of-conduct.md)

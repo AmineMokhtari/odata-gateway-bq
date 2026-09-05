@@ -1,4 +1,4 @@
-# API Contracts Documentation
+# Reference: API Contracts
 
 This document catalogs the available API endpoints for the **odata-gateway-bq**, including OData protocol endpoints and administrative governance routes.
 
