@@ -75,7 +75,7 @@ This solution is designed specifically to bridge that gap elegantly. It ensures 
 
 * **The Profile:** A domain expert working in core business departments like Finance, Supply Chain, Marketing, or Operations.
 * **The Skillset:** They have limited to zero SQL or coding competencies. However, they are absolute masters of **Microsoft Excel**.
-* **The Dilemma:** They hold the keys to critical business decisions but are completely locked out of the enterprise data warehouse (BigQuery) because they cannot write the code to access it. 
+* **The Dilemma:** They hold the keys to critical business decisions but are completely locked out of the enterprise data warehouse (BigQuery) because they cannot write the code to access it.
 * **The Goal:** Bridge the gap. Bring BigQuery's massive scale directly into the spreadsheet environments they have mastered.
 
 ---
@@ -87,6 +87,7 @@ This solution is designed specifically to bridge that gap elegantly. It ensures 
 ### The "SQL Tax" & The Azure Trap
 
 **The Current Reality:**
+
 * Data democratization fails when business users rely on Data Engineers for custom SQL exports ("SQL Tax").
 * **The Azure Trap:** Microsoft pushes customers to constantly copy their "last mile" data into Azure Data Fabric simply to connect it to spreadsheets.
 * **Brand Erasure:** By forcing data through Azure, BigQuery becomes entirely invisible to the business user—they never even know Google Cloud is powering their insights.
@@ -97,10 +98,12 @@ This solution is designed specifically to bridge that gap elegantly. It ensures 
 ### Existing Solutions & Their Limitations (1/2)
 
 **1. Native ODBC / JDBC Drivers**
+
 * *The Reality:* Requires complex local installation, drivers, and configuration on every laptop.
 * *The Limitation:* Bypasses modern identity (OIDC), difficult to govern centrally, and struggles with nested BigQuery arrays in Excel.
 
 **2. Custom Nightly CSV/SQL Exports**
+
 * *The Reality:* Data Engineers write custom scripts to dump BigQuery tables into spreadsheets.
 * *The Limitation:* Massive "SQL Tax" on engineering time, data is instantly stale, and creates compliance nightmares (local data copies).
 
@@ -109,10 +112,12 @@ This solution is designed specifically to bridge that gap elegantly. It ensures 
 ### Existing Solutions & Their Limitations (2/2)
 
 **3. Moving Data to Azure Data Fabric**
+
 * *The Reality:* This approach requires duplicating the 'last mile' of data into Azure just for native Power BI/Excel integration.
 * *The Limitation:* Expensive data egress, high operational complexity, and Google Cloud loses all end-user visibility.
 
 **4. Power BI Data Gateway**
+
 * *The Reality:* Deploying dedicated Windows VMs/servers to bridge Power BI Service to BigQuery.
 * *The Limitation:* Performance bottlenecks, no Excel solution, and **cannot be automated via IaC (Terraform/Pulumi)**, forcing manual toil.
 
@@ -220,6 +225,7 @@ This solution is designed specifically to bridge that gap elegantly. It ensures 
 ### Infrastructure Pull-Through
 
 The gateway acts as a force multiplier for Google Cloud. Running it at enterprise scale drives consumption across:
+
 * **BigQuery Compute:** Increases slot consumption as thousands of new users trigger live queries from their daily spreadsheets.
 * **Gemini Agent Platform:** Unlocks the use of BigQuery's built-in `AI.*` functions, enriching data with generative AI on the fly before it reaches the business user.
 * **Google Cloud Run / GKE:** For hosting the highly scalable gateway APIs.
@@ -241,5 +247,5 @@ The gateway acts as a force multiplier for Google Cloud. Running it at enterpris
 
 ---
 
-> **A Note on Availability:** 
+> **A Note on Availability:**
 > *Please note that the OData Gateway for BigQuery is currently undergoing internal reviews and is in the active process of being officially open-sourced. We look forward to sharing the public repository with our customers and the broader community very soon, empowering them to deploy, audit, and confidently build upon this transformative solution.*

@@ -5,6 +5,7 @@ Welcome! We're thrilled you want to help build the world's most business-friendl
 We would love to accept your patches and contributions to this project.
 
 ---
+
 ## Before you begin
 
 ### Sign our Contributor License Agreement
@@ -39,6 +40,7 @@ for this purpose.
 ## Our North Star: The 'Elena' Persona
 
 Every line of code in this project should serve **Elena**, our "Stranded Analyst."
+
 - **Who she is**: A brilliant business person who knows her data but doesn't know SQL or Python.
 - **Her goal**: To connect her favorite tools (Excel, Power BI) to BigQuery instantly and securely.
 - **Our mission**: To transform technical errors into "Elena Tips" and complex OData syntax into visual toggles.
@@ -111,4 +113,3 @@ Our frontend should feel premium, alive, and encouraging.
 4. Submit your PR with a link to your `walkthrough.md`.
 
 Thank you for helping us empower the next generation of analysts!
-

@@ -10,6 +10,7 @@
     "**/docs/**",
     "**/node_modules/**",
     "**/dist/**",
+    "**/.next/**",
     "**/.git/**",
     "**/coverage/**",
     "**/playwright-report/**",
@@ -25,6 +26,9 @@
     "**/*.txt",
     "**/*.example",
     "**/.gitignore",
-    "**/.env*"
+    "**/.env*",
+    "**/.markdownlint*",
+    "**/*.tsbuildinfo",
+    "**/*.d.ts"
   ]
 }

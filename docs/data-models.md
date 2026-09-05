@@ -3,6 +3,7 @@
 This document explains the internal and external data structures used by the **odata-gateway-bq**, specifically focusing on tenant configuration and the mapping of BigQuery schemas to OData.
 
 ## Multi-Tenant Configuration (`TenantConfig`)
+
 The system's behavior for each project/dataset combination is governed by the `tenants.yaml` configuration.
 
 | Field | Type | Description |
@@ -14,6 +15,7 @@ The system's behavior for each project/dataset combination is governed by the `t
 | `access_rules` | `object` (Optional) | Authorization rules (Emails/Groups). |
 
 ## BigQuery-to-OData Type Mapping
+
 The system dynamically generates the Entity Data Model (EDM) by mapping BigQuery types to standard OData Edm types.
 
 | BigQuery Type | OData Edm Type | Implementation Detail |
@@ -29,5 +31,5 @@ The system dynamically generates the Entity Data Model (EDM) by mapping BigQuery
 | `RECORD` / `STRUCT` | `Edm.String` | **Casted:** Automatically wrapped in `TO_JSON_STRING()`. |
 
 ## Lossless JSON Casting
-BigQuery `RECORD` (struct) and `REPEATED` (array) types are not natively supported by the base OData-to-SQL translator in a streaming-compatible way. To ensure 100% data fidelity, the gateway automatically injects `TO_JSON_STRING()` into the BigQuery SQL projection for these columns. This ensures that complex nested enterprise data is delivered as a JSON-encoded string within the OData payload.
 
+BigQuery `RECORD` (struct) and `REPEATED` (array) types are not natively supported by the base OData-to-SQL translator in a streaming-compatible way. To ensure 100% data fidelity, the gateway automatically injects `TO_JSON_STRING()` into the BigQuery SQL projection for these columns. This ensures that complex nested enterprise data is delivered as a JSON-encoded string within the OData payload.

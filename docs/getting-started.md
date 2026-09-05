@@ -3,6 +3,7 @@
 Welcome to the **OData Gateway for BigQuery**. This guide will help you connect your favorite data tools (Excel, Power BI, etc.) to your organization's BigQuery datasets in minutes.
 
 ## Prerequisites
+
 - An active **Office 365 / Microsoft Entra ID** account (if your organization uses Entra ID).
 - Access to your organization's **Data Catalog Portal**.
 - **Microsoft Excel** (2016 or later) or **Power BI Desktop**.
@@ -25,14 +26,17 @@ Instead of manually typing OData URLs, we recommend using the **Data Catalog Por
 On the top-right side of the **Dataset Details** page, you will find a premium Action Bar containing three connection helpers for the entire dataset:
 
 ### 1. Copy URL
+
 - Click the **"Copy URL"** button. The OData service root endpoint URL of your dataset is instantly copied to your clipboard. You can paste this directly into Excel, Power BI, or any compatible BI tool.
 
 ### 2. Export Excel (.odc)
+
 - Click the **"Export Excel (.odc)"** button to download a pre-configured Office Data Connection file for the dataset.
 - Double-click/open the downloaded `.odc` file.
 - Microsoft Excel will launch automatically and prompt you for credentials. Select **Organizational Account**, sign in, and Excel will establish a live connection to the entire dataset!
 
 ### 3. Export Power BI (.pbids)
+
 - Click the **"Export Power BI (.pbids)"** button to download a Power BI Data Source Reference file.
 - Double-click the downloaded `.pbids` file.
 - Power BI Desktop will launch instantly and pre-configure the data connection. Sign in using your **Organizational account** when prompted, and all tables in the dataset will load in the Navigator!
@@ -42,6 +46,7 @@ On the top-right side of the **Dataset Details** page, you will find a premium A
 ## Visual Schema Badges (PK & FK)
 
 When exploring table columns on the **Dataset Details** page:
+
 - **Primary Keys (PK)**: Marked with a blue **PK** badge next to the column name. This represents the unique key used to index the table.
 - **Foreign Keys (FK)**: Marked with a violet **FK** badge. Hover your cursor over the **FK** badge to view a tooltip stating the target constraint relationship (e.g. `References Customers(id)`), making schema joins highly discoverable.
 
@@ -78,12 +83,15 @@ When exploring table columns on the **Dataset Details** page:
 If you encounter authentication failures (e.g., you see a message saying "Authentication failed" in your browser, or an error starting with **AADSTS500011**), follow these steps to reset your connection:
 
 ### 1. Clear Cached Credentials
+
 Power BI and Excel often remember old, failed authentication attempts.
+
 - **Power BI:** Go to **File > Options and settings > Data source settings**.
 - **Excel:** Go to **Data > Get Data > Data Source Settings**.
 - Locate the URL you are trying to connect to (e.g., your gateway endpoint) and select **Clear Permissions**.
 
 ### 2. Verify Connection Details
+
 - **Ensure you selected 'Organizational account':** "Basic", "Windows", or "Anonymous" authentication types will not work if the gateway requires Entra ID login.
 - **Use the correct URL:** Ensure you copied the exact URL provided by your administrator or the Data Catalog. (e.g., If testing locally, ensure you use the designated local domain like `local.odatabq.com` instead of `127.0.0.1` or `localhost`).
 
@@ -98,6 +106,7 @@ When working with large BigQuery datasets, **do not load the entire table first 
 Instead, leverage **Query Folding**. Both Microsoft Excel and Power BI support this natively over OData feeds. This means any filter you apply visually inside your tool is automatically translated into an OData `$filter` parameter and sent back to the BigQuery engine to run as a native `WHERE` clause.
 
 ### Step-by-Step: Filtering your Data Visually
+
 1. When connecting via Excel or Power BI, do not click **Load** immediately in the *Navigator* window. Instead, click **Transform Data**.
 2. This opens the **Power Query Editor**.
 3. Locate the column you want to filter (e.g., `Region`, `EventDate`, or `Status`).
@@ -124,9 +133,9 @@ sequenceDiagram
 ---
 
 ## Tips for Success & Elena's Advice
+
 - **Use Filters:** If you are working with large datasets, use the OData filter options or the "Transform Data" view in Power BI to limit the data you pull.
 - **Stay Connected:** Your credentials are saved securely. You can refresh your data anytime by clicking **Refresh** in your tool.
 - **Advanced Joins (1:N):** You can now build complex joins visually in the Data Catalog. If a table has related data (e.g., an Order having multiple Line Items), you can select these in the "Related Data" section to include them in your export.
 - **Elena's Tips:** If you encounter an error (such as a 403 Budget Exceeded or 401 Unauthorized), the Catalog UI will automatically slide out the **Elena Drawer**. This provides you with plain-English explanations and actionable buttons to fix the issue (e.g., "Select fewer columns").
 - **Budget Limits:** Keep an eye on your Personal Usage Hub. Every query is pre-estimated to protect your organization from cost spikes.
-

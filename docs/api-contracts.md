@@ -3,13 +3,17 @@
 This document catalogs the available API endpoints for the **odata-gateway-bq**, including OData protocol endpoints and administrative governance routes.
 
 ## OData V1 Endpoints
+
 All OData endpoints are prefixed with `/v1/:projectId/:datasetId`.
 
 ### Service Root (Service Document)
+
 `GET /v1/:projectId/:datasetId`
 Returns the OData v4 Service Document listing all available entity sets in JSON format. This is the entry point for OData clients like PowerBI to discover available data.
+
 - **Response Headers:** `Content-Type: application/json;odata.metadata=minimal;charset=utf-8`, `OData-Version: 4.0`
 - **Response Body:**
+
   ```json
   {
     "@odata.context": "http://host/v1/:projectId/:datasetId/$metadata",
@@ -20,31 +24,39 @@ Returns the OData v4 Service Document listing all available entity sets in JSON 
   ```
 
 ### Metadata (CSDL)
+
 `GET /v1/:projectId/:datasetId/$metadata`
 Returns the dynamically generated OData Entity Data Model (EDM) in XML format.
+
 - **Response Headers:** `Content-Type: application/xml`, `OData-Version: 4.0`
 
 ### EntitySet (Data Fetch)
+
 `GET /v1/:projectId/:datasetId/:entitySet`
 The primary endpoint for fetching data.
+
 - **Query Parameters:** Supports OData V4 filtering (`$filter`), sorting (`$orderby`), paging (`$top`, `$skip`, `$skiptoken`), selection (`$select`), navigation (`$expand` including 1:N collections), text search (`$search`), and calculated columns (`$compute`).
-- **Custom Parameters:** 
+- **Custom Parameters:**
   - `?$explain=true`: Returns the generated SQL and Dry-Run cost estimate instead of the data.
 - **Security:** Every query job is isolated by user identity. Resuming results via `$skiptoken` is only permitted for the user who initiated the job.
 - **Response:** JSON-formatted OData envelope with results streamed directly from BigQuery.
 
 ### User Consumption (Usage Hub)
+
 `GET /v1/usage`
 Returns the current user's monthly BigQuery consumption and recent job history.
+
 - **Response:** JSON object containing `totalBytesBilled`, `budgetBytes`, and `lastJobs` array.
 
 ## Governance & Admin Endpoints
 
 ### Consumption Audit
+
 `GET /admin/usage/:projectId/:datasetId`
 Returns the total bytes processed and query count for a specific tenant.
 
 ### Cache Invalidation
+
 `POST /admin/refresh/:projectId/:datasetId`
 Clears the cached metadata (schemas) for a specific tenant, forcing a fresh crawl on the next request.
 
@@ -52,6 +64,7 @@ Clears the cached metadata (schemas) for a specific tenant, forcing a fresh craw
 Clears the metadata and usage caches for all tenants.
 
 ### Dynamic Configuration
+
 `POST /admin/config/reload`
 Triggers a hot-reload of the `tenants.yaml` configuration file. Used to update scan budgets or access rules across distributed instances.
 
@@ -61,7 +74,8 @@ Triggers a hot-reload of the `tenants.yaml` configuration file. Used to update s
 Returns the server status (`"status": "ok"`) and version information. This endpoint is public and does not require authentication.
 
 ## Authentication Requirements
+
 All endpoints (except `/health`) require one of the following:
+
 1. **OIDC Bearer Token:** A valid JWT in the `Authorization` header.
 2. **Offloaded Headers:** When `ANONYMOUS_MODE` is active, identity is extracted from `X-Forwarded-Email`, `X-Forwarded-Groups`, and `X-Forwarded-Sub`.
-

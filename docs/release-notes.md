@@ -1,79 +1,93 @@
 # Release Notes
 
 ## Version 1.5.0 (Resilient Server-Driven Paging)
+
 *Release Date: July 14, 2026*
 
 This release hardens the gateway's data extraction pipeline by introducing intelligent, server-driven pagination to protect against memory exhaustion during massive data pulls.
 
 ### New Features
-- **Configurable Chunking limits (`DEFAULT_FETCH_SIZE`)**: Administrators can now strictly cap the maximum number of rows returned per OData request (defaults to 10,000). 
+
+- **Configurable Chunking limits (`DEFAULT_FETCH_SIZE`)**: Administrators can now strictly cap the maximum number of rows returned per OData request (defaults to 10,000).
 - **Opaque Server-Driven Paging**: OData responses now automatically generate `@odata.nextLink` pagination URLs when a dataset exceeds the fetch size limit. The link calculates remaining row targets and protects state by ignoring client-injected `$skip` parameters if a BigQuery `$skiptoken` is present.
 - **Paging Telemetry**: Multi-chunk pagination events are now explicitly tracked in the `usage-audit` logs to improve visibility into BigQuery API overhead caused by fragmented data extractions.
 
 ### How to Upgrade
+
 Deploy the new version. Non-compliant OData clients that ignore `@odata.nextLink` will now safely receive truncated datasets rather than crashing the gateway. You can tune the memory/API overhead balance using the `DEFAULT_FETCH_SIZE` environment variable.
 
-
 ## Version 1.4.0 (Direct Integration & Visual Schema Keying)
+
 *Release Date: May 29, 2026*
 
 This release introduces direct connection integrations from the main dataset catalog view and enhances table discoverability with visual primary and foreign key indicators, alongside critical Power BI desktop schema compliance updates.
 
 ### New Features
+
 - **Dataset Direct Connection Buttons**: Added high-density, interactive "COPY URL", "Export Excel (.odc)", and "Export Power BI (.pbids)" actions on the top side of the dataset details header. Users can now obtain dataset-wide integration parameters with a single click.
 - **Primary & Foreign Key Indicators**: Enabled visual PK (blue badge) and FK (violet badge) badges next to column names in each table's schema detail grid. FK badges contain rich tooltips identifying their exact target constraints (e.g. `References Customers(id)`).
 
 ### Enhancements
+
 - **Power BI PBIDS Parser Compliance**: Resolved an `Unable to parse data source file` deserialization error in Power BI Desktop by nesting the feed URL inside the correct `address.url` object schema (i.e. `address: { url: url }`).
 - **Dynamic Dataset-Wide Scope**: Wired all catalog connection exports to automatically target the global dataset service root rather than the selected table, simplifying multi-table connections.
 
 ### How to Upgrade
+
 This release contains client connection upgrades. No manual intervention or breaking schema updates are needed; simply deploy the update to allow users to pull down the newly formatted ODC/PBIDS connection files.
 
-
 ## Version 1.3.0 (Architecture Hardening & 1:N Expansion)
+
 *Release Date: May 16, 2026*
 
 This release introduces a major architectural hardening phase, migrating all metadata discovery to secure Server Actions and enabling full 1:N expansion support for complex data relationships.
 
 ### New Features
+
 - **1:N Relationship Expansion**: Full support for "To-Many" relationships in the Step-by-Step Join Builder. The gateway now automatically identifies inbound Foreign Keys and uses BigQuery's nested `ARRAY` structures for high-fidelity data retrieval.
 - **Server-Action Based Discovery**: Migrated all UI metadata, pulse checks, and cost auditing to Next.js Server Actions. This hides backend infrastructure from the client and ensures unified session propagation.
 - **Identity-Job Binding**: Enhanced security isolation by binding BigQuery Job IDs to the user's OIDC identity via audit labels. This prevents unauthorized result resumption across different user sessions.
 
 ### Enhancements
+
 - **Unified Gateway Client**: Centralized all server-to-backend communication in a robust, cookie-aware client (`GatewayClient`) with automatic correlation ID injection.
 - **Server-Side XML Parsing**: Optimized OData metadata processing by moving XML-to-JSON transformation to the server layer using `fast-xml-parser`.
 - **Relationship Discovery**: Refactored the metadata crawler to perform a bi-directional scan of BigQuery `INFORMATION_SCHEMA` for improved relationship mapping.
 
 ### How to Upgrade
+
 This release contains internal architectural shifts. Ensure the `GATEWAY_URL` environment variable is correctly set in your Next.js environment. No breaking changes for end-users.
 
-
 ## Version 1.2.0 (Catalog Experience)
+
 *Release Date: May 11, 2026*
 
 This release focuses on professionalizing the data discovery journey through a full-width catalog interface and refined reactive guidance.
 
 ### New Features
+
 - **Full-Width Catalog Layout**: Redesigned the Catalog and Connection Builder into a professional, responsive full-width interface aligned with the Google Cloud Console identity.
 - **Branded Discovery Feedback**: Implemented centralized, branded loading states providing transparent progress during BigQuery metadata discovery.
 - **"Elena" Advice Layer (Native Drawer)**: Integrated a reactive MD3-compliant drawer that triggers actionable "Elena Tips" for budget (403) and session (401) errors.
 - **Google Cloud Design System**: Migrated the entire frontend to the Roboto font family and a curated Neutral/Primary color palette for a native platform feel.
 
 ### Enhancements
+
 - **Hybrid LRU Metadata Cache**: Optimized backend performance with a sharded in-memory cache (`projectId:datasetId`) featuring a 24h sliding TTL.
 - **Metadata Description Support**: Added support for surfacing BigQuery table and column descriptions directly in the UI.
 
 ### How to Upgrade
+
 No breaking changes. The UI will automatically adopt the new full-width layout upon deployment.
 
 ## Version 1.1.0 (Self-Service Governance)
+
 *Release Date: May 09, 2026*
 
 This release introduces the **"Elena" Experience**—a set of features designed to empower non-technical users with advanced data building and governance capabilities.
 
 ### New Features
+
 - **Usage Hub (User Consumption Tracking):** Real-time dashboard for users to track their personal monthly BigQuery consumption and job history.
 - **Step-by-Step Join Builder (`$expand`):** Automatic discovery of foreign key relationships allowing users to build complex joins step-by-step.
 - **Form-Based Aggregation Builder (`$apply`):** Interactive UI for building GroupBy and Aggregate queries without knowing OData syntax.
@@ -85,19 +99,23 @@ This release introduces the **"Elena" Experience**—a set of features designed 
 - **Feature Toggle (Query Builder):** New `ENABLE_QUERY_BUILDER` toggle to hide/show advanced data building tools.
 
 ### Enhancements
+
 - **Enhanced Introspection:** Added cross-project metadata crawling support.
 - **UI Polishing:** Premium visual feedback for data builders and consumption gauges.
 
 ### Known Limitations
+
 - Usage auditing requires `roles/bigquery.jobUser` in the centralized billing project.
 - Visual Joins currently support 1:1 and 1:N relationships via standard constraints.
 
 ## Version 1.0.0 (Initial MVP)
+
 *Release Date: April 25, 2026*
 
 The initial launch of the **OData Gateway for BigQuery** focuses on enabling secure, governed data democratization for Excel and Power BI users.
 
 ### New Features
+
 - **URL-Based Routing:** Access independent BigQuery datasets via easy-to-use URL segments: `/v1/:projectId/:datasetId`.
 - **Trusted Subsystem Security:** Integrated OIDC authentication (Microsoft Entra ID / O365) with application-level authorization rules.
 - **Cost Protection (Dry-Run):** Every query is estimated before execution. Queries exceeding the 10GB scan budget are automatically blocked to prevent cost spikes.
@@ -108,10 +126,11 @@ The initial launch of the **OData Gateway for BigQuery** focuses on enabling sec
 - **Zero-Footprint Streaming:** Results are streamed directly from BigQuery to the client, ensuring high performance and low server memory usage.
 
 ### Known Limitations
+
 - Metadata discovery currently refreshes every 24 hours.
 - Advanced table joins (`$expand`) require manual configuration in the backend manifest.
 - Custom scan budgets are currently configured via backend configuration files only.
 
 ### How to Upgrade
-As this is the initial release, no upgrade steps are required. Simply deploy the service and share the URLs with your users.
 
+As this is the initial release, no upgrade steps are required. Simply deploy the service and share the URLs with your users.

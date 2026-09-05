@@ -1,0 +1,9 @@
+node_modules/
+_bmad/
+_bmad-output/
+.agents/
+.gemini/
+.next/
+dist/
+coverage/
+.playwright/

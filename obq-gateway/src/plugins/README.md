@@ -14,4 +14,3 @@ Check out:
 * [The hitchhiker's guide to plugins](https://fastify.dev/docs/latest/Guides/Plugins-Guide/)
 * [Fastify decorators](https://fastify.dev/docs/latest/Reference/Decorators/).
 * [Fastify lifecycle](https://fastify.dev/docs/latest/Reference/Lifecycle/).
-

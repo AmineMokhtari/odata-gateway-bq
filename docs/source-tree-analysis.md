@@ -60,4 +60,3 @@ odata-gateway-bq/
 - **Service Root:** `GET /v1/:projectId/:datasetId` - Entry point for OData navigators.
 - **Metadata:** `GET /v1/:projectId/:datasetId/$metadata` - Technical schema discovery for Excel/Power BI.
 - **Data Fetch:** `GET /v1/:projectId/:datasetId/:entitySet` - High-throughput data streaming path.
-

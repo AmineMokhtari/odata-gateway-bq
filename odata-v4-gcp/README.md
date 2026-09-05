@@ -14,6 +14,7 @@ A high-performance, stateless OData v4 to BigQuery SQL translator written in Typ
 ## Architecture
 
 The engine follows a standard compiler pipeline:
+
 1. **Lexer**: Tokenizes the OData query string into semantic units.
 2. **Parser**: Builds a strongly-typed Abstract Syntax Tree (AST).
 3. **Visitor**: Traverses the AST to generate SQL dialect-specific components.
@@ -36,6 +37,7 @@ The engine follows a standard compiler pipeline:
 ## Security
 
 The library generates a structured `TranslationResult` containing:
+
 - `sql`: The SQL template with placeholders.
 - `params`: A record of parameter values to be passed to the BigQuery client.
 - `options`: Structured query fragments (where, select, etc.) for post-processing.
@@ -60,4 +62,3 @@ const { sql, params } = translator.translate(ast);
 // sql: "SELECT `Id`, `Name` FROM `Table` WHERE (`Price` > @p0)"
 // params: { "p0": 100 }
 ```
-

@@ -28,10 +28,13 @@ These variables control the core behavior and security of the application.
 *\** Required for non-GCP environments. In local environments, the system will fall back to **Application Default Credentials (ADC)** if this variable is not set.
 
 ### Configuring Application Default Credentials (ADC)
+
 For local development, we recommend using ADC instead of service account keys. Run the following command:
+
 ```bash
 gcloud auth application-default login
 ```
+
 This enables the BigQuery client to use your personal identity for local testing, ensuring your credentials are never committed to source control.
 
 ---
@@ -41,6 +44,7 @@ This enables the BigQuery client to use your personal identity for local testing
 The `tenants.yaml` file is the central policy engine for the gateway. It maps OData URLs to BigQuery datasets and enforces security rules.
 
 ### File Schema
+
 ```yaml
 tenants:
   - project_id: "my-gcp-project"      # The project where the dataset lives
@@ -60,12 +64,13 @@ tenants:
 ## 3. Advanced Configuration
 
 ### OIDC Authentication (jose)
+
 - The gateway automatically performs OIDC discovery using the `OIDC_ISSUER`.
 - It expects a standard `Bearer` token in the `Authorization` header.
 - For `ANONYMOUS_MODE`, the gateway can extract identity from common proxy headers like `x-forwarded-email`.
 
 ### BigQuery Client
+
 - The gateway uses the official `@google-cloud/bigquery` SDK.
 - Clients are cached per `projectId:location` to optimize connection pooling.
 - **Location Sensing:** The gateway detects dataset regions dynamically to ensure compliance with data residency rules.
-
