@@ -40,6 +40,23 @@ Welcome to the technical documentation for the **odata-gateway-bq**. This docume
 - **[Recent Commits Deep-Dive](./architecture/recent-commits-analysis.md)** - Context on recent major feature additions (Catalog UI, PK/FK badges, Usage Hub).
 - **[Knowledge Base](./architecture/knowledge-base.md)** - Collection of distilled technical decisions and research.
 
+## 5. Operations & Incident Runbooks (Action-Oriented)
+
+*Runbooks provide prescriptive triage and standard operating procedures for SREs and system operators.*
+
+- **[Runbooks & Incident Response Directory](./runbooks/README.md)** - Central index, P1–P4 severity matrix, and diagnostic cheat-sheet.
+- **[RB-01: BigQuery Scan Budget Circuit Breaker Trip](./runbooks/incident-budget-exceeded.md)** - Resolving `BudgetExceeded` (HTTP 403) and query folding guidance.
+- **[RB-02: Entra ID / OIDC Token Rejection & BI Auth Outage](./runbooks/incident-entra-auth-failure.md)** - Resolving `AADSTS500011` and clearing BI client credential caches.
+- **[RB-03: Cloud Run Memory Exhaustion & Container OOM Kills](./runbooks/incident-cloud-run-oom.md)** - Handling container exit `137` and tuning `DEFAULT_FETCH_SIZE`.
+- **[RB-04: Storage Write API Audit Logging Stream Drop](./runbooks/incident-audit-stream-drop.md)** - Recovering Protobuf audit log streams to BigQuery `api_audit`.
+- **[RB-05: BigQuery Slot Quota Starvation & Concurrency Limits](./runbooks/incident-bigquery-quota-exceeded.md)** - Mitigating BigQuery 403/429 concurrency and slot bottlenecks.
+- **[RB-06: Zero-Downtime Tenant Onboarding & Budget Updates](./runbooks/sop-tenant-onboarding.md)** - SOP for adding tenants and hot-reloading `tenants.yaml`.
+- **[RB-07: Schema Evolution & Metadata Cache Invalidation](./runbooks/sop-schema-cache-refresh.md)** - SOP for targeted and global metadata cache flushes.
+- **[RB-08: GCP Service Account Key & Workload Identity Rotation](./runbooks/sop-credential-rotation.md)** - SOP for rotating IAM credentials safely.
+- **[RB-09: Safe Release Deployment & Instant Rollback](./runbooks/sop-release-and-rollback.md)** - SOP for Cloud Build canary releases and 1-command rollback.
+- **[RB-10: Billing Project Switchover & Multi-Region Failover](./runbooks/dr-billing-project-failover.md)** - DR procedure for billing project quota or regional failover.
+- **[RB-11: Identity Provider Outage Emergency Fallback](./runbooks/dr-idp-outage-emergency-fallback.md)** - DR procedure for operating during global Entra ID outages.
+
 ---
 
 > [!NOTE]

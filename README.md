@@ -181,6 +181,7 @@ For comprehensive guides, architecture deep dives, and operational manuals:
 * **[API Contracts](./docs/api-contracts.md)** – Specification of OData v4 endpoints, governance routes, and admin controls.
 * **[Deployment Guide](./docs/deployment-guide.md)** – Production deployment instructions for Google Cloud Run, Docker, and CI/CD.
 * **[Troubleshooting & FAQ](./docs/troubleshooting.md)** – Common error resolutions, Elena Tips, and operational advice.
+* **[Operational Runbooks](./docs/runbooks/README.md)** – Prescriptive incident triage, severity matrix (P1–P4), and SOPs.
 
 ---
 
