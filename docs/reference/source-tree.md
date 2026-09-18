@@ -37,6 +37,11 @@ odata-gateway-bq/
 │   │   ├── lexer.ts         # Tokenizer
 │   │   ├── parser.ts        # Recursive Descent Parser
 │   │   └── translator.ts    # Visitor-based SQL Generator
+├── scripts/                 # Vendor-agnostic procedural automation
+│   ├── ci/                  # Test execution, boundary validation, and linting
+│   ├── deploy/              # Docker compilation, image push, and Cloud Run deployment
+│   ├── dev/                 # Dev server lifecycle and cache/port cleanup
+│   └── sql/                 # BigQuery schema definitions and data product seeding
 ├── common/                  # Shared TypeScript types and schemas
 ├── docs/                    # Technical documentation
 └── CONTRIBUTING.md          # Persona and Workflow guide
@@ -46,6 +51,10 @@ odata-gateway-bq/
 
 | Folder | Purpose |
 | --- | --- |
+| `scripts/ci/` | Continuous integration scripts for test suites, linters, and boundary validation. |
+| `scripts/deploy/` | Vendor-agnostic scripts for Docker containerization and Cloud Run releases. |
+| `scripts/dev/` | Developer ergonomics, port management, and local compilation cache cleanup. |
+| `scripts/sql/` | Automated BigQuery schema provisioning and domain data product seeding. |
 | `src/plugins/` | Core system services and shared infrastructure components. |
 | `src/routes/v1/` | Primary OData API surface and request handler. |
 | `src/lib/` | The "brains" of the protocol translation (OData -> SQL -> OData). |

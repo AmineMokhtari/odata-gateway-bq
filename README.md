@@ -113,60 +113,60 @@ These scripts delegate the entire build process to **GCP Cloud Build**, meaning 
 * The **Cloud Build API** (`cloudbuild.googleapis.com`) must be enabled on your GCP project.
 * You must have a Docker repository created in **GCP Artifact Registry** in the target region.
 
-### Publishing All Services
+### CI Quality & Testing
 
-To build and publish both `obq-gateway` and `obq-hub` simultaneously, use the root publish scripts:
-
-**Bash:**
+Verify system integrity, git security boundaries, and code compliance prior to deployment:
 
 ```bash
-chmod +x publish.sh
-./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+# Run complete CI test suite (boundary validation, backend build, tests)
+./scripts/ci/test.sh
+
+# Run license compliance and markdown linting
+./scripts/ci/lint.sh
 ```
 
-**PowerShell:**
+### Building & Publishing Container Images
 
-```powershell
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+All procedural build and deployment automation is organized under the vendor-agnostic `scripts/` directory and executed directly from the root of the repository.
+
+#### Option 1: Publishing via GCP Cloud Build (Serverless)
+
+Builds both microservices inside GCP Cloud Build without requiring a local Docker daemon:
+
+**Publish All Services:**
+```bash
+./scripts/deploy/publish-cloud-build.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+*(Alternatively, you can run `./publish.sh`, which forwards directly to this script. For Windows PowerShell: `.\scripts\deploy\publish.ps1`).*
+
+**Publish Individual Services:**
+```bash
+# Gateway backend only
+./scripts/deploy/publish-cloud-build.sh -s obq-gateway -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+
+# Hub frontend only
+./scripts/deploy/publish-cloud-build.sh -s obq-hub -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
 ```
 
-### For `obq-gateway`
-
-Navigate to the `obq-gateway` directory and run either the Bash or PowerShell script:
-
-**Bash:**
+#### Option 2: Local Docker Build & Push
 
 ```bash
-cd obq-gateway
-chmod +x publish.sh
-./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-# Example: ./publish.sh -p my-gcp-project -r us-central1 -repo my-docker-repo
+# Build and push images to container registry
+./scripts/deploy/build-and-push.sh \
+  --backend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-gateway:<TAG> \
+  --frontend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-hub:<TAG>
 ```
 
-**PowerShell:**
+### Deploying to Google Cloud Run
 
-```powershell
-cd obq-gateway
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-```
-
-### For `obq-hub`
-
-Navigate to the `obq-hub` directory and run either the Bash or PowerShell script:
-
-**Bash:**
+Deploy both microservices idempotently to Cloud Run:
 
 ```bash
-cd obq-hub
-chmod +x publish.sh
-./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-```
-
-**PowerShell:**
-
-```powershell
-cd obq-hub
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
+./scripts/deploy/deploy-cloud-run.sh \
+  --project-id <PROJECT_ID> \
+  --region <REGION> \
+  --backend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-gateway:<TAG> \
+  --frontend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-hub:<TAG>
 ```
 
 ---

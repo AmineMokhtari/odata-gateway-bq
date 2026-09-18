@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **Runbook ID** | RB-09 |
 | **Type** | Standard Operating Procedure (SOP) |
-| **Component** | Cloud Run, Artifact Registry, Cloud Build (`publish.sh`, `publish.ps1`) |
+| **Component** | Cloud Run, Artifact Registry, Cloud Build (`scripts/deploy/publish-cloud-build.sh`, `scripts/deploy/publish.ps1`) |
 | **Primary Audience** | Release Engineers, DevOps, SRE |
 
 ---
@@ -26,9 +26,8 @@ This standard operating procedure guides the deployment of new software versions
 
 ```mermaid
 flowchart TD
-    A["Trigger publish.sh / publish.ps1"] --> B["Cloud Build Compiles & Pushes Images to Artifact Registry"]
+    A["Trigger publish-cloud-build.sh"] --> B["Cloud Build Compiles & Pushes Images to Artifact Registry"]
     B --> C["Deploy Cloud Run Revision with --no-traffic"]
-    C --> D["Execute Smoke Test on Revision Direct URL"]
     D --> E{"Smoke Tests Pass?"}
     E -- "No" --> F["Abort Deployment (No User Impact)"]
     E -- "Yes" --> G["Shift Traffic: 10% Canary"]
@@ -43,12 +42,13 @@ Delegate container compilation directly to GCP Cloud Build without requiring loc
 
 **Using Bash:**
 ```bash
-./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t $(git rev-parse --short HEAD)
+./scripts/deploy/publish-cloud-build.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t $(git rev-parse --short HEAD)
 ```
+*(Or use `./publish.sh`, which forwards directly to this script).*
 
 **Using PowerShell:**
 ```powershell
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t $(git rev-parse --short HEAD)
+.\scripts\deploy\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t $(git rev-parse --short HEAD)
 ```
 
 ### Step 2: Deploy New Revision with Zero Initial Traffic (`--no-traffic`)

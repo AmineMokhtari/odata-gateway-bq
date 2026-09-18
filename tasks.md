@@ -70,28 +70,29 @@ The recommended production path using **Google Cloud Run** for serverless scalab
 
 ### Step-by-Step Procedure
 
-1. **Build & Tag Image:**
+1. **Option A: Build & Publish via GCP Cloud Build (Serverless):**
 
     ```bash
-    docker build -t gcr.io/[PROJECT_ID]/odata-gateway-bq:v1 .
+    ./scripts/deploy/publish-cloud-build.sh -p [PROJECT_ID] -r [REGION] -repo [REPOSITORY_NAME] -t v1
     ```
 
-2. **Push to Registry:**
+2. **Option B: Build & Push via Local Docker:**
 
     ```bash
-    docker push gcr.io/[PROJECT_ID]/odata-gateway-bq:v1
+    ./scripts/deploy/build-and-push.sh \
+      --backend-image [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY]/obq-gateway:v1 \
+      --frontend-image [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY]/obq-hub:v1
     ```
 
 3. **Deploy to Cloud Run:**
 
     ```bash
-    gcloud run deploy odata-gateway-bq \
-      --image gcr.io/[PROJECT_ID]/odata-gateway-bq:v1 \
-      --platform managed \
+    ./scripts/deploy/deploy-cloud-run.sh \
+      --project-id [PROJECT_ID] \
       --region [REGION] \
-      --set-env-vars BQ_BILLING_PROJECT_ID=[PROJECT_ID],OIDC_ISSUER=[URL],ENABLE_QUERY_BUILDER=false \
-      --service-account [SERVICE_ACCOUNT_EMAIL] \
-      --allow-unauthenticated # If using OIDC inside the app
+      --backend-image [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY]/obq-gateway:v1 \
+      --frontend-image [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY]/obq-hub:v1 \
+      --service-account [SERVICE_ACCOUNT_EMAIL]
     ```
 
 ### Validation Tests

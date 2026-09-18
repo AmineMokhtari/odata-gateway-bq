@@ -1,92 +1,143 @@
 # How-To Guide: Deploying to Google Cloud Run
 
-This guide provides the exact steps to build, publish, and deploy the **odata-gateway-bq** services (Gateway and Hub) to Google Cloud Run using GCP Cloud Build and Artifact Registry.
+This guide provides the exact steps to build, publish, and deploy the **odata-gateway-bq** services (`obq-gateway` and `obq-hub`) to Google Cloud Run using the standardized CI/CD and deployment scripts located in `scripts/`.
+
+---
 
 ## Prerequisites
 
 Before starting your deployment, ensure you have:
-- Authenticated `gcloud` CLI.
-- Cloud Build API enabled on your target project.
-- Proper IAM permissions (e.g., Cloud Build Editor) to submit builds.
-- An existing Docker repository in GCP Artifact Registry.
+- Authenticated `gcloud` CLI (`gcloud auth login` or service account credentials).
+- The Cloud Build API (`cloudbuild.googleapis.com`) and Cloud Run API (`run.googleapis.com`) enabled on your target GCP project.
+- Appropriate IAM permissions (e.g., Cloud Build Editor, Cloud Run Admin, Artifact Registry Writer).
+- An existing Docker repository in **GCP Artifact Registry** in the target region.
 
-## How to Publish All Services Simultaneously
+---
 
-You can build and publish the Docker images for both `obq-gateway` and `obq-hub` using the provided root publish scripts. These scripts delegate the build process to GCP Cloud Build, removing the need for a local Docker installation.
+## Pre-Deployment CI Checks
 
-### Using Bash (Mac/Linux)
+Before building and deploying images, verify that your code adheres to security boundaries, licensing, and passing tests using the vendor-agnostic CI scripts:
 
-1. Make the script executable:
+```bash
+# 1. Run full CI test suite (git boundaries, TypeScript compilation, unit/integration tests)
+./scripts/ci/test.sh
+
+# 2. Verify license headers and Markdown documentation
+./scripts/ci/lint.sh
+```
+
+---
+
+## Building and Publishing Container Images
+
+You can publish images using either **Google Cloud Build** (recommended, requires no local Docker daemon) or a **local Docker daemon**.
+
+### Option A: Publishing via Google Cloud Build (Recommended)
+
+Cloud Build compiles and pushes both microservices from the repository root, ensuring shared dependencies (`common/`) are included in the build context.
+
+#### Publish All Services
+
+**Using Bash:**
+```bash
+./scripts/deploy/publish-cloud-build.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+*(Alternatively, you can run `./publish.sh` which forwards directly to this script).*
+
+**Using PowerShell:**
+```powershell
+.\scripts\deploy\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+#### Publish an Individual Service
+
+To publish only the Gateway backend (`obq-gateway`) or Hub frontend (`obq-hub`), use the `-s` / `--service` flag:
+
+**Gateway Backend Only:**
+```bash
+./scripts/deploy/publish-cloud-build.sh -s obq-gateway -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+**Hub Frontend Only:**
+```bash
+./scripts/deploy/publish-cloud-build.sh -s obq-hub -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+```
+
+---
+
+### Option B: Building & Pushing via Local Docker
+
+If you have a local Docker daemon and preferred registry authentication (`gcloud auth configure-docker`):
+
+1. **Build and Push in One Step:**
    ```bash
-   chmod +x publish.sh
+   ./scripts/deploy/build-and-push.sh \
+     --backend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-gateway:<TAG> \
+     --frontend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-hub:<TAG>
    ```
-2. Execute the script with your project details:
+
+2. **Or Run Granular Build & Push Separately:**
    ```bash
-   ./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
+   # Build images locally
+   ./scripts/deploy/build-docker.sh -s all -b <BACKEND_IMAGE> -f <FRONTEND_IMAGE>
+
+   # Push to registry
+   ./scripts/deploy/push-docker.sh -s all -b <BACKEND_IMAGE> -f <FRONTEND_IMAGE>
    ```
 
-### Using PowerShell (Windows)
+---
 
-Execute the script with your project details:
-```powershell
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -t <TAG>
-```
+## Deploying to Google Cloud Run
 
-## How to Publish Individual Services
+Once images are published to Artifact Registry or Container Registry, deploy them to Cloud Run using `./scripts/deploy/deploy-cloud-run.sh`. This script is idempotent: it provisions the service if it does not exist, or creates a new revision if it does.
 
-If you only need to update a single service, navigate to its respective directory and run the localized script.
-
-### For `obq-gateway`
-
-**Bash:**
-```bash
-cd obq-gateway
-chmod +x publish.sh
-./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-```
-
-**PowerShell:**
-```powershell
-cd obq-gateway
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-```
-
-### For `obq-hub`
-
-**Bash:**
-```bash
-cd obq-hub
-chmod +x publish.sh
-./publish.sh -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-```
-
-**PowerShell:**
-```powershell
-cd obq-hub
-.\publish.ps1 -p <PROJECT_ID> -r <REGION> -repo <REPOSITORY_NAME> -i <IMAGE_NAME> -t <TAG>
-```
-
-## How to Deploy to Cloud Run
-
-After the images are successfully published to Artifact Registry, you can deploy them using the `gcloud` CLI or by utilizing the provided CI/CD GitHub Action workflow.
-
-### Deploying via gcloud CLI (Manual)
+### Deploying Both Services
 
 ```bash
-gcloud run deploy odata-gateway \
-  --image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/obq-gateway:<TAG> \
+./scripts/deploy/deploy-cloud-run.sh \
+  --project-id <PROJECT_ID> \
   --region <REGION> \
-  --platform managed \
-  --service-account <YOUR_SERVICE_ACCOUNT> \
-  --set-env-vars BQ_BILLING_PROJECT_ID=<YOUR_PROJECT>,OIDC_ISSUER=<YOUR_ISSUER>,OIDC_AUDIENCE=<YOUR_AUDIENCE>
+  --backend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-gateway:<TAG> \
+  --frontend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-hub:<TAG>
 ```
 
-*(Repeat this process for the `obq-hub` image, ensuring the appropriate environment variables are passed).*
+### Deploying a Single Service
 
-### Deploying via GitHub Actions (Automated CI/CD)
+**Backend Gateway Only:**
+```bash
+./scripts/deploy/deploy-cloud-run.sh \
+  -s backend \
+  --project-id <PROJECT_ID> \
+  --region <REGION> \
+  --backend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-gateway:<TAG> \
+  --service-account <SERVICE_ACCOUNT_EMAIL>
+```
 
-The project includes an automated deployment workflow located at `.github/workflows/deploy-cloud-run.yml`.
-To use this:
-1. Ensure you have configured the necessary GitHub Secrets (`GCP_PROJECT_ID`, `GCP_SA_KEY`).
-2. Push your code to the `main` branch.
-3. The workflow will automatically build and deploy both images to the configured Cloud Run region.
+**Frontend Hub Only:**
+```bash
+./scripts/deploy/deploy-cloud-run.sh \
+  -s frontend \
+  --project-id <PROJECT_ID> \
+  --region <REGION> \
+  --frontend-image <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/obq-hub:<TAG>
+```
+
+---
+
+## Automated CI/CD via GitHub Actions
+
+The repository includes a decoupled GitHub Actions workflow at [`.github/workflows/deploy-cloud-run.yml`](../../.github/workflows/deploy-cloud-run.yml).
+
+### How It Works
+
+The workflow separates CI/CD orchestration from procedural shell logic:
+1. **CI Job (`test`)**: Checks out the code and executes `./scripts/ci/test.sh`.
+2. **CD Job (`deploy`)**: Authenticates to Google Cloud via Workload Identity / Service Account key, configures Docker credentials, executes `./scripts/deploy/build-and-push.sh`, and triggers `./scripts/deploy/deploy-cloud-run.sh`.
+
+### Configuration Requirements
+
+To enable automated deployments on merge to `main`:
+1. Configure GitHub Repository Secrets:
+   - `GCP_PROJECT_ID`: Target GCP Project ID.
+   - `GCP_SA_KEY`: Service Account key JSON with Cloud Run and Artifact Registry permissions.
+2. Push commits to `main` to trigger the automated test and deployment pipeline.

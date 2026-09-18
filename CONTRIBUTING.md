@@ -101,7 +101,22 @@ Our frontend should feel premium, alive, and encouraging.
 1. **Environment**: Copy `.env.example` to `.env` and configure your GCP and OIDC settings.
 2. **Auth**: Run `gcloud auth application-default login` to enable local BigQuery access.
 3. **Install**: `npm install`
-4. **Dev**: `npm run dev` (Runs both backend and frontend).
+4. **Dev**: `npm run dev` (Runs both backend and frontend). If ports are blocked or build cache is stale, run `./scripts/dev/clean.sh`.
+
+---
+
+## Procedural Automation Rules
+
+All procedural automation scripts must reside in the vendor-agnostic `scripts/` directory:
+- **`scripts/ci/`**: Continuous Integration checks (tests, lints, git boundary validation).
+- **`scripts/deploy/`**: Container image building, pushing, and Cloud Run deployment.
+- **`scripts/dev/`**: Local developer orchestration and environment cleanup.
+- **`scripts/sql/`**: BigQuery schema initialization and data product seeding.
+
+**Operating Rules**:
+1. **Fail-Fast**: All Bash scripts must begin with `set -euo pipefail`.
+2. **Root-Level Pathing**: All scripts must assume and enforce execution from the repository root (`package.json` guard).
+3. **Idempotency**: Scripts must be safe to execute multiple times without corrupting state or duplicating data.
 
 ---
 
@@ -109,7 +124,14 @@ Our frontend should feel premium, alive, and encouraging.
 
 1. Create a new Story file in `_bmad-output/implementation-artifacts/`.
 2. Follow the story implementation steps.
-3. Run `npm test` to ensure no regressions.
+3. Run CI verification scripts:
+   ```bash
+   # Run boundary checks, TypeScript compilation, and test suite
+   ./scripts/ci/test.sh
+
+   # Run license compliance and markdown linting
+   ./scripts/ci/lint.sh
+   ```
 4. Submit your PR with a link to your `walkthrough.md`.
 
 Thank you for helping us empower the next generation of analysts!
