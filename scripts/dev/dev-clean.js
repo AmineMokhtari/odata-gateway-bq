@@ -61,3 +61,4 @@ const devProcess = spawn('npm', ['run', 'dev'], {
 devProcess.on('exit', (code) => {
   process.exit(code || 0);
 });
+

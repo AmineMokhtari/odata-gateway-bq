@@ -13,10 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Master Publish Script (Forwarder)
+# CI Lint & Compliance Verification Script
 # ==============================================================================
-# Forwards execution to the standardized scripts/deploy/publish-cloud-build.sh.
+# Runs license header validation and markdown linting across repository files.
+#
+# Must be executed from the repository root:
+#   ./scripts/ci/lint.sh
 # ==============================================================================
 set -euo pipefail
 
-exec ./scripts/deploy/publish-cloud-build.sh "$@"
+# Ensure script is executed from repo root
+if [[ ! -f "package.json" ]]; then
+  echo "🚨 [CI Lint Error]: Script must be run from the repository root." >&2
+  exit 1
+fi
+
+echo "========================================="
+echo "1. Validating License Headers"
+echo "========================================="
+npm run license:check
+
+echo ""
+echo "========================================="
+echo "2. Running Markdown Linting"
+echo "========================================="
+npm run lint:md
+
+echo ""
+echo "✅ [CI Lint Suite]: All linting and compliance checks passed!"
+

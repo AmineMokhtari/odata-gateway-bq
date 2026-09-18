@@ -13,10 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Forwarding shim to standardized script in scripts/deploy/
+# Build and Push Runner Script
+# ==============================================================================
+# Orchestrates local Docker image build followed by pushing to a container
+# registry for obq-gateway and/or obq-hub.
+#
+# Must be executed from the repository root:
+#   ./scripts/deploy/build-and-push.sh [OPTIONS]
 # ==============================================================================
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_ROOT"
-exec ./scripts/deploy/publish-cloud-build.sh --service obq-hub "$@"
+# Ensure script is executed from repo root
+if [[ ! -f "package.json" ]]; then
+  echo "🚨 [Build and Push Error]: Script must be run from the repository root." >&2
+  exit 1
+fi
+
+./scripts/deploy/build-docker.sh "$@"
+echo ""
+./scripts/deploy/push-docker.sh "$@"
+

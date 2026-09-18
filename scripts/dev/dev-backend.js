@@ -42,3 +42,4 @@ const fastifyProcess = spawn(
 fastifyProcess.on('exit', (code) => {
   process.exit(code || 0);
 });
+
