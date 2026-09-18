@@ -24,6 +24,10 @@ was for a different project), you probably don't need to do it again.
 Visit <https://cla.developers.google.com/> to see your current agreements or to
 sign a new one.
 
+For any code that Google does not own the copyright to or that Google has not received under Google's Contributor License Agreement must be placed in a [third_party directory](http://go/thirdparty/non-google3) at the root of the project.
+
+Every directory inside `third_party` (or 'vendor', etc.) must have a `LICENSE` file that includes the full license text and copyright notice for the library. It should also be easy to trace where each directory came from. You are strongly encouraged to include a [METADATA](http://go/thirdparty/non-google3#metadata) file for each included package. You can also include third_party metadata in the README file, or as an index in the `third_party` directory.
+
 ### Review our Community Guidelines
 
 This project follows [Google's Open Source Community

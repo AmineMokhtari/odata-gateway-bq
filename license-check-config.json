@@ -8,6 +8,7 @@
     "**/.bmad-output/**",
     "**/_bmad/**",
     "**/docs/**",
+    "**/third_party/**",
     "**/node_modules/**",
     "**/dist/**",
     "**/.next/**",
