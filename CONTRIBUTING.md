@@ -1,4 +1,4 @@
-# # How to Contribute
+# How to Contribute
 
 Welcome! We're thrilled you want to help build the world's most business-friendly OData gateway for BigQuery. This project isn't just about moving data; it's about empowering people.
 
@@ -6,7 +6,9 @@ We would love to accept your patches and contributions to this project.
 
 ---
 
-## Before you begin
+# Before you begin
+
+## Contribution process
 
 ### Sign our Contributor License Agreement
 
@@ -45,93 +47,5 @@ Every line of code in this project should serve **Elena**, our "Stranded Analyst
 - **Her goal**: To connect her favorite tools (Excel, Power BI) to BigQuery instantly and securely.
 - **Our mission**: To transform technical errors into "Elena Tips" and complex OData syntax into visual toggles.
 
-**Rule #1**: If a feature is too complex for Elena to use, it's not finished yet.
+**Our golden rule**: If a feature is too complex for Elena to use, it's not finished yet.
 
----
-
-## Architecture Philosophy
-
-We follow the **Trusted Subsystem** model to eliminate IAM management overhead.
-
-1. **Identity**: We verify the user via OIDC (Office 365/GCP).
-2. **Authorization**: We check internal department rules (`common/src/types/tenant.ts`) to see if they are allowed in.
-3. **Execution**: All queries run via a single **Master Service Account**.
-4. **Audit**: We attach the user's identity to every BigQuery job using **Job Labels** (`user_identity`).
-
----
-
-## Development Workflow (The BMad Way)
-
-We use the **BMad Framework** for a rigorous, story-driven implementation trail.
-
-1. **Epics**: Large feature areas (e.g., "Self-Service Governance").
-2. **Stories**: Small, actionable units of work with clear Acceptance Criteria (AC).
-3. **Implementation**: We follow a Red-Green-Refactor cycle for every story.
-4. **Walkthroughs**: Every major change is documented with a visual walkthrough.
-
-**Before you start**: Check `_bmad-output/implementation-artifacts/sprint-status.yaml` to see what's in progress.
-
----
-
-## Premium UX Standards
-
-Our frontend should feel premium, alive, and encouraging.
-
-- **Styling**: Use Tailwind CSS (via Shadcn/UI) but maintain a custom, high-end aesthetic.
-- **Icons**: Use `lucide-react` for all iconography.
-- **Animations**: Use `framer-motion` for smooth state transitions, scale cues (`active:scale-95`), and "Success Pulses."
-- **Direct Connections**: Include high-focus OData Action Bars in the catalog detail headers to allow Copy URL, Export ODC (Excel), and Export PBIDS (Power BI) actions instantly.
-- **Visual Schema Indicators**: Visually decorate tables with Primary Key (PK, blue badge) and Foreign Key (FK, violet badge with target details tooltips) status badges to simplify schema discovery for Elena.
-- **Narrative**: Use the `ElenaAdviceCard` to provide feedback. Never show a raw JSON error to the user.
-
----
-
-## Technical Guardrails
-
-- **Type Safety**: No `any`. No `!`. Use TypeScript interfaces for all API contracts.
-- **Cost Control**: Every query must undergo a **Dry Run** check before execution.
-- **Streaming & Chunking**: Data must be streamed from BigQuery to the client using Node.js `Transform` streams. Always respect `config.defaultFetchSize` via Server-Driven Paging (`@odata.nextLink`) to avoid `res.send(hugeArray)` and OOM crashes.
-- **SQL Safety**: Use the `translateODataToSql` engine. Never concatenate raw user input into SQL strings.
-- **PBIDS Compliance**: Power BI Data Source Reference (`.pbids`) file builders MUST strictly wrap the feed URL inside the address object structure: `address: { url: url }` to avoid parser deserialization errors in Power BI Desktop.
-
----
-
-## Getting Started
-
-1. **Environment**: Copy `.env.example` to `.env` and configure your GCP and OIDC settings.
-2. **Auth**: Run `gcloud auth application-default login` to enable local BigQuery access.
-3. **Install**: `npm install`
-4. **Dev**: `npm run dev` (Runs both backend and frontend). If ports are blocked or build cache is stale, run `./scripts/dev/clean.sh`.
-
----
-
-## Procedural Automation Rules
-
-All procedural automation scripts must reside in the vendor-agnostic `scripts/` directory:
-- **`scripts/ci/`**: Continuous Integration checks (tests, lints, git boundary validation).
-- **`scripts/deploy/`**: Container image building, pushing, and Cloud Run deployment.
-- **`scripts/dev/`**: Local developer orchestration and environment cleanup.
-- **`scripts/sql/`**: BigQuery schema initialization and data product seeding.
-
-**Operating Rules**:
-1. **Fail-Fast**: All Bash scripts must begin with `set -euo pipefail`.
-2. **Root-Level Pathing**: All scripts must assume and enforce execution from the repository root (`package.json` guard).
-3. **Idempotency**: Scripts must be safe to execute multiple times without corrupting state or duplicating data.
-
----
-
-## Submitting Changes
-
-1. Create a new Story file in `_bmad-output/implementation-artifacts/`.
-2. Follow the story implementation steps.
-3. Run CI verification scripts:
-   ```bash
-   # Run boundary checks, TypeScript compilation, and test suite
-   ./scripts/ci/test.sh
-
-   # Run license compliance and markdown linting
-   ./scripts/ci/lint.sh
-   ```
-4. Submit your PR with a link to your `walkthrough.md`.
-
-Thank you for helping us empower the next generation of analysts!
