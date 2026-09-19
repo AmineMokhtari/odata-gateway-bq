@@ -6,11 +6,11 @@ We would love to accept your patches and contributions to this project.
 
 ---
 
-# Before you begin
+## Before you begin
 
-## Contribution process
+### Contribution Prerequisites
 
-### Sign our Contributor License Agreement
+#### Sign our Contributor License Agreement
 
 Contributions to this project must be accompanied by a
 [Contributor License Agreement](https://cla.developers.google.com/about) (CLA).
@@ -24,18 +24,20 @@ was for a different project), you probably don't need to do it again.
 Visit <https://cla.developers.google.com/> to see your current agreements or to
 sign a new one.
 
-For any code that Google does not own the copyright to or that Google has not received under Google's Contributor License Agreement must be placed in a [third_party directory](http://go/thirdparty/non-google3) at the root of the project.
+#### Third-Party Code
 
-Every directory inside `third_party` (or 'vendor', etc.) must have a `LICENSE` file that includes the full license text and copyright notice for the library. It should also be easy to trace where each directory came from. You are strongly encouraged to include a [METADATA](http://go/thirdparty/non-google3#metadata) file for each included package. You can also include third_party metadata in the README file, or as an index in the `third_party` directory.
+For any code that Google does not own the copyright to or that Google has not received under Google's Contributor License Agreement, it must be placed in a `third_party` directory at the root of the project.
 
-### Review our Community Guidelines
+Every directory inside `third_party` (or 'vendor', etc.) must have a `LICENSE` file that includes the full license text and copyright notice for the library. It should also be easy to trace where each directory came from. You are strongly encouraged to include a `METADATA` file for each included package. You can also include third-party metadata in the README file, or as an index in the `third_party` directory.
+
+#### Review our Community Guidelines
 
 This project follows [Google's Open Source Community
 Guidelines](https://opensource.google/conduct/).
 
-## Contribution process
+### Contribution Process
 
-### Code Reviews
+#### Code Reviews
 
 All submissions, including submissions by project members, require review. We
 use [GitHub pull requests](https://docs.github.com/articles/about-pull-requests)
@@ -52,4 +54,3 @@ Every line of code in this project should serve **Elena**, our "Stranded Analyst
 - **Our mission**: To transform technical errors into "Elena Tips" and complex OData syntax into visual toggles.
 
 **Our golden rule**: If a feature is too complex for Elena to use, it's not finished yet.
-

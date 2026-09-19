@@ -1,6 +1,6 @@
 # Third-Party Code Directory
 
-This directory is reserved for any code that Google does not own the copyright to or that Google has not received under Google's Contributor License Agreement ([third_party directory](http://go/thirdparty/non-google3)).
+This directory is reserved for any code that Google does not own the copyright to or that Google has not received under Google's Contributor License Agreement.
 
 ## Mandatory Requirements
 
@@ -10,7 +10,7 @@ This directory is reserved for any code that Google does not own the copyright t
    - Do **not** add Google copyright headers or Apache-2.0 boilerplate to third-party code.
 
 2. **Traceability & METADATA**:
-   It should also be easy to trace where each directory came from. You are strongly encouraged to include a [METADATA](http://go/thirdparty/non-google3#metadata) file for each included package. You can also include third_party metadata in the README file, or as an index in the `third_party` directory.
+   It should also be easy to trace where each directory came from. You are strongly encouraged to include a `METADATA` file for each included package. You can also include third_party metadata in the README file, or as an index in the `third_party` directory.
 
 3. **Standard Package Structure**:
    ```text

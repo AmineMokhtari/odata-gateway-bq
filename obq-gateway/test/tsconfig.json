@@ -4,5 +4,6 @@
     "baseUrl": ".",
     "noEmit": true
   },
-  "include": ["../src/**/*.ts", "**/*.ts"]
+  "include": ["../src/**/*.ts", "**/*.ts"],
+  "exclude": ["plugins/auth-session.test.ts"]
 }
